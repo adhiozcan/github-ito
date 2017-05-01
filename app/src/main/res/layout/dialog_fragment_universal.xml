@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/dfu_master"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/style_menu_split"
+              android:minWidth="290dp"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/dfu_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/style_menu_split_top"
+        android:padding="@dimen/space_16dp"
+        android:text="Title"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/text_size_24sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/dfu_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_16dp"
+        android:layout_marginTop="@dimen/space_16dp"
+        android:padding="@dimen/space_16dp"
+        android:text="Content goes here"
+        android:textColor="#121212"
+        android:textSize="@dimen/text_size_16sp"/>
+
+    <TextView
+        android:id="@+id/dfu_btn_close"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/space_8dp"
+        android:background="@drawable/style_button_mode_light"
+        android:clickable="true"
+        android:gravity="center"
+        android:paddingBottom="@dimen/space_16dp"
+        android:paddingTop="@dimen/space_16dp"
+        android:text="Tutup"
+        android:textColor="#6f6f6f"
+        android:textSize="@dimen/text_size_16sp"
+        android:textStyle="bold"/>
+
+</LinearLayout>

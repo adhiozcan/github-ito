@@ -1,0 +1,102 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
+//apply plugin: 'realm-android'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "id.net.iconpln.apps.ito"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        resValue "string", "google_maps_key",
+                (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.3.1"
+    testCompile "org.mockito:mockito-core:1.10.19"
+    testCompile 'org.robolectric:shadows-support-v4:3.0'
+    androidTestCompile 'com.android.support:support-annotations:25.2.0'
+
+    testCompile "org.powermock:powermock-module-junit4:1.6.4"
+    testCompile "org.powermock:powermock-module-junit4-rule:1.6.4"
+    testCompile "org.powermock:powermock-api-mockito:1.6.4"
+    testCompile "org.powermock:powermock-classloading-xstream:1.6.4"
+
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+
+    testCompile 'io.reactivex:rxjava:1.1.0'
+
+    // Apache Commons Lang for working with string utility
+    compile 'org.apache.commons:commons-lang3:3.4'
+
+    // Google Maps dependency
+    compile 'com.google.android.gms:play-services-maps:9.8.0'
+
+    // Android Support Compatibility
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'com.android.support:design:25.2.0'
+    compile 'com.android.support:cardview-v7:25.2.0'
+    compile 'com.android.support:recyclerview-v7:25.2.0'
+
+    // Replace SharedPreference with hawk
+    compile 'com.orhanobut:hawk:2.0.1'
+
+    // Chart
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+
+    // Realm Stetho
+    compile 'com.uphyca:stetho_realm:0.9.0'
+    compile 'com.facebook.stetho:stetho:1.3.1'
+    compile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
+
+    // Scheduler
+    compile 'com.birbit:android-priority-jobqueue:1.3.5'
+
+    // Socket and Gson
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+
+    // Image downloader
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+
+    // EventBus
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
+        transitive = true;
+    }
+
+}

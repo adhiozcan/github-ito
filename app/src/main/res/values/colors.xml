@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#01376C</color>
+    <color name="colorPrimaryDark">#022D58</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorSnow">#FDFCFC</color>
+    <color name="colorAlice">#F0F4F6</color>
+    <color name="colorOrange">#ffb603</color>
+    <color name="colorOrange2">#ff8603</color>
+    <color name="colorRed">#e7291e</color>
+    <color name="ColorPrimaryDark">#c31c13</color>
+    <color name="colorZumthor">#D6D7D7</color>
+    <color name="colorVulcan">#33373F</color>
+    <color name="tabsScrollColor">#8a140e</color>
+
+    <color name="universalDialogRed">#e7291e</color>
+    <color name="universalDialogBlue">#04a2eb</color>#F44336
+    <color name="universalDialogGreen">#50d569</color>
+
+    <color name="navigationBackground">#282828</color>
+    <color name="navigationMiscBackground">#545454</color>
+    <color name="belumlunas">#C2185B</color>
+    <color name="lunas">#4CAF50</color>
+    <color name="colorTeal">#4CAF50</color>
+    <color name="colorTealDark">#3c913f</color>
+
+    <color name="legendBelumPutus">#FFCC80</color>
+    <color name="legendBelumPutusSudahLunas">#F48FB1</color>
+    <color name="legendSudahPutus">#81C784</color>
+    <color name="legendSudahPutusSudahLunas">#64B5F6</color>
+    <color name="legendSambung">#E6EE9C</color>
+    <color name="legendBelumBongkar">#FF9800</color>
+    <color name="legendBongkar">#CE93D8</color>
+</resources>

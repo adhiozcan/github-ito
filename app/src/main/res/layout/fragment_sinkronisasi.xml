@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="180dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_synch"/>
+
+        <TextView
+            android:id="@+id/lbl_synch_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_16dp"
+            android:layout_marginLeft="@dimen/space_16dp"
+            android:layout_marginRight="@dimen/space_16dp"
+            android:layout_marginTop="@dimen/space_24dp"
+            android:layout_toLeftOf="@+id/btn_synch"
+            android:layout_toStartOf="@+id/btn_synch"
+            android:fontFamily="sans-serif-light"
+            android:text="Sinkronisasi memudahkan Anda untuk tetap menjaga kesegaran data."
+            android:textColor="@color/colorWhite"/>
+
+        <TextView
+            android:id="@+id/btn_synch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/lbl_synch_desc"
+            android:layout_gravity="center"
+            android:layout_marginRight="@dimen/space_16dp"
+            android:background="@drawable/style_button_mode_orange"
+            android:paddingBottom="@dimen/space_8dp"
+            android:paddingLeft="@dimen/space_16dp"
+            android:paddingRight="@dimen/space_16dp"
+            android:paddingTop="@dimen/space_8dp"
+            android:text="Sync Data"
+            android:textColor="@color/colorWhite"/>
+
+        <TextView
+            android:id="@+id/lbl_last_sync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/lbl_synch_desc"
+            android:layout_alignStart="@+id/lbl_synch_desc"
+            android:layout_below="@+id/btn_synch"
+            android:layout_marginTop="@dimen/space_16dp"
+            android:fontFamily="sans-serif-light"
+            android:text="Sinkronisasi terakhir :"
+            android:textColor="@color/colorWhite"/>
+
+        <TextView
+            android:id="@+id/last_sync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/lbl_last_sync"
+            android:layout_alignStart="@+id/lbl_last_sync"
+            android:layout_below="@+id/lbl_last_sync"
+            android:text="No Data"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/text_size_18sp"
+            android:textStyle="bold"/>
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/last_sync"
+            android:layout_marginTop="@dimen/space_16dp"
+            app:tabGravity="fill"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/colorOrange"
+            app:tabTextColor="@color/colorWhite"/>
+
+    </RelativeLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

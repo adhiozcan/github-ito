@@ -1,0 +1,367 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#f1f1f1"
+              android:fillViewport="true"
+              android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="Status Piutang"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorSnow"
+                android:gravity="center"
+                android:minHeight="120dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/status_pelunasan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_12dp"
+                    android:text="Belum Lunas"/>
+
+                <TextView
+                    android:id="@+id/tagihan_tul_601"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Rp 25.000.0000,-"
+                    android:textColor="@color/belumlunas"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/jumlah_lembar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jumlah Lembar"/>
+
+                <TextView
+                    android:id="@+id/btnTusbung"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="@dimen/space_12dp"
+                    android:layout_marginTop="@dimen/space_12dp"
+                    android:background="@drawable/style_button_mode_orange"
+                    android:gravity="center"
+                    android:onClick="onTusbungButtonClicked"
+                    android:paddingBottom="@dimen/space_8dp"
+                    android:paddingLeft="@dimen/space_16dp"
+                    android:paddingRight="@dimen/space_16dp"
+                    android:paddingTop="@dimen/space_8dp"
+                    android:text="Tusbung"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+
+            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                      xmlns:map="http://schemas.android.com/apk/res-auto"
+                      android:id="@+id/google_map"
+                      android:name="com.google.android.gms.maps.SupportMapFragment"
+                      android:layout_width="match_parent"
+                      android:layout_height="120dp"
+                      map:cameraZoom="10"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorSnow"
+                android:padding="@dimen/space_32dp">
+
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:collapseColumns="*"
+                    android:shrinkColumns="*">
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_span="1"
+                            android:text="Data Pelanggan"
+                            android:textAppearance="@android:style/TextAppearance.Small"
+                            android:textColor="@color/colorVulcan"
+                            android:textStyle="bold"/>
+
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Id Pelanggan"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Nama"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/pelanggan_id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No Data"
+                            android:textColor="@color/colorRed"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/pelanggan_nama"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="25dp"
+                            android:layout_weight="1"
+                            android:maxWidth="100dp"
+                            android:text="No Data"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"/>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_marginTop="5dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Tanggal TUL"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No. TUL"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/tanggal_tul"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="00-00-0000"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:id="@+id/nomor_tul"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No Data"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_marginTop="5dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Kode KDDK"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Alamat"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/kode_kddk"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No Data"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="@dimen/text_size_14sp"/>
+
+                        <TextView
+                            android:id="@+id/pelanggan_alamat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:maxWidth="100dp"
+                            android:text="No Data"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"/>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_marginTop="5dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Tarif Daya"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Gardu Tiang"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/tarif_daya"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="25dp"
+                            android:layout_weight="1"
+                            android:maxWidth="90dp"
+                            android:text="00/00"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:id="@+id/gardu_tiang"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="XXXX"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="14sp"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/tglputustitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-condensed"
+                            android:text="Tanggal Putus"
+                            android:textColor="@color/colorZumthor"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/tanggal_putus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="25dp"
+                            android:layout_weight="1"
+                            android:maxWidth="90dp"
+                            android:text="00-00-0000"
+                            android:textColor="@color/colorVulcan"
+                            android:textSize="@dimen/text_size_14sp"
+                            android:textStyle="bold"/>
+                    </TableRow>
+                </TableLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/carilokasi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:background="@drawable/style_button_mode_blue"
+                    android:clickable="true"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/map"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:layout_gravity="center"
+                        android:layout_margin="5dp"
+                        android:gravity="center"
+                        android:text="Temukan Lokasi"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

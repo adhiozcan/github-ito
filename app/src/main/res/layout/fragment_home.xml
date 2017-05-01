@@ -1,0 +1,431 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#f1f1f1"
+            android:fillViewport="true"
+            android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#1C6FD4"
+            android:minHeight="120dp"
+            android:orientation="vertical"
+            android:padding="@dimen/space_24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="@dimen/space_8dp"
+                android:text="Work Order"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/colorSnow"
+                android:textStyle="bold"/>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/space_16dp"
+                app:tabGravity="center"
+                app:tabMode="scrollable"
+                app:tabSelectedTextColor="@color/colorOrange"
+                app:tabTextColor="@color/colorWhite"/>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/vp_chart"
+                android:layout_width="match_parent"
+                android:layout_height="280dp"/>
+
+            <!--<com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/chart_pie"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minHeight="280dp"/>
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/chart_bar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minHeight="280dp"/>-->
+        </LinearLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_12dp"
+            android:padding="@dimen/space_16dp">
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/space_6dp"
+                    android:text="Total "
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold"/>
+            </TableRow>
+
+            <TableRow
+                android:layout_marginTop="@dimen/space_6dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_1"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendBelumPutus"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Belum Putus Belum Lunas"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_belum_putus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_2"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendBelumPutusSudahLunas"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Belum Putus Sudah Lunas"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_belum_putus_sudah_lunas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_3"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendSudahPutus"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Sudah Putus Belum Lunas"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_sudah_putus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_4"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendSudahPutusSudahLunas"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Sudah Putus Sudah Lunas"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_sudah_putus_sudah_lunas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_5"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendSambung"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Sambung"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_sambung"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_6"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendBelumBongkar"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Belum Bongkar"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_belum_bongkar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/legend_box_7"
+                        android:layout_width="@dimen/space_12dp"
+                        android:layout_height="@dimen/space_12dp"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:background="@color/legendBongkar"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Bongkar"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_12dp"
+                    android:text=" : "/>
+
+                <TextView
+                    android:id="@+id/value_bongkar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
+            </TableRow>
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4dp"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="left"
+                android:text="Bersih Data"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"/>
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_16dp"
+                android:layout_marginTop="@dimen/space_16dp"
+                android:paddingLeft="@dimen/space_8dp"
+                android:paddingRight="@dimen/space_8dp"
+                android:shrinkColumns="*"
+                android:stretchColumns="*">
+
+                <TableRow>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:text="Semua Data "
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/btn_clean_all"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:background="@drawable/style_button_mode_blue"
+                            android:gravity="center"
+                            android:padding="@dimen/space_12dp"
+                            android:text="Bersihkan"
+                            android:textAppearance="?android:attr/textAppearanceSmall"
+                            android:textColor="#FFFFFF"
+                            android:textStyle="bold"/>
+                    </RelativeLayout>
+                </TableRow>
+
+                <TableRow
+                    android:layout_marginTop="@dimen/space_6dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dip"
+                        android:layout_span="2"
+                        android:background="#9e9e9e"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_marginTop="@dimen/space_12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_span="2"
+                        android:gravity="left"
+                        android:text="** Bersih data akan menghapus data dan foto"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </TableRow>
+            </TableLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

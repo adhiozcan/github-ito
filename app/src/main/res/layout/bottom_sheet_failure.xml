@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/view_notification"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/colorAccent"
+    android:clipToPadding="true"
+    android:visibility="gone"
+    app:behavior_hideable="true"
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingBottom="@dimen/space_24dp"
+            android:paddingLeft="@dimen/space_16dp"
+            android:paddingRight="@dimen/space_16dp"
+            android:paddingTop="@dimen/space_24dp"
+            android:text="Gagal terhubung dengan server, silakan coba beberapa saat lagi"
+            android:textColor="@android:color/white"/>
+
+        <TextView
+            android:id="@+id/yes_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/style_button_mode_pink"
+            android:gravity="center"
+            android:paddingLeft="@dimen/space_24dp"
+            android:paddingRight="@dimen/space_24dp"
+            android:text="Ya"
+            android:textColor="@color/colorOrange"
+            android:textStyle="bold"/>
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>

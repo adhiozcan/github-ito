@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">I-To</string>
+    <string-array name="navigation_drawer_items_array">
+        <item>Home</item>
+        <item>Perencanaan WO</item>
+        <item>Pelaksanaan WO</item>
+        <item>Sinkronisasi</item>
+        <item>Monitoring</item>
+        <item>Tentang Aplikasi</item>
+        <item>Help</item>
+        <item>Logout</item>
+    </string-array>
+
+    <string-array name="jenis_pekerjaan">
+        <item>Pemutusan</item>
+        <item>Penyambungan</item>
+    </string-array>
+
+    <string-array name="urutan_bulan">
+        <item>-</item>
+        <item>Januari</item>
+        <item>Februari</item>
+        <item>Maret</item>
+        <item>April</item>
+        <item>Mei</item>
+        <item>Juni</item>
+        <item>Juli</item>
+        <item>Agustus</item>
+        <item>September</item>
+        <item>Oktober</item>
+        <item>November</item>
+        <item>Desember</item>
+    </string-array>
+
+    <string-array name="urutan_tahun">
+        <item>-</item>
+        <item>2015</item>
+        <item>2016</item>
+        <item>2017</item>
+    </string-array>
+
+    <string name="open_drawer">Navigation Open</string>
+    <string name="close_drawer">Navigation Close</string>
+</resources>

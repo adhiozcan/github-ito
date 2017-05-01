@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:paddingBottom="@dimen/space_12dp"
+              android:paddingLeft="@dimen/space_16dp"
+              android:paddingRight="@dimen/space_16dp"
+              android:paddingTop="@dimen/space_12dp">
+
+    <TextView
+        android:id="@+id/pelanggan_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nomor Id Pelanggan"/>
+
+    <TextView
+        android:id="@+id/pelanggan_alamat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alamat"
+        android:textSize="@dimen/text_size_16sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/status_sinkronisasi_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pending"
+        android:textColor="@color/colorOrange2"/>
+</LinearLayout>
