@@ -149,7 +149,8 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            NavUtils.navigateUpFromSameTask(this);
+            onBackPressed();
+          //  NavUtils.navigateUpFromSameTask(this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -206,4 +207,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
             googleMap.addMarker(new MarkerOptions().position(customerLocation));
         }
     }
+
+
 }

@@ -1,5 +1,8 @@
 package id.net.iconpln.apps.ito.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 import id.net.iconpln.apps.ito.utility.StringUtils;
@@ -8,7 +11,7 @@ import id.net.iconpln.apps.ito.utility.StringUtils;
  * Created by Ozcan on 23/03/2017.
  */
 
-public class WorkOrder extends Model {
+public class WorkOrder extends Model implements Parcelable {
     @SerializedName("no_wo")
     private String noWo;
     @SerializedName("idpelanggan")
@@ -68,6 +71,54 @@ public class WorkOrder extends Model {
     private String flag;
     @SerializedName("totalloop")
     private String jumlahData;
+
+    public WorkOrder(){}
+
+    protected WorkOrder(Parcel in) {
+        noWo = in.readString();
+        pelangganId = in.readString();
+        nama = in.readString();
+        tanggalWo = in.readString();
+        tanggalPelunasan = in.readString();
+        alamat = in.readString();
+        tarif = in.readString();
+        daya = in.readString();
+        noTul601 = in.readString();
+        noTul = in.readString();
+        tagihan601 = in.readString();
+        unitUpi = in.readString();
+        unitUp = in.readString();
+        unitAp = in.readString();
+        noGardu = in.readString();
+        noTiang = in.readString();
+        kddk = in.readString();
+        rbm = in.readString();
+        statusPiutang = in.readString();
+        rpTotal = in.readString();
+        jumlahRpTag = in.readString();
+        jumlahRbpk = in.readString();
+        jumlahLembar = in.readString();
+        total = in.readString();
+        koordinatX = in.readString();
+        koordinatY = in.readString();
+        kodeVendor = in.readString();
+        expired = in.readString();
+        kodePetugas = in.readString();
+        flag = in.readString();
+        jumlahData = in.readString();
+    }
+
+    public static final Creator<WorkOrder> CREATOR = new Creator<WorkOrder>() {
+        @Override
+        public WorkOrder createFromParcel(Parcel in) {
+            return new WorkOrder(in);
+        }
+
+        @Override
+        public WorkOrder[] newArray(int size) {
+            return new WorkOrder[size];
+        }
+    };
 
     public String getJumlahData() {
         return jumlahData;
@@ -361,5 +412,45 @@ public class WorkOrder extends Model {
         this.alamat = StringUtils.normalize(alamat);
         this.noTul = StringUtils.normalize(noTul);
         this.noTiang = StringUtils.normalize(noTiang);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(noWo);
+        parcel.writeString(pelangganId);
+        parcel.writeString(nama);
+        parcel.writeString(tanggalWo);
+        parcel.writeString(tanggalPelunasan);
+        parcel.writeString(alamat);
+        parcel.writeString(tarif);
+        parcel.writeString(daya);
+        parcel.writeString(noTul601);
+        parcel.writeString(noTul);
+        parcel.writeString(tagihan601);
+        parcel.writeString(unitUpi);
+        parcel.writeString(unitUp);
+        parcel.writeString(unitAp);
+        parcel.writeString(noGardu);
+        parcel.writeString(noTiang);
+        parcel.writeString(kddk);
+        parcel.writeString(rbm);
+        parcel.writeString(statusPiutang);
+        parcel.writeString(rpTotal);
+        parcel.writeString(jumlahRpTag);
+        parcel.writeString(jumlahRbpk);
+        parcel.writeString(jumlahLembar);
+        parcel.writeString(total);
+        parcel.writeString(koordinatX);
+        parcel.writeString(koordinatY);
+        parcel.writeString(kodeVendor);
+        parcel.writeString(expired);
+        parcel.writeString(kodePetugas);
+        parcel.writeString(flag);
+        parcel.writeString(jumlahData);
     }
 }

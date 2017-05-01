@@ -15,7 +15,7 @@
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="2dip"/>
-            <solid android:color="@color/colorSnow"/>
+            <solid android:color="@color/colorWhite"/>
         </shape>
     </item>
 </selector>

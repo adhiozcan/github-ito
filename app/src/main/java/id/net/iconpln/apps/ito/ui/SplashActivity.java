@@ -8,6 +8,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.anthonycr.grant.PermissionsManager;
+import com.anthonycr.grant.PermissionsResultAction;
 
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.helper.CheckPermission;
@@ -17,39 +21,51 @@ import id.net.iconpln.apps.ito.helper.CheckPermission;
  */
 
 public class SplashActivity extends AppCompatActivity {
-    private static int SPLASH_TIME_OUT = 3000;
+    private static int SPLASH_TIME_OUT = 1500;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         Log.d("ITO", "onCreate: Before executing from repository");
+
         checkAppConfig();
-        displaySplash();
 
-        boolean isGranted = CheckPermission.check(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (!isGranted)
-            CheckPermission.showRequestDialog(this, Manifest.permission.READ_EXTERNAL_STORAGE, 200, new CheckPermission.onCheckPermissionCallback() {
-                @Override
-                public void onYesAnswer() {
 
-                }
+        PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA}, new PermissionsResultAction() {
 
-                @Override
-                public void onNoAnswer() {
+                    @Override
+                    public void onGranted() {
+                        displaySplash();
 
-                }
-            });
+                    }
 
+                    @Override
+                    public void onDenied(String permission) {
+                        Toast.makeText(SplashActivity.this,
+                                "Izin ditolak, tidak dapat masuk ke aplikasi.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+
+    }
+
+
+    private void checkAppConfig() {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-    }
-
-    private void checkAppConfig() {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
     }
 
     private void displaySplash() {

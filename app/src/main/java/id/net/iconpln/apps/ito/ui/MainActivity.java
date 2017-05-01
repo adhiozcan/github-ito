@@ -1,6 +1,7 @@
 package id.net.iconpln.apps.ito.ui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
@@ -18,11 +19,13 @@ import android.widget.Toast;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        PelaksanaanFragment.OnFragmentInteractionListener,
+        PelaksanaanItemFragment.OnFragmentInteractionListener{
     private NavigationView navigationView;
-    private DrawerLayout   drawer;
+    private DrawerLayout drawer;
     private View           navHeader;
-    private Toolbar        toolbar;
+    private Toolbar toolbar;
     private TextView       txtName;
 
     // index to identify current nav menu item
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // update the main content by replacing fragments
-                Fragment            fragment            = getHomeFragment();
+                Fragment fragment            = getHomeFragment();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
@@ -129,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Closing drawer on item click
-        drawer.closeDrawers();
 
         // refresh toolbar menu
         invalidateOptionsMenu();
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 menuItem.setChecked(true);
 
-                loadHomeFragment();
+                drawer.closeDrawers();
 
                 return true;
             }
@@ -240,6 +242,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onDrawerClosed(View drawerView) {
+                loadHomeFragment();
+
                 // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
                 super.onDrawerClosed(drawerView);
             }
@@ -278,4 +282,8 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 }
