@@ -6,12 +6,13 @@ import android.os.Parcelable;
 import com.google.gson.annotations.SerializedName;
 
 import id.net.iconpln.apps.ito.utility.StringUtils;
+import io.realm.RealmObject;
 
 /**
  * Created by Ozcan on 23/03/2017.
  */
 
-public class WorkOrder extends Model implements Parcelable {
+public class WorkOrder extends RealmObject implements Parcelable {
     @SerializedName("no_wo")
     private String noWo;
     @SerializedName("idpelanggan")

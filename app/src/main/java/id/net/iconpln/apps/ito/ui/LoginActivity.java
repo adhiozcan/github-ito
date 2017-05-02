@@ -38,8 +38,10 @@ import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import id.net.iconpln.apps.ito.storage.entity.FlagTusbugStorage;
 import id.net.iconpln.apps.ito.utility.DeviceUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
+import io.realm.Realm;
 
 /**
  * Created by Ozcan on 23/03/2017.
@@ -61,11 +63,15 @@ public class LoginActivity extends AppCompatActivity {
     private boolean MASTER_TUSBUNG_COMPLETE = false;
     private boolean WORK_ORDER_COMPLETE     = false;
 
+    private Realm realm;
+
     @Override
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        realm = Realm.getDefaultInstance();
 
         socketTransaction = SocketTransaction.prepareStatement();
 
@@ -280,7 +286,13 @@ public class LoginActivity extends AppCompatActivity {
         MASTER_TUSBUNG_COMPLETE = true;
         listenDataToComplete();
 
-        //TODO save to Realm in here
+        //TODO save to Realm in here <DONE>
+        realm.beginTransaction();
+        for (FlagTusbung aFlagTusbung : flagTusbung) {
+            realm.insert(aFlagTusbung);
+        }
+        realm.commitTransaction();
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

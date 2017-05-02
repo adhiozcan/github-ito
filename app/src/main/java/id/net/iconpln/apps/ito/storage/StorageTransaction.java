@@ -14,7 +14,7 @@ import id.net.iconpln.apps.ito.model.WorkOrder;
  * Created by Ozcan on 17/04/2017.
  */
 
-public class StorageTransaction<T extends Model> implements CrudTransaction<T> {
+public class StorageTransaction<T> implements CrudTransaction<T> {
 
     @Override
     public T save(Class className, T entity) {

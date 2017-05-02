@@ -11,8 +11,7 @@ import java.util.List;
  */
 
 public class ChartVPAdapter extends FragmentPagerAdapter {
-    final int CHART_PIE = 0;
-    final int CHART_BAR = 1;
+
 
     private List<Fragment> fragmentList;
 
@@ -34,9 +33,9 @@ public class ChartVPAdapter extends FragmentPagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         if (position == 0) {
-            return "Pie Chart";
-        } else {
             return "Bar Chart";
+        } else {
+            return "Pie Chart";
         }
     }
 }

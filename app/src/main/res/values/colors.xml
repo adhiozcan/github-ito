@@ -33,4 +33,14 @@
     <color name="legendSambung">#E6EE9C</color>
     <color name="legendBelumBongkar">#FF9800</color>
     <color name="legendBongkar">#CE93D8</color>
+
+    <!-- material -->
+    <color name="material_red">#F44336</color>
+    <color name="material_pink">#FF4081</color>
+    <color name="material_blue">#1976D2</color>
+    <color name="material_purple">#E040FB</color>
+    <color name="material_yellow">#FFEB3B</color>
+    <color name="material_green">#4CAF50</color>
+    <color name="material_lighr_green">#8BC34A</color>
+    <color name="material_amber">#FFC107</color>
 </resources>

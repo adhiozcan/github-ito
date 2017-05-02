@@ -29,6 +29,7 @@ import java.util.List;
 
 import id.net.iconpln.apps.ito.R;
 
+import static android.R.attr.colorPrimary;
 import static android.R.attr.value;
 
 /**
@@ -39,54 +40,55 @@ public class ChartUtils {
 
     protected static List<Integer> getStandardColor(Context context) {
         List<Integer> colors = new ArrayList<>();
-        colors.add(ContextCompat.getColor(context, R.color.legendBelumPutus));
-        colors.add(ContextCompat.getColor(context, R.color.legendBelumPutusSudahLunas));
-        colors.add(ContextCompat.getColor(context, R.color.legendSudahPutus));
-        colors.add(ContextCompat.getColor(context, R.color.legendSudahPutusSudahLunas));
-        colors.add(ContextCompat.getColor(context, R.color.legendSambung));
-        colors.add(ContextCompat.getColor(context, R.color.legendBelumBongkar));
-        colors.add(ContextCompat.getColor(context, R.color.legendBongkar));
+        colors.add(ContextCompat.getColor(context, R.color.material_yellow));
+        colors.add(ContextCompat.getColor(context, R.color.material_pink));
+        colors.add(ContextCompat.getColor(context, R.color.material_green));
+        colors.add(ContextCompat.getColor(context, R.color.material_blue));
+        colors.add(ContextCompat.getColor(context, R.color.material_lighr_green));
+        colors.add(ContextCompat.getColor(context, R.color.material_amber));
+        colors.add(ContextCompat.getColor(context, R.color.material_purple));
         return colors;
     }
 
     public static class Pie {
 
         protected static String[] mParties = new String[]{
-                "Belum Putus Belum Lunas", "Belum Putus Sudah Lunas",
-                "Sudah Putus Sudah Lunas", "Sudah Putus Belum Lunas",
-                "Sambung", "Belum Bongkar", "Sudah Bongkar"
+                "BPBL", "BPSL",
+                "SPSL", "SPBL",
+                "S", "BB", "SB"
         };
 
         public static void setChartConfiguration(Context context, PieChart mChart) {
-            mChart.setUsePercentValues(true);
+        //    mChart.setUsePercentValues(true);
             mChart.getDescription().setEnabled(false);
             mChart.setExtraOffsets(5, 10, 5, 5);
 
             mChart.setDragDecelerationFrictionCoef(0.95f);
 
-            mChart.setCenterTextTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
-            mChart.setCenterText(ChartUtils.Pie.generateCenterSpannableText());
+         /*   mChart.setCenterTextTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
+            mChart.setCenterText(ChartUtils.Pie.generateCenterSpannableText());*/
 
-            mChart.setDrawHoleEnabled(true);
-            mChart.setHoleColor(Color.WHITE);
+            mChart.setDrawHoleEnabled(false);
+         //   mChart.setHoleColor(R.color.colorPrimary);
 
-            mChart.setTransparentCircleColor(Color.WHITE);
-            mChart.setTransparentCircleAlpha(110);
+          //  mChart.setTransparentCircleColor(Color.WHITE);
+          //  mChart.setTransparentCircleAlpha(110);
 
             mChart.setHoleRadius(58f);
             mChart.setTransparentCircleRadius(61f);
 
-            mChart.setDrawCenterText(true);
+
+          //  mChart.setDrawCenterText(true);
 
             mChart.setRotationAngle(0);
-            mChart.setRotationEnabled(true);
+            mChart.setRotationEnabled(false);
             mChart.setHighlightPerTapEnabled(true);
             mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
 
             // entry label styling
-            mChart.setEntryLabelColor(Color.WHITE);
+          /*  mChart.setEntryLabelColor(Color.WHITE);
             mChart.setEntryLabelTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_REGULAR));
-            mChart.setEntryLabelTextSize(12f);
+            mChart.setEntryLabelTextSize(12f);*/
 
             // hidden legend
             mChart.getLegend().setEnabled(false);
@@ -115,9 +117,9 @@ public class ChartUtils {
 
             PieData data = new PieData(dataSet);
             data.setValueFormatter(new PercentFormatter());
-            data.setValueTextSize(11f);
-            data.setValueTextColor(Color.BLACK);
-            data.setValueTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
+         //   data.setValueTextSize(11f);
+         //   data.setValueTextColor(Color.BLACK);
+         //   data.setValueTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
             chart.setData(data);
 
             // undo all highlights
@@ -136,6 +138,7 @@ public class ChartUtils {
         public static void setChartConfiguration(Context context, BarChart mChart) {
             mChart.setDrawBarShadow(false);
             mChart.setDrawValueAboveBar(true);
+            mChart.getLegend().setEnabled(false);
 
             mChart.getDescription().setEnabled(false);
 
@@ -150,14 +153,14 @@ public class ChartUtils {
             // mChart.setDrawYLabels(false);
 
             XAxis xAxis = mChart.getXAxis();
+            xAxis.setTextColor(Color.WHITE);
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
             xAxis.setDrawGridLines(false);
             xAxis.setGranularity(1f); // only intervals of 1 day
             xAxis.setLabelCount(7);
 
             YAxis leftAxis = mChart.getAxisLeft();
-            leftAxis.setTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
+            leftAxis.setTextColor(Color.WHITE);
             leftAxis.setDrawGridLines(false);
             leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
             leftAxis.setSpaceTop(15f);

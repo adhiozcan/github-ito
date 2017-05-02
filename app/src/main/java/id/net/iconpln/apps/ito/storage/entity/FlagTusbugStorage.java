@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.model;
+package id.net.iconpln.apps.ito.storage.entity;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -6,14 +6,21 @@ import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.RealmObject;
 
 /**
- * Created by Ozcan on 20/04/2017.
+ * Created by rizmaulana on 02/05/17.
  */
 
-public class FlagTusbung extends RealmObject {
+public class FlagTusbugStorage extends RealmObject {
 
-    public FlagTusbung(){
+    public FlagTusbugStorage(){
 
     }
+
+    public FlagTusbugStorage(String kode, String keterangan, String deskripsi) {
+        this.kode = kode;
+        this.keterangan = keterangan;
+        this.deskripsi = deskripsi;
+    }
+
     @SerializedName("flag_tusbung")
     private String kode;
     @SerializedName("keterangan")
@@ -59,4 +66,5 @@ public class FlagTusbung extends RealmObject {
                 ", deskripsi='" + deskripsi + '\'' +
                 '}';
     }
+
 }

@@ -41,6 +41,7 @@ import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import io.realm.Realm;
 
 
 public class PelaksanaanFragment extends Fragment
@@ -73,6 +74,8 @@ public class PelaksanaanFragment extends Fragment
 
     private int WO_NETWORK_ITERATION = 100;
 
+    private Realm realm;
+
 
     public PelaksanaanFragment() {
         // Required empty public constructor
@@ -93,6 +96,8 @@ public class PelaksanaanFragment extends Fragment
         initView();
         initMap();
         //provideDummyData();
+
+        realm = Realm.getDefaultInstance();
 
         AppConfig.NO_WO_LOCAL = "";
         checkAvailableData();
@@ -135,9 +140,13 @@ public class PelaksanaanFragment extends Fragment
 
 
     private List<WorkOrder> getWoDataLocal() {
-        //TODO get from realm in here.
-        StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
-        return storageTransaction.findAll(WorkOrder.class);
+        //TODO get from realm in here. <DONE>
+       // StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
+       // return storageTransaction.findAll(WorkOrder.class);
+        //DONE
+        ArrayList<WorkOrder> woList = new ArrayList<>();
+        woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
+        return woList;
     }
 
 
@@ -297,7 +306,6 @@ public class PelaksanaanFragment extends Fragment
     }
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 
@@ -343,9 +351,17 @@ public class PelaksanaanFragment extends Fragment
         woValidate();
 
         // save work order list into local.
-        //TODO save to realm in here
-        StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
-        storageTransaction.saveList(WorkOrder.class, woList);
+        //TODO save to realm in here <DONE>
+        //StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
+        //storageTransaction.saveList(WorkOrder.class, woList);
+        //DONE
+
+        realm.beginTransaction();
+        for (WorkOrder wo : workOrder ){
+            realm.insert(wo);
+        }
+        realm.commitTransaction();
+
 
         //  mAdapter.notifyDataSetChanged();
         initViewPager();

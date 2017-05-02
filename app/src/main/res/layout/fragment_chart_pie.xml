@@ -5,9 +5,10 @@
               android:orientation="vertical">
 
     <com.github.mikephil.charting.charts.PieChart
+        android:layout_margin="@dimen/space_16dp"
         android:id="@+id/chart_pie"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:minHeight="280dp"/>
+        android:minHeight="170dp"/>
 
 </LinearLayout>

@@ -141,8 +141,8 @@ public class HomeFragment extends Fragment {
         mBarChartData[5] = checkNull(woSummary.getBongkar());
         mBarChartData[6] = checkNull(woSummary.getBelumBongkar());
 
-        mChartFragments.add(PieChartFragment.newInstance(mPieChartData));
         mChartFragments.add(BarChartFragment.newInstance(mBarChartData));
+        mChartFragments.add(PieChartFragment.newInstance(mPieChartData));
 
         mViewPager.getAdapter().notifyDataSetChanged();
     }
