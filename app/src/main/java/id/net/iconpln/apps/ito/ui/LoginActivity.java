@@ -279,6 +279,8 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "[Flag Tusbung] " + flagTusbung.length + "--------------------");
         MASTER_TUSBUNG_COMPLETE = true;
         listenDataToComplete();
+
+        //TODO save to Realm in here
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

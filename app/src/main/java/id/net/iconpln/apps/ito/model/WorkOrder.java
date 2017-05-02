@@ -72,7 +72,11 @@ public class WorkOrder extends Model implements Parcelable {
     @SerializedName("totalloop")
     private String jumlahData;
 
-    public WorkOrder(){}
+    private boolean isSelesai;
+
+    public WorkOrder() {
+    }
+
 
     protected WorkOrder(Parcel in) {
         noWo = in.readString();
@@ -106,6 +110,7 @@ public class WorkOrder extends Model implements Parcelable {
         kodePetugas = in.readString();
         flag = in.readString();
         jumlahData = in.readString();
+        isSelesai = in.readByte() != 0;
     }
 
     public static final Creator<WorkOrder> CREATOR = new Creator<WorkOrder>() {
@@ -372,6 +377,14 @@ public class WorkOrder extends Model implements Parcelable {
         this.kodePetugas = kodePetugas;
     }
 
+    public boolean isSelesai() {
+        return isSelesai;
+    }
+
+    public void setSelesai(boolean selesai) {
+        isSelesai = selesai;
+    }
+
     @Override
     public String toString() {
         return "WorkOrder{" +
@@ -452,5 +465,6 @@ public class WorkOrder extends Model implements Parcelable {
         parcel.writeString(kodePetugas);
         parcel.writeString(flag);
         parcel.writeString(jumlahData);
+        parcel.writeByte((byte) (isSelesai ? 1 : 0));
     }
 }

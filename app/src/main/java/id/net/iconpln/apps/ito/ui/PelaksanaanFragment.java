@@ -22,16 +22,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
@@ -44,9 +41,6 @@ import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
-import id.net.iconpln.apps.ito.utility.CommonUtils;
-
-import static android.content.ContentValues.TAG;
 
 
 public class PelaksanaanFragment extends Fragment
@@ -55,22 +49,27 @@ public class PelaksanaanFragment extends Fragment
 
 
     private OnFragmentInteractionListener mListener;
-    private View view;
+    private View                          view;
+
     private final String TAG = getClass().getSimpleName();
     private LinearLayout mLayoutContent, mLayoutContainer;
+
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
-    private int heightContainer = 0;
-    private boolean isPanelExpand = true;
-    private boolean isBack = false;
-    private GoogleMap googleMap;
-    private ArrayList<WorkOrder> workOrdersLunasList = new ArrayList<>();
-    private ArrayList<WorkOrder> workOrdersBelumLunasLIst = new ArrayList<>();
 
-    private RecyclerView mRecyclerView;
+    private int     heightContainer = 0;
+    private boolean isPanelExpand   = true;
+    private boolean isBack          = false;
+    private GoogleMap googleMap;
+
+    private ArrayList<WorkOrder> workOrdersLunasList     = new ArrayList<>();
+    private ArrayList<WorkOrder> workOrderBelumLunasList = new ArrayList<>();
+    private ArrayList<WorkOrder> workOrderSelesaiList    = new ArrayList<>();
+    private List<WorkOrder>      woList                  = new ArrayList<>();
+
+    private RecyclerView       mRecyclerView;
     private PelaksanaanAdapter mAdapter;
-    private List<WorkOrder> woList = new ArrayList<>();
-    private View viewNotification;
+    private View               viewNotification;
 
     private int WO_NETWORK_ITERATION = 100;
 
@@ -91,12 +90,8 @@ public class PelaksanaanFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_pelaksanaan2, container, false);
-
         initView();
-        //   initViewPager();
         initMap();
-
-        woList = new ArrayList<>();
         //provideDummyData();
 
         AppConfig.NO_WO_LOCAL = "";
@@ -140,6 +135,7 @@ public class PelaksanaanFragment extends Fragment
 
 
     private List<WorkOrder> getWoDataLocal() {
+        //TODO get from realm in here.
         StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
         return storageTransaction.findAll(WorkOrder.class);
     }
@@ -160,11 +156,11 @@ public class PelaksanaanFragment extends Fragment
 
     private void initViewPager() {
         workOrdersLunasList = new ArrayList<>();
-        workOrdersBelumLunasLIst = new ArrayList<>();
+        workOrderBelumLunasList = new ArrayList<>();
 
         for (WorkOrder wo : woList) {
             if (wo.getStatusPiutang().equals("Belum Lunas")) {
-                workOrdersBelumLunasLIst.add(wo);
+                workOrderBelumLunasList.add(wo);
             } else {
                 workOrdersLunasList.add(wo);
             }
@@ -172,14 +168,26 @@ public class PelaksanaanFragment extends Fragment
 
         mLayoutContent.setVisibility(View.VISIBLE);
         mTabLayout.removeAllTabs();
-        mViewPager.setAdapter(new TabMapAdapter(getActivity().getSupportFragmentManager(), workOrdersBelumLunasLIst, workOrdersLunasList));
+        mViewPager.setAdapter(new TabMapAdapter(getActivity().getSupportFragmentManager(), workOrderBelumLunasList, new ArrayList<WorkOrder>(), workOrdersLunasList));
         mTabLayout.setupWithViewPager(mViewPager);
-        mTabLayout.getTabAt(0).setText("LUNAS");
-        mTabLayout.getTabAt(1).setText("BELUM LUNAS");
+        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + workOrderBelumLunasList.size() + ")");
+        mTabLayout.getTabAt(1).setText("WO Selesai (" + workOrderSelesaiList.size() + ")");
+        mTabLayout.getTabAt(2).setText("WO Lunas (" + workOrdersLunasList.size() + ")");
 
-        mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        shouldUpdateMarker(workOrderBelumLunasList);
+                        break;
+                    case 1:
+                        shouldUpdateMarker(workOrderSelesaiList);
+                        break;
+                    case 2:
+                        shouldUpdateMarker(workOrdersLunasList);
+                        break;
+                }
                 if (!isPanelExpand)
                     showPanel();
             }
@@ -252,12 +260,41 @@ public class PelaksanaanFragment extends Fragment
         }
 
         googleMap.getUiSettings().setRotateGesturesEnabled(false);
-        //shouldUpdateMarker();
 
         // Position the map's camera near Bandung, Indonesia.
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-6.915846, 107.604789)));
     }
 
+    private void shouldUpdateMarker(ArrayList<WorkOrder> woList) {
+        googleMap.clear();
+        if ((googleMap != null) && ((woList != null) && (!woList.isEmpty()))) {
+            for (WorkOrder wo : woList) {
+                // if can't parse lat lng for any specific reason like null variable, then continue
+                // to the next iteration.
+                boolean isSafeToContinue = isValidLatLng(wo.getKoordinatX(), wo.getKoordinatY());
+                if (!isSafeToContinue) continue;
+
+                // add marker and additional info on top of it.
+                double lat    = Double.parseDouble(wo.getKoordinatX());
+                double lng    = Double.parseDouble(wo.getKoordinatY());
+                LatLng latLng = new LatLng(lat, lng);
+                googleMap.addMarker(
+                        new MarkerOptions()
+                                .position(latLng)
+                                .title(wo.getPelangganId())
+                                .snippet(wo.getAlamat()));
+            }
+        }
+    }
+
+    private boolean isValidLatLng(String lat, String lng) {
+        if (((lat != null) && (lng != null)) &&
+                ((!lat.isEmpty()) && (!lng.isEmpty()))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
@@ -306,6 +343,7 @@ public class PelaksanaanFragment extends Fragment
         woValidate();
 
         // save work order list into local.
+        //TODO save to realm in here
         StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
         storageTransaction.saveList(WorkOrder.class, woList);
 

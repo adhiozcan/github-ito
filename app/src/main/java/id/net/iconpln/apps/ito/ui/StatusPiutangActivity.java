@@ -124,7 +124,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onMessageEventReceived(WorkOrder workOrder) {
-
         // providing work order information to be post when user clicked tusbus button.
         woInfo = workOrder;
 
@@ -150,7 +149,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
-          //  NavUtils.navigateUpFromSameTask(this);
+            //  NavUtils.navigateUpFromSameTask(this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -170,14 +169,11 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     }
 
     private void checkTusbungIsAllowed(WorkOrder workOrder) {
-        // check jika user sudah melakukan pelunasan, dihitung dari field tanggal pelunasan,
-        // jika value is not null, maka status = belum lunas
-        /*if (workOrder.getStatusPiutang().equals("Belum Lunas")) {
+        if (workOrder.getStatusPiutang().equals("Belum Lunas")) {
             isAllowToCut = true;
         } else {
             isAllowToCut = false;
-        }*/
-        isAllowToCut = true;
+        }
     }
 
     @Override

@@ -72,9 +72,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MainActivity"/>
         </activity>
+
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="23a3bc41a56c77048b7bc4053a64226db1800556" />
+            android:value="23a3bc41a56c77048b7bc4053a64226db1800556"/>
     </application>
 
 </manifest>

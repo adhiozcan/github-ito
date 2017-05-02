@@ -169,9 +169,6 @@ public class PemutusanActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresPermission(allOf = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE})
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp     = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
@@ -285,15 +282,16 @@ public class PemutusanActivity extends AppCompatActivity {
 
         int part = 1;
         for (int i = 0; i < jumlahFoto; i++) {
-            /*String doTusbung = Param.doTusbung(foto, String.valueOf(jumlahFoto), String.valueOf(part),
-            tanggalPutus, lwbp, wbp, kvarh, kodePetugas, isGagalPutus, noWo, namaPetugas,
-            noTul601, unitUpId, "C");*/
             tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
             tusbung.setPart(String.valueOf(part));
             AppConfig.TUSBUNG = tusbung;
-            SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
+            //SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
             part++;
         }
+
+        // mark wo has done.
+        wo.setSelesai(true);
+        finish();
 
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
         Log.d(TAG, "doPemutusan: Param No Tul\t" + tusbung.getNoTul());
