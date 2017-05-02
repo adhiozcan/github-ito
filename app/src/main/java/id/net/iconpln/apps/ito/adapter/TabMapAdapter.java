@@ -43,4 +43,3 @@ public class TabMapAdapter extends FragmentStatePagerAdapter {
         return 3;
     }
 }
-
