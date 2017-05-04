@@ -30,6 +30,7 @@ import java.util.Date;
 import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.model.RefreshEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
@@ -290,7 +291,7 @@ public class PemutusanActivity extends AppCompatActivity {
         }
 
         // mark wo has done.
-        wo.setSelesai(true);
+        EventBusProvider.getInstance().post(new RefreshEvent(true));
         finish();
 
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");

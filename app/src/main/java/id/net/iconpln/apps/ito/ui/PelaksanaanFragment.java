@@ -381,6 +381,14 @@ public class PelaksanaanFragment extends Fragment
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefreshTrigger() {
+        Realm realm = Realm.getDefaultInstance();
+        woList.clear();
+        woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
+        initViewPager();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketFailure(ErrorMessageEvent errorMessage) {
         System.out.println(errorMessage.getErrorCode() + " | " + errorMessage.getMessage());
         new CountDownTimer(3_000, 1_000) {
