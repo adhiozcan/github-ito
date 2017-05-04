@@ -40,6 +40,7 @@ import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import io.realm.Realm;
 
 /**
  * Created by Ozcan on 30/03/2017.
@@ -291,6 +292,11 @@ public class PemutusanActivity extends AppCompatActivity {
         }
 
         // mark wo has done.
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        realm.where(WorkOrder.class).equalTo("noWo", wo.getNoWo()).findFirst().setSelesai(true);
+        realm.commitTransaction();
+        //wo.setSelesai(true);
         EventBusProvider.getInstance().post(new RefreshEvent(true));
         finish();
 

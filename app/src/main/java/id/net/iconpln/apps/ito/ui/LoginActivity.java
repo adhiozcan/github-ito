@@ -38,7 +38,6 @@ import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
-import id.net.iconpln.apps.ito.storage.entity.FlagTusbugStorage;
 import id.net.iconpln.apps.ito.utility.DeviceUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import io.realm.Realm;
@@ -289,7 +288,7 @@ public class LoginActivity extends AppCompatActivity {
         //TODO save to Realm in here <DONE>
         realm.beginTransaction();
         for (FlagTusbung aFlagTusbung : flagTusbung) {
-            realm.insert(aFlagTusbung);
+            realm.copyToRealm(aFlagTusbung);
         }
         realm.commitTransaction();
 

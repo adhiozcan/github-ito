@@ -293,6 +293,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
             return "Belum Lunas";
         }
     }
+    
 
     public void setStatusPiutang(String statusPiutang) {
         this.statusPiutang = statusPiutang;
