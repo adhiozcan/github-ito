@@ -73,19 +73,6 @@ public class Param {
                 "}";
     }
 
-    public static String getWoAll() {
-        return "{" +
-                "type:event," +
-                "event:do_something," +
-                "params: {" +
-                "method:getwoall," +
-                "kodepetugas:" + AppConfig.KODE_PETUGAS + "," +
-                "idunitup:" + AppConfig.ID_UNIT_UP +
-                "}" +
-                "}";
-    }
-
-
     public static String getMasterTusbung() {
         return "{" +
                 "type: event," +

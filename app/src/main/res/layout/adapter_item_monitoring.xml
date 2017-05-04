@@ -16,7 +16,7 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/notul"
+            android:id="@+id/nomor_tul"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -31,6 +31,16 @@
             android:text="97823123"
             android:textColor="@color/colorVulcan"
             android:textSize="@dimen/text_size_12sp"/>
+
+        <TextView
+            android:id="@+id/status_lunas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:gravity="right"
+            android:text="Lunas"
+            android:textColor="@color/colorTealDark"
+            android:textStyle="bold"/>
     </LinearLayout>
 
     <LinearLayout
@@ -59,5 +69,6 @@
             android:text="Jl. Bahayangkara Kompl. Polri Gowok "
             android:textSize="@dimen/text_size_12sp"/>
     </LinearLayout>
+
 
 </LinearLayout>

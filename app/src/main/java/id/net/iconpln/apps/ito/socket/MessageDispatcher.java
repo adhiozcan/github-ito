@@ -14,6 +14,7 @@ import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.helper.JsonNullConverter;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.model.WoMonitoring;
 import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
@@ -86,6 +87,9 @@ public class MessageDispatcher {
             case "getwosync":
                 eventBus.post(produceMessageWorkOrder(messages));
                 break;
+            case "getwomonitoring":
+                eventBus.post(produceMessageMonitoring(messages));
+                break;
             case "updateprogressworkorder":
                 break;
             case "tempuploadwo":
@@ -101,6 +105,26 @@ public class MessageDispatcher {
                 Log.d(TAG, "[Unknown Response]");
                 break;
         }
+    }
+
+    /**
+     * Produce broadcasr for monitoring data
+     *
+     * @param messages
+     * @return
+     */
+    private WoMonitoring[] produceMessageMonitoring(Object[] messages) {
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .serializeNulls()
+                .registerTypeAdapter(String.class, new JsonNullConverter())
+                .create();
+
+        WoMonitoring[] woList = gson.fromJson(Arrays.toString(messages), WoMonitoring[].class);
+        for (WoMonitoring _wo : woList) {
+            _wo.formatPretty();
+        }
+        return woList;
     }
 
     /**
