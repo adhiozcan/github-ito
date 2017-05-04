@@ -20,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -141,8 +142,8 @@ public class PelaksanaanFragment extends Fragment
 
     private List<WorkOrder> getWoDataLocal() {
         //TODO get from realm in here. <DONE>
-       // StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
-       // return storageTransaction.findAll(WorkOrder.class);
+        // StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
+        // return storageTransaction.findAll(WorkOrder.class);
         //DONE
         ArrayList<WorkOrder> woList = new ArrayList<>();
         woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
@@ -203,7 +204,6 @@ public class PelaksanaanFragment extends Fragment
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
             }
 
             @Override
@@ -272,9 +272,19 @@ public class PelaksanaanFragment extends Fragment
 
         // Position the map's camera near Bandung, Indonesia.
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-6.915846, 107.604789)));
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (!isPanelExpand)
+                    showPanel();
+                else
+                    hidePanel();
+            }
+        });
+        shouldUpdateMarker(workOrderBelumLunasList);
     }
 
-    private void shouldUpdateMarker(ArrayList<WorkOrder> woList) {
+    private void shouldUpdateMarker(List<WorkOrder> woList) {
         googleMap.clear();
         if ((googleMap != null) && ((woList != null) && (!woList.isEmpty()))) {
             for (WorkOrder wo : woList) {
@@ -292,6 +302,7 @@ public class PelaksanaanFragment extends Fragment
                                 .position(latLng)
                                 .title(wo.getPelangganId())
                                 .snippet(wo.getAlamat()));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
             }
         }
     }
@@ -333,6 +344,7 @@ public class PelaksanaanFragment extends Fragment
     public void onMessageEventReceived(WorkOrder[] workOrder) {
         Log.d(TAG, "[onWoAllReceived] ------------------------------------------------------------");
         System.out.println(workOrder);
+        Log.d(TAG, "" + workOrder);
         if (workOrder == null) return;
 
         // update marker on map
@@ -357,7 +369,7 @@ public class PelaksanaanFragment extends Fragment
         //DONE
 
         realm.beginTransaction();
-        for (WorkOrder wo : workOrder ){
+        for (WorkOrder wo : workOrder) {
             realm.insert(wo);
         }
         realm.commitTransaction();
