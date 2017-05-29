@@ -45,6 +45,13 @@
             android:name=".ui.LoginActivity"
             android:screenOrientation="portrait"/>
         <activity
+            android:name=".ui.PencarianActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity"/>
+        </activity>
+        <activity
             android:name=".ui.AboutActivity"
             android:screenOrientation="portrait">
             <meta-data

@@ -33,13 +33,13 @@
             android:textSize="@dimen/text_size_12sp"/>
 
         <TextView
-            android:id="@+id/status_sinkronisasi_upload"
+            android:id="@+id/status_lunas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pending"
-
-            android:textColor="@color/colorOrange2"
-            android:textSize="@dimen/text_size_12sp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="right"
+            android:text="Lunas"
+            android:textColor="@color/colorTealDark"
             android:textStyle="bold"/>
     </LinearLayout>
 
@@ -69,4 +69,6 @@
             android:text="Jl. Bahayangkara Kompl. Polri Gowok "
             android:textSize="@dimen/text_size_12sp"/>
     </LinearLayout>
+
+
 </LinearLayout>

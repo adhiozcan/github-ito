@@ -11,11 +11,6 @@
         <item>Logout</item>
     </string-array>
 
-    <string-array name="jenis_pekerjaan">
-        <item>Pemutusan</item>
-        <item>Penyambungan</item>
-    </string-array>
-
     <string-array name="urutan_bulan">
         <item>-</item>
         <item>Januari</item>

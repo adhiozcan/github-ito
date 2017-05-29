@@ -1,159 +1,171 @@
 <LinearLayout
-    android:onClick="onRevealPassword"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fillViewport="true"
     android:background="@color/colorWhite"
+    android:fillViewport="true"
+    android:onClick="onRevealPassword"
     android:orientation="vertical">
+
     <LinearLayout
-        android:gravity="center_vertical"
-        android:background="@color/colorPrimary"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
         <android.support.design.widget.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_weight="3"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_weight="3"
             app:tabGravity="center"
             app:tabMode="fixed"
             app:tabSelectedTextColor="@color/colorOrange"
             app:tabTextColor="@color/colorWhite"/>
+
         <TextView
-            android:layout_marginRight="@dimen/space_16dp"
             android:id="@+id/btn_clean_all"
-            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="@dimen/space_8dp"
+            android:layout_marginRight="@dimen/space_16dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_rounded_yellow"
             android:gravity="center"
+            android:padding="@dimen/space_8dp"
             android:text="Bersihkan"
             android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:background="@drawable/bg_rounded_yellow"/>
+            android:textStyle="bold"/>
     </LinearLayout>
+
     <android.support.v4.view.ViewPager
-        android:background="@color/colorPrimary"
         android:id="@+id/vp_chart"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="200dp"
+        android:background="@color/colorPrimary"/>
+
     <ScrollView
-        android:scrollbars="none"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:background="@drawable/bg_border_grey"
                 android:gravity="center|top"
                 android:orientation="vertical"
-                android:padding="@dimen/space_8dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:padding="@dimen/space_8dp">
+
                 <TextView
-                    android:textColor="@color/colorAccent"
                     android:id="@+id/value_total"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
+                    android:textColor="@color/colorAccent"
                     android:textSize="@dimen/text_size_24sp"
                     android:textStyle="bold"/>
+
                 <TextView
-                    android:textColor="@color/colorVulcan"
-                    android:textSize="@dimen/text_size_14sp"
-                    android:layout_marginTop="@dimen/space_8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
                     android:text="Total"
+                    android:textColor="@color/colorVulcan"
+                    android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold"/>
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_yellow"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_belum_putus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_yellow"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Belum Putus Belum Lunas"
                         android:textSize="@dimen/text_size_14sp"/>
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_pink"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_belum_putus_sudah_lunas"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_pink"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Belum Putus Sudah Lunas"
                         android:textSize="@dimen/text_size_14sp"/>
                 </LinearLayout>
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_green"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_sudah_putus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_green"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Sudah Putus Belum Lunas"
                         android:textSize="@dimen/text_size_14sp"/>
 
@@ -162,136 +174,142 @@
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_blue"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_sudah_putus_sudah_lunas"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_blue"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Sudah Putus Sudah Lunas"
                         android:textSize="@dimen/text_size_14sp"/>
                 </LinearLayout>
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_lighr_green"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_sambung"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_light_green"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Sambung"
                         android:textSize="@dimen/text_size_14sp"/>
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_amber"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_belum_bongkar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_amber"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Belum Bongkar"
                         android:textSize="@dimen/text_size_14sp"/>
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
                 <LinearLayout
-                    android:background="@drawable/bg_border_grey"
-                    android:orientation="vertical"
-                    android:gravity="center|top"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_border_grey"
+                    android:gravity="center|top"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
+
                     <TextView
-                        android:textColor="@color/material_purple"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_18sp"
                         android:id="@+id/value_bongkar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"/>
+                        android:text="0"
+                        android:textColor="@color/material_purple"
+                        android:textSize="@dimen/text_size_18sp"
+                        android:textStyle="bold"/>
 
                     <TextView
-                        android:layout_marginTop="@dimen/space_8dp"
-                        android:gravity="center"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/space_6dp"
+                        android:layout_marginTop="@dimen/space_6dp"
+                        android:gravity="center"
                         android:text="Bongkar"
                         android:textSize="@dimen/text_size_14sp"/>
 
                 </LinearLayout>
+
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
                 </LinearLayout>
+
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="@dimen/space_8dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_8dp">
                 </LinearLayout>
             </LinearLayout>
 

@@ -215,6 +215,7 @@
                             android:background="@drawable/style_button_mode_light"
                             android:clickable="true"
                             android:gravity="center"
+                            android:onClick="onBtnHapusClicked"
                             android:padding="5dp"
                             android:text="Hapus"
                             android:textSize="14sp"
@@ -246,6 +247,7 @@
                             android:background="@drawable/style_button_mode_light"
                             android:clickable="true"
                             android:gravity="center"
+                            android:onClick="onBtnHapusClicked"
                             android:padding="5dp"
                             android:text="Hapus"
                             android:textSize="14sp"
@@ -277,6 +279,7 @@
                             android:background="@drawable/style_button_mode_light"
                             android:clickable="true"
                             android:gravity="center"
+                            android:onClick="onBtnHapusClicked"
                             android:padding="5dp"
                             android:text="Hapus"
                             android:textSize="14sp"
@@ -308,6 +311,7 @@
                             android:background="@drawable/style_button_mode_light"
                             android:clickable="true"
                             android:gravity="center"
+                            android:onClick="onBtnHapusClicked"
                             android:padding="5dp"
                             android:text="Hapus"
                             android:textSize="14sp"
@@ -358,6 +362,28 @@
 
                     <Spinner
                         android:id="@+id/status_pekerjaan"
+                        android:layout_width="100dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:entries="@array/jenis_pekerjaan"
+                        android:spinnerMode="dropdown"
+                        android:textSize="14sp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="@dimen/space_8dp"
+                        android:text="Keterangan"
+                        android:textSize="13sp"
+                        android:textStyle="bold"/>
+
+                    <Spinner
+                        android:id="@+id/keterangan"
                         android:layout_width="100dp"
                         android:layout_height="40dp"
                         android:layout_weight="1"
@@ -449,7 +475,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/style_button_mode_teal"
-            android:onClick="onBtnSimpanClicked"
+            android:onClick="onProsesButtonClicked"
             android:paddingBottom="@dimen/space_12dp"
             android:paddingLeft="@dimen/space_16dp"
             android:paddingRight="@dimen/space_16dp"

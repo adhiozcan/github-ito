@@ -9,8 +9,9 @@
     <color name="colorAlice">#F0F4F6</color>
     <color name="colorOrange">#ffb603</color>
     <color name="colorOrange2">#ff8603</color>
+
     <color name="colorRed">#e7291e</color>
-    <color name="ColorPrimaryDark">#c31c13</color>
+    <color name="colorGrey">#9E9E9E</color>
     <color name="colorZumthor">#D6D7D7</color>
     <color name="colorVulcan">#33373F</color>
     <color name="tabsScrollColor">#8a140e</color>
@@ -41,6 +42,6 @@
     <color name="material_purple">#E040FB</color>
     <color name="material_yellow">#FFEB3B</color>
     <color name="material_green">#4CAF50</color>
-    <color name="material_lighr_green">#8BC34A</color>
+    <color name="material_light_green">#8BC34A</color>
     <color name="material_amber">#FFC107</color>
 </resources>

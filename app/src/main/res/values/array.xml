@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="jenis_pekerjaan">
+        <item>Pemutusan</item>
+        <item>Penyambungan</item>
+    </string-array>
+    <integer-array name="jenis_pekerjaan_val">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+</resources>

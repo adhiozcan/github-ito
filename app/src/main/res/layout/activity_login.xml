@@ -161,8 +161,7 @@
             android:layout_marginTop="@dimen/space_24dp"
             android:gravity="center"
             android:text="0000-0000-0000-0000"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"/>
+            android:textColor="#FFFFFF"/>
 
 
         <TextView
@@ -172,7 +171,6 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:text="version"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"/>
+            android:textColor="#FFFFFF"/>
     </TableLayout>
 </LinearLayout>
