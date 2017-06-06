@@ -35,6 +35,7 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
     public void onBindViewHolder(SynchRiwayatAdapter.ViewHolder holder, int position) {
         Riwayat riwayat = riwayatList.get(position);
         holder.txtTanggal.setText(riwayat.getTanggal());
+        holder.txtWaktu.setText(riwayat.getWaktu());
     }
 
     @Override
@@ -44,10 +45,12 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtTanggal;
+        private TextView txtWaktu;
 
         public ViewHolder(View itemView) {
             super(itemView);
             txtTanggal = (TextView) itemView.findViewById(R.id.tanggal_riwayat);
+            txtWaktu = (TextView) itemView.findViewById(R.id.jam_riwayat);
         }
     }
 }

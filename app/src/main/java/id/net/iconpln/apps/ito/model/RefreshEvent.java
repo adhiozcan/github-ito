@@ -5,17 +5,5 @@ package id.net.iconpln.apps.ito.model;
  */
 
 public class RefreshEvent {
-    private boolean isRefresh;
-
-    public RefreshEvent(boolean isRefresh) {
-        this.isRefresh = isRefresh;
-    }
-
-    public boolean isRefresh() {
-        return isRefresh;
-    }
-
-    public void setRefresh(boolean refresh) {
-        isRefresh = refresh;
-    }
+    public boolean isRefresh;
 }

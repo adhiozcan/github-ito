@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -50,6 +49,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     private TextView txtNominalRpTag;
     private TextView txtNominalRpbk;
     private TextView txtTagihanTul601;
+    private TextView btnTusbung;
 
     private GoogleMap googleMap;
     private LatLng    customerLocation;
@@ -86,6 +86,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         txtNominalRpTag = (TextView) findViewById(R.id.nilai_rp_tag);
         txtNominalRpbk = (TextView) findViewById(R.id.nilai_rbpk);
         txtTagihanTul601 = (TextView) findViewById(R.id.tagihan_tul_601);
+        btnTusbung = (TextView) findViewById(R.id.btnTusbung);
     }
 
     private void updateCustomerInfoDisplay(WorkOrder workOrder) {
@@ -103,9 +104,16 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
 
         // check if status pelunasan is belum lunas, then show the tusbung button
         if (workOrder.getStatusPiutang().equals("Belum Lunas")) {
-            findViewById(R.id.btnTusbung).setVisibility(View.VISIBLE);
+            btnTusbung.setVisibility(View.VISIBLE);
+            if (workOrder.isSelesai()) {
+                btnTusbung.setText("Selesai Dikerjakan");
+                btnTusbung.setEnabled(false);
+            } else {
+                btnTusbung.setText("Tusbung");
+                btnTusbung.setEnabled(true);
+            }
         } else {
-            findViewById(R.id.btnTusbung).setVisibility(View.GONE);
+            btnTusbung.setVisibility(View.GONE);
         }
 
         // parse customer location using lat lng in order to show in google map
@@ -165,6 +173,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         if (isAllowToCut) {
             startActivity(new Intent(this, PemutusanActivity.class));
             EventBusProvider.getInstance().postSticky(woInfo);
+            finish();
         }
     }
 

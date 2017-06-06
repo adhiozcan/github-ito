@@ -35,8 +35,10 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Tusbung tusbung = tusbungList.get(position);
+        holder.txtPelangganId.setText(tusbung.getPelangganId());
+        holder.txtPelangganNama.setText(tusbung.getNamaPelanggan());
         holder.txtPelangganId.setText(tusbung.getKodePetugas());
-        holder.txtPelangganAlamat.setText(tusbung.getNoTul());
+        holder.txtPelangganAlamat.setText(tusbung.getAlamat());
     }
 
     @Override
@@ -46,12 +48,15 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtPelangganId;
+        private TextView txtPelangganNama;
         private TextView txtPelangganAlamat;
         private TextView txtStatusSynch;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
+            txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganAlamat = (TextView) itemView.findViewById(R.id.pelanggan_alamat);
             txtStatusSynch = (TextView) itemView.findViewById(R.id.status_sinkronisasi_upload);
         }

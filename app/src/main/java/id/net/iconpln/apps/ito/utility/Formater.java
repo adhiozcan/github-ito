@@ -13,8 +13,8 @@ import java.util.TimeZone;
  */
 public class Formater {
     public static String numberToMonth(String str) {
-        int intmonth = Integer.valueOf(str);
-        String date = "";
+        int    intmonth = Integer.valueOf(str);
+        String date     = "";
         switch (intmonth) {
             case 1:
                 date = "Januari";
@@ -154,55 +154,55 @@ public class Formater {
         return data;
     }
 
-    public static String unixTimeToString(String str){
-        String data = "";
-        long unixSeconds = Long.parseLong(str);
-        Date date = new Date(unixSeconds*1000L);
-        Date dateToday = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
+    public static String unixTimeToString(String str) {
+        String           data        = "";
+        long             unixSeconds = Long.parseLong(str);
+        Date             date        = new Date(unixSeconds * 1000L);
+        Date             dateToday   = new Date();
+        SimpleDateFormat sdf         = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
         sdf.setTimeZone(TimeZone.getDefault());
-        String formattedDate = sdf.format(date);
+        String formattedDate     = sdf.format(date);
         String formatedDateToday = sdf.format(dateToday);
-        if (formattedDate.equals(formatedDateToday)){
+        if (formattedDate.equals(formatedDateToday)) {
             SimpleDateFormat sdfTime = new SimpleDateFormat("hh:mm a", Locale.getDefault());
             sdf.setTimeZone(TimeZone.getDefault());
             data = sdfTime.format(date);
-        }else {
+        } else {
             data = formattedDate;
         }
         return data;
     }
 
-    public static String unixTimeToCompleteString(String str){
-        long unixSeconds = Long.parseLong(str);
-        Date date = new Date(unixSeconds*1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm  ", Locale.getDefault());
+    public static String unixTimeToCompleteString(String str) {
+        long             unixSeconds = Long.parseLong(str);
+        Date             date        = new Date(unixSeconds * 1000L);
+        SimpleDateFormat sdf         = new SimpleDateFormat("dd MMMM yyyy HH:mm  ", Locale.getDefault());
         return sdf.format(date);
     }
 
-    public static String getTimeStamp(){
+    public static String getTimeStamp() {
         long unixTime = System.currentTimeMillis() / 1000L;
         return String.valueOf(unixTime);
     }
 
-    public static String stringToUnixTime(int year, int month, int day){
-        Date date = new Date(year - 1900, month, day+1);
+    public static String stringToUnixTime(int year, int month, int day) {
+        Date date     = new Date(year - 1900, month, day + 1);
         long unixTime = date.getTime() / 1000L;
-        Log.i("stringToUnixTime", String.valueOf(unixTime)+" | "+year);
+        Log.i("stringToUnixTime", String.valueOf(unixTime) + " | " + year);
         return String.valueOf(unixTime);
     }
 
-    public static String unixTimeToDateString(String str){
-        long unixSeconds = Long.parseLong(str);
-        Date date = new Date(unixSeconds*1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy", Locale.getDefault());
+    public static String unixTimeToDateString(String str) {
+        long             unixSeconds = Long.parseLong(str);
+        Date             date        = new Date(unixSeconds * 1000L);
+        SimpleDateFormat sdf         = new SimpleDateFormat("d MMMM yyyy", Locale.getDefault());
         return sdf.format(date);
     }
 
-    public static String unixTimeToTimeString(String str){
-        long unixSeconds = Long.parseLong(str);
-        Date date = new Date(unixSeconds*1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a", Locale.getDefault());
+    public static String unixTimeToTimeString(String str) {
+        long             unixSeconds = Long.parseLong(str);
+        Date             date        = new Date(unixSeconds * 1000L);
+        SimpleDateFormat sdf         = new SimpleDateFormat("HH:mm a", Locale.getDefault());
         return sdf.format(date);
     }
 

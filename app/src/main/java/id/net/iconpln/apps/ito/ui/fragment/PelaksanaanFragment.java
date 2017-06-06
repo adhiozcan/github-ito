@@ -1,16 +1,22 @@
-package id.net.iconpln.apps.ito.ui;
+package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -28,6 +34,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
@@ -41,14 +48,13 @@ import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
-import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import id.net.iconpln.apps.ito.ui.PencarianActivity;
 import io.realm.Realm;
 
 
 public class PelaksanaanFragment extends Fragment
         implements PelaksanaanItemFragment.OnFragmentInteractionListener,
         OnMapReadyCallback {
-
 
     private OnFragmentInteractionListener mListener;
     private View                          view;
@@ -75,6 +81,7 @@ public class PelaksanaanFragment extends Fragment
 
     private int WO_NETWORK_ITERATION = 100;
 
+    private List<WorkOrder> testMaxList = new ArrayList<>();
     private Realm realm;
 
 
@@ -85,7 +92,9 @@ public class PelaksanaanFragment extends Fragment
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        EventBusProvider.getInstance().register(this);
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
     }
 
@@ -102,7 +111,6 @@ public class PelaksanaanFragment extends Fragment
 
         AppConfig.NO_WO_LOCAL = "";
         checkAvailableData();
-
 
         return view;
     }
@@ -141,10 +149,9 @@ public class PelaksanaanFragment extends Fragment
 
 
     private List<WorkOrder> getWoDataLocal() {
-        //TODO get from realm in here. <DONE>
-       // StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
-       // return storageTransaction.findAll(WorkOrder.class);
-        //DONE
+        // StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
+        // return storageTransaction.findAll(WorkOrder.class);
+
         ArrayList<WorkOrder> woList = new ArrayList<>();
         woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
         return woList;
@@ -167,12 +174,13 @@ public class PelaksanaanFragment extends Fragment
     private void initViewPager() {
         workOrdersLunasList = new ArrayList<>();
         workOrderBelumLunasList = new ArrayList<>();
+        workOrderSelesaiList = new ArrayList<>();
 
         for (WorkOrder wo : woList) {
             if (wo.getStatusPiutang().equals("Belum Lunas")) {
-                if (wo.isSelesai()){
+                if (wo.isSelesai()) {
                     workOrderSelesaiList.add(wo);
-                }else {
+                } else {
                     workOrderBelumLunasList.add(wo);
                 }
             } else {
@@ -208,7 +216,6 @@ public class PelaksanaanFragment extends Fragment
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
             }
 
             @Override
@@ -277,9 +284,19 @@ public class PelaksanaanFragment extends Fragment
 
         // Position the map's camera near Bandung, Indonesia.
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-6.915846, 107.604789)));
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (!isPanelExpand)
+                    showPanel();
+                else
+                    hidePanel();
+            }
+        });
+        shouldUpdateMarker(workOrderBelumLunasList);
     }
 
-    private void shouldUpdateMarker(ArrayList<WorkOrder> woList) {
+    private void shouldUpdateMarker(List<WorkOrder> woList) {
         googleMap.clear();
         if ((googleMap != null) && ((woList != null) && (!woList.isEmpty()))) {
             for (WorkOrder wo : woList) {
@@ -297,6 +314,7 @@ public class PelaksanaanFragment extends Fragment
                                 .position(latLng)
                                 .title(wo.getPelangganId())
                                 .snippet(wo.getAlamat()));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
             }
         }
     }
@@ -310,20 +328,29 @@ public class PelaksanaanFragment extends Fragment
         }
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_pelaksanaan, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_search) {
+            startActivity(new Intent(getActivity(), PencarianActivity.class));
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
     }
 
     @Override
-    public void onStart() {
-        EventBusProvider.getInstance().register(this);
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
+    public void onDestroy() {
         EventBusProvider.getInstance().unregister(this);
-        super.onStop();
+        super.onDestroy();
     }
 
     private void woValidate() {
@@ -334,10 +361,19 @@ public class PelaksanaanFragment extends Fragment
         AppConfig.NO_WO_LOCAL = "";
     }
 
+    private void showCompletePostMessage() {
+        Snackbar snackbar = Snackbar.make(view.findViewById(R.id.coordinator_layout),
+                "Tusbung berhasil dikerjakan",
+                Snackbar.LENGTH_LONG);
+        snackbar.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.material_light_green));
+        snackbar.show();
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEventReceived(WorkOrder[] workOrder) {
         Log.d(TAG, "[onWoAllReceived] ------------------------------------------------------------");
         System.out.println(workOrder);
+        Log.d(TAG, "" + workOrder);
         if (workOrder == null) return;
 
         // update marker on map
@@ -356,30 +392,30 @@ public class PelaksanaanFragment extends Fragment
         woValidate();
 
         // save work order list into local.
-        //TODO save to realm in here <DONE>
         //StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
         //storageTransaction.saveList(WorkOrder.class, woList);
-        //DONE
 
         realm.beginTransaction();
-        for (WorkOrder wo : workOrder ){
+        for (WorkOrder wo : workOrder) {
             realm.insert(wo);
         }
         realm.commitTransaction();
 
-
-        //  mAdapter.notifyDataSetChanged();
+        testMaxList.addAll(Arrays.asList(workOrder));
+        System.out.println("**********************************************************************");
+        System.out.println("--> Current Size : " + woList.size() + "data");
         initViewPager();
         Log.d(TAG, "[Wo Complete] Wo has been saved. :)");
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onRefreshTrigger(RefreshEvent event) {
-        Log.d(TAG, "onRefreshTrigger: ");
         Realm realm = Realm.getDefaultInstance();
         woList.clear();
         woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
         initViewPager();
+        showCompletePostMessage();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -395,9 +431,6 @@ public class PelaksanaanFragment extends Fragment
                 Anim.slideUp(viewNotification);
             }
         }.start();
-
     }
-
-
 
 }

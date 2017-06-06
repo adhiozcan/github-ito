@@ -1,6 +1,5 @@
 package id.net.iconpln.apps.ito.socket.envelope;
 
-import com.google.gson.JsonArray;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Arrays;

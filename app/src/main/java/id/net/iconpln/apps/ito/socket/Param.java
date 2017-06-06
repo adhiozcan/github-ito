@@ -106,7 +106,7 @@ public class Param {
                 "\"standkvarhputus\": \"" + tusbung.getStandKVARH() + "\",\n" +
                 "\"namaputus\": \"" + tusbung.getNamaPetugas() + "\",\n" +
                 "\"gagalputus\": \"" + tusbung.getGagalPutus() + "\",\n" +
-                "\"nomorwo\": \"" + tusbung.getNoTul() + "\",\n" +
+                "\"nomorwo\": \"" + tusbung.getNoWo() + "\",\n" +
                 "\"kodepetugas\": \"" + tusbung.getKodePetugas() + "\",\n" +
                 "\"notul\": \"" + tusbung.getNoTul() + "\",\n" +
                 "\"idunitup\": \"" + tusbung.getUnitUpId() + "\",\n" +

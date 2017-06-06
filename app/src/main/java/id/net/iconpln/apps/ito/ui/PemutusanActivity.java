@@ -1,6 +1,5 @@
 package id.net.iconpln.apps.ito.ui;
 
-import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
@@ -9,7 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -25,11 +25,14 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.RefreshEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
 import id.net.iconpln.apps.ito.model.WorkOrder;
@@ -40,6 +43,7 @@ import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.Realm;
 
 /**
@@ -56,32 +60,33 @@ public class PemutusanActivity extends AppCompatActivity {
 
     private static int REQUEST_TAKE_PHOTO = 0;
 
-    private Spinner spn_StatusPekerjaan;
+    private Spinner spnStatus,
+            spnKeterangan;
 
-    private TextView txt_noTul,
-            txt_idPelanggan,
-            txt_nama,
-            txt_alamat,
-            txt_tanggal;
+    private TextView txtNoTul,
+            txtIdPelanggan,
+            txtNama,
+            txtAlamat,
+            txtTanggal;
 
-    private EditText ed_TanggalPutus,
-            ed_lwbp,
-            ed_wbp,
-            ed_kvarh;
+    private EditText edTanggalPutus,
+            edLwbp,
+            edWbp,
+            edKvarh;
 
-    private ImageView img_foto1,
-            img_foto2,
-            img_foto3,
-            img_foto4;
+    private ImageView imgFoto1,
+            imgFoto2,
+            imgFoto3,
+            imgFoto4;
 
-    private String
-            petugasId,
+    private String petugasId,
             petugasUnitUpId;
 
     private String mCurrentPhotoPath;
     private Uri[] mPhotoPath = new Uri[4];
 
-    private WorkOrder wo;
+    private List<FlagTusbung> mFlagTusbung;
+    private WorkOrder         mWo;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,28 +95,34 @@ public class PemutusanActivity extends AppCompatActivity {
         CommonUtils.installToolbar(this);
         initView();
 
-        // manipulate spinner status pekerjaan.
-        ArrayAdapter<CharSequence> adapterStatus = ArrayAdapter.createFromResource(this,
-                R.array.jenis_pekerjaan, android.R.layout.simple_spinner_item);
-        adapterStatus.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spn_StatusPekerjaan.setAdapter(adapterStatus);
+        mFlagTusbung = new ArrayList<>();
+        mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
+
+        List<String> keteranganList = new ArrayList<>();
+        for (FlagTusbung flagTusbung : mFlagTusbung) {
+            String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
+            keteranganList.add(keterangan);
+        }
+        ArrayAdapter userAdapter = new ArrayAdapter(this, R.layout.adapter_item_spinner_keterangan, keteranganList);
+        spnKeterangan.setAdapter(userAdapter);
     }
 
     private void initView() {
-        spn_StatusPekerjaan = (Spinner) findViewById(R.id.status_pekerjaan);
-        txt_noTul = (TextView) findViewById(R.id.nomor_tul);
-        txt_idPelanggan = (TextView) findViewById(R.id.pelanggan_id);
-        txt_nama = (TextView) findViewById(R.id.pelanggan_nama);
-        txt_alamat = (TextView) findViewById(R.id.pelanggan_alamat);
-        txt_tanggal = (TextView) findViewById(R.id.tanggal_tul);
-        ed_TanggalPutus = (EditText) findViewById(R.id.tanggal_putus);
-        ed_lwbp = (EditText) findViewById(R.id.lwbp);
-        ed_wbp = (EditText) findViewById(R.id.wbp);
-        ed_kvarh = (EditText) findViewById(R.id.kvarh);
-        img_foto1 = (ImageView) findViewById(R.id.foto_1);
-        img_foto2 = (ImageView) findViewById(R.id.foto_2);
-        img_foto3 = (ImageView) findViewById(R.id.foto_3);
-        img_foto4 = (ImageView) findViewById(R.id.foto_4);
+        spnStatus = (Spinner) findViewById(R.id.status_pekerjaan);
+        spnKeterangan = (Spinner) findViewById(R.id.keterangan);
+        txtNoTul = (TextView) findViewById(R.id.nomor_tul);
+        txtIdPelanggan = (TextView) findViewById(R.id.pelanggan_id);
+        txtNama = (TextView) findViewById(R.id.pelanggan_nama);
+        txtAlamat = (TextView) findViewById(R.id.pelanggan_alamat);
+        txtTanggal = (TextView) findViewById(R.id.tanggal_tul);
+        edTanggalPutus = (EditText) findViewById(R.id.tanggal_putus);
+        edLwbp = (EditText) findViewById(R.id.lwbp);
+        edWbp = (EditText) findViewById(R.id.wbp);
+        edKvarh = (EditText) findViewById(R.id.kvarh);
+        imgFoto1 = (ImageView) findViewById(R.id.foto_1);
+        imgFoto2 = (ImageView) findViewById(R.id.foto_2);
+        imgFoto3 = (ImageView) findViewById(R.id.foto_3);
+        imgFoto4 = (ImageView) findViewById(R.id.foto_4);
     }
 
     /**
@@ -120,12 +131,17 @@ public class PemutusanActivity extends AppCompatActivity {
      * @param wo
      */
     private void updateInfoPelangganDisplay(WorkOrder wo) {
-        this.wo = wo;
-        txt_noTul.setText(wo.getNoTul601());
-        txt_idPelanggan.setText(wo.getPelangganId());
-        txt_nama.setText(wo.getNama());
-        txt_alamat.setText(wo.getAlamat());
-        txt_tanggal.setText(wo.getTanggalWo());
+        this.mWo = wo;
+        txtNoTul.setText(wo.getNoTul601());
+        txtIdPelanggan.setText(wo.getPelangganId());
+        txtNama.setText(wo.getNama());
+        txtAlamat.setText(wo.getAlamat());
+        txtTanggal.setText(wo.getTanggalWo());
+    }
+
+    private List<FlagTusbung> getDataMasterTusbungFromLocal() {
+        Realm realm = Realm.getDefaultInstance();
+        return realm.copyFromRealm(realm.where(FlagTusbung.class).findAll());
     }
 
     public void takePicture(View viewId) {
@@ -210,20 +226,24 @@ public class PemutusanActivity extends AppCompatActivity {
             imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap, 150, 150);
             switch (requestCode) {
                 case CAMERA_REQUEST_CODE_1:
-                    img_foto1.setImageBitmap(imageBitmap);
-                    img_foto1.setTag("Flag to be post!");
+                    hapusFoto(R.id.foto_1);
+                    imgFoto1.setImageBitmap(imageBitmap);
+                    imgFoto1.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_2:
-                    img_foto2.setImageBitmap(imageBitmap);
-                    img_foto2.setTag("Flag to be post!");
+                    hapusFoto(R.id.foto_2);
+                    imgFoto2.setImageBitmap(imageBitmap);
+                    imgFoto2.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_3:
-                    img_foto3.setImageBitmap(imageBitmap);
-                    img_foto3.setTag("Flag to be post!");
+                    hapusFoto(R.id.foto_3);
+                    imgFoto3.setImageBitmap(imageBitmap);
+                    imgFoto3.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_4:
-                    img_foto4.setImageBitmap(imageBitmap);
-                    img_foto4.setTag("Flag to be post!");
+                    hapusFoto(R.id.foto_4);
+                    imgFoto4.setImageBitmap(imageBitmap);
+                    imgFoto4.setTag("Flag to be post!");
                     break;
                 default:
                     break;
@@ -244,21 +264,26 @@ public class PemutusanActivity extends AppCompatActivity {
     }
 
     private void doPemutusan() {
-        String noTul       = txt_noTul.getText().toString();
-        String noTul601    = wo.getNoTul601();
-        String noWo        = wo.getNoWo();
-        String unitUpId    = wo.getUnitUp();
-        String kodePetugas = wo.getKodePetugas();
-        //String tanggalPutus  = ed_TanggalPutus.getText().toString();
+        String noTul       = txtNoTul.getText().toString();
+        String noTul601    = mWo.getNoTul601();
+        String noWo        = mWo.getNoWo();
+        String idpel       = mWo.getPelangganId();
+        String nama        = mWo.getNama();
+        String alamat      = mWo.getAlamat();
+        String unitUpId    = mWo.getUnitUp();
+        String kodePetugas = mWo.getKodePetugas();
+        //String tanggalPutus  = edTanggalPutus.getText().toString();
         String tanggalPutus = "20170413";
+        String selectedVal  = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
         String lwbp         = "2000018990";
         String wbp          = null;
         String kvarh        = null;
-        //String lwbp          = ed_lwbp.getText().toString();
-        //String wbp           = ed_wbp.getText().toString();
-        //String kvarh         = ed_kvarh.getText().toString();
+        //String lwbp          = edLwbp.getText().toString();
+        //String wbp           = edWbp.getText().toString();
+        //String kvarh         = edKvarh.getText().toString();
         String isGagalPutus = "0";
-        String namaPetugas  = wo.getNama();
+        String status       = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
+        String namaPetugas  = mWo.getNama();
 
         Uri[] fotoTobePosted = new Uri[4];
         int   jumlahFoto     = 0;
@@ -272,6 +297,9 @@ public class PemutusanActivity extends AppCompatActivity {
         Tusbung tusbung = new Tusbung();
         tusbung.setKodePetugas(kodePetugas);
         tusbung.setNamaPetugas(namaPetugas);
+        tusbung.setPelangganId(idpel);
+        tusbung.setAlamat(alamat);
+        tusbung.setNamaPelanggan(nama);
         tusbung.setUnitUpId(unitUpId);
         tusbung.setNoTul(noTul601);
         tusbung.setNoWo(noWo);
@@ -280,6 +308,7 @@ public class PemutusanActivity extends AppCompatActivity {
         tusbung.setStandWBP(wbp);
         tusbung.setStandKVARH(kvarh);
         tusbung.setGagalPutus(isGagalPutus);
+        tusbung.setStatus(status);
         tusbung.setJumlahFoto(String.valueOf(jumlahFoto));
 
         int part = 1;
@@ -287,17 +316,18 @@ public class PemutusanActivity extends AppCompatActivity {
             tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
             tusbung.setPart(String.valueOf(part));
             AppConfig.TUSBUNG = tusbung;
-            //SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
+            SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
             part++;
         }
 
-        // mark wo has done.
+        // mark mWo has done.
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
-        realm.where(WorkOrder.class).equalTo("noWo", wo.getNoWo()).findFirst().setSelesai(true);
+        realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setSelesai(true);
+        realm.insert(tusbung);
         realm.commitTransaction();
-        //wo.setSelesai(true);
-        EventBusProvider.getInstance().post(new RefreshEvent(true));
+
+        EventBusProvider.getInstance().post(new RefreshEvent());
         finish();
 
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
@@ -308,10 +338,62 @@ public class PemutusanActivity extends AppCompatActivity {
         Log.d(TAG, "doPemutusan: Param WBP\t" + tusbung.getStandWBP());
         Log.d(TAG, "doPemutusan: Param KVARH\t" + tusbung.getStandKVARH());
         Log.d(TAG, "doPemutusan: Param Kode Petugas\t" + tusbung.getKodePetugas());
+        Log.d(TAG, "doPemutusan: " + tusbung.toString());
     }
 
-    public void onBtnSimpanClicked(View btnId) {
-        doPemutusan();
+    public void onProsesButtonClicked(View btnId) {
+        if (cekFieldContent())
+            doPemutusan();
+    }
+
+    private boolean cekFieldContent() {
+        if (edLwbp.getText().toString().trim().length() == 0) {
+            Toast.makeText(this, "No. LWBP Wajib diisi", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        int photoNumber = 0;
+        for (Uri photoPath : mPhotoPath) {
+            if (photoPath != null) photoNumber++;
+        }
+        if (photoNumber == 0) {
+            Toast.makeText(this, "Tidak ada bukti foto yang terlampir", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    public void onBtnHapusClicked(View btnId) {
+        hapusFoto(btnId.getId());
+    }
+
+    private void hapusFoto(int id) {
+        switch (id) {
+            case R.id.hapus_foto_1:
+                if (mPhotoPath[0] == null) return;
+                new File(mPhotoPath[0].getPath()).delete();
+                imgFoto1.setImageResource(R.drawable.camera_b);
+                mPhotoPath[0] = null;
+                break;
+            case R.id.hapus_foto_2:
+                if (mPhotoPath[1] == null) return;
+                new File(mPhotoPath[1].getPath()).delete();
+                imgFoto1.setImageResource(R.drawable.camera_b);
+                mPhotoPath[1] = null;
+                break;
+            case R.id.hapus_foto_3:
+                if (mPhotoPath[2] == null) return;
+                new File(mPhotoPath[2].getPath()).delete();
+                imgFoto1.setImageResource(R.drawable.camera_b);
+                mPhotoPath[2] = null;
+                break;
+            case R.id.hapus_foto_4:
+                if (mPhotoPath[3] == null) return;
+                new File(mPhotoPath[3].getPath()).delete();
+                imgFoto1.setImageResource(R.drawable.camera_b);
+                mPhotoPath[3] = null;
+                break;
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
@@ -329,6 +411,6 @@ public class PemutusanActivity extends AppCompatActivity {
     }
 
     private void updateTanggalDisplay(String date) {
-        ed_TanggalPutus.setText(date);
+        edTanggalPutus.setText(date);
     }
 }

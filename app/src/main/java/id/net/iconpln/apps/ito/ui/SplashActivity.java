@@ -14,14 +14,13 @@ import com.anthonycr.grant.PermissionsManager;
 import com.anthonycr.grant.PermissionsResultAction;
 
 import id.net.iconpln.apps.ito.R;
-import id.net.iconpln.apps.ito.helper.CheckPermission;
 
 /**
  * Created by Ozcan on 23/03/2017.
  */
 
 public class SplashActivity extends AppCompatActivity {
-    private static int SPLASH_TIME_OUT = 1500;
+    private static int SPLASH_TIME_OUT = 1000;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,17 +30,16 @@ public class SplashActivity extends AppCompatActivity {
 
         checkAppConfig();
 
-
         PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA}, new PermissionsResultAction() {
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.CAMERA}, new PermissionsResultAction() {
 
                     @Override
                     public void onGranted() {
-                        displaySplash();
+                        moveIntoLogin();
 
                     }
 
@@ -52,7 +50,6 @@ public class SplashActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
-
 
 
     }
@@ -68,7 +65,7 @@ public class SplashActivity extends AppCompatActivity {
         PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
     }
 
-    private void displaySplash() {
+    private void moveIntoLogin() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

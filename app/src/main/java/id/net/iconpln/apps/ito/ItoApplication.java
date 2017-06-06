@@ -8,6 +8,8 @@ import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
+import java.util.Locale;
+
 import id.net.iconpln.apps.ito.helper.CheckPermission;
 import id.net.iconpln.apps.ito.socket.ItoHttpClient;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
@@ -24,14 +26,13 @@ import okhttp3.OkHttpClient;
 public class ItoApplication extends Application {
 
 
-
     @Override
     public void onCreate() {
         super.onCreate();
+        Locale.setDefault(new Locale("in", "ID"));
         Fabric.with(this, new Crashlytics());
         ItoStorage.init(this);
         ItoHttpClient.init(this);
-        SocketTransaction.init();
         RealmConfiguration config = new RealmConfiguration
                 .Builder(getApplicationContext())
                 .deleteRealmIfMigrationNeeded()

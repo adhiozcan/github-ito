@@ -3,14 +3,11 @@ package id.net.iconpln.apps.ito.utility;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
-import android.text.SpannableString;
-import android.text.style.RelativeSizeSpan;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -19,18 +16,13 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import id.net.iconpln.apps.ito.R;
-
-import static android.R.attr.colorPrimary;
-import static android.R.attr.value;
 
 /**
  * Created by Ozcan on 03/04/2017.
@@ -44,7 +36,7 @@ public class ChartUtils {
         colors.add(ContextCompat.getColor(context, R.color.material_pink));
         colors.add(ContextCompat.getColor(context, R.color.material_green));
         colors.add(ContextCompat.getColor(context, R.color.material_blue));
-        colors.add(ContextCompat.getColor(context, R.color.material_lighr_green));
+        colors.add(ContextCompat.getColor(context, R.color.material_light_green));
         colors.add(ContextCompat.getColor(context, R.color.material_amber));
         colors.add(ContextCompat.getColor(context, R.color.material_purple));
         return colors;
@@ -58,8 +50,8 @@ public class ChartUtils {
                 "S", "BB", "SB"
         };
 
-        public static void setChartConfiguration(Context context, PieChart mChart) {
-        //    mChart.setUsePercentValues(true);
+        public static void setChartConfiguration(PieChart mChart) {
+            //    mChart.setUsePercentValues(true);
             mChart.getDescription().setEnabled(false);
             mChart.setExtraOffsets(5, 10, 5, 5);
 
@@ -69,16 +61,16 @@ public class ChartUtils {
             mChart.setCenterText(ChartUtils.Pie.generateCenterSpannableText());*/
 
             mChart.setDrawHoleEnabled(false);
-         //   mChart.setHoleColor(R.color.colorPrimary);
+            //   mChart.setHoleColor(R.color.colorPrimary);
 
-          //  mChart.setTransparentCircleColor(Color.WHITE);
-          //  mChart.setTransparentCircleAlpha(110);
+            //  mChart.setTransparentCircleColor(Color.WHITE);
+            //  mChart.setTransparentCircleAlpha(110);
 
             mChart.setHoleRadius(58f);
             mChart.setTransparentCircleRadius(61f);
 
 
-          //  mChart.setDrawCenterText(true);
+            //  mChart.setDrawCenterText(true);
 
             mChart.setRotationAngle(0);
             mChart.setRotationEnabled(false);
@@ -92,12 +84,6 @@ public class ChartUtils {
 
             // hidden legend
             mChart.getLegend().setEnabled(false);
-        }
-
-        private static SpannableString generateCenterSpannableText() {
-            SpannableString s = new SpannableString("i-To \nApplication");
-            s.setSpan(new RelativeSizeSpan(1.5f), 0, 17, 0);
-            return s;
         }
 
         public static void setData(Context context, Chart chart, int[] chartData) {
@@ -117,9 +103,9 @@ public class ChartUtils {
 
             PieData data = new PieData(dataSet);
             data.setValueFormatter(new PercentFormatter());
-         //   data.setValueTextSize(11f);
-         //   data.setValueTextColor(Color.BLACK);
-         //   data.setValueTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
+            //   data.setValueTextSize(11f);
+            //   data.setValueTextColor(Color.BLACK);
+            //   data.setValueTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
             chart.setData(data);
 
             // undo all highlights

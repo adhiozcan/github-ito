@@ -1,15 +1,10 @@
 package id.net.iconpln.apps.ito.ui;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.util.DiffUtil;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
@@ -26,11 +21,14 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.config.NetworkConfig;
-import id.net.iconpln.apps.ito.helper.CheckPermission;
+import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoSummary;
@@ -69,10 +67,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         realm = Realm.getDefaultInstance();
-
-        socketTransaction = SocketTransaction.prepareStatement();
 
         formLogin = findViewById(R.id.login_form);
         viewLoading = findViewById(R.id.view_loading);
@@ -104,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         chkRememberMe = (CheckBox) findViewById(R.id.remember);
+        chkRememberMe.setChecked(AppConfig.isRemember);
         chkRememberMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -125,9 +121,9 @@ public class LoginActivity extends AppCompatActivity {
     private void checkUserIsRemember() {
         boolean isUserRemembered = AppConfig.isRemember;
         if (isUserRemembered) {
-            // check is user logged on
-            if (!AppConfig.ID_UNIT_UP.isEmpty() && !AppConfig.KODE_PETUGAS.isEmpty())
-                startActivity(new Intent(this, MainActivity.class));
+            Map<String, String> userInfo = AppConfig.getUserRemember();
+            edUser.setText(userInfo.get(Constants.USERNAME));
+            edPassword.setText(userInfo.get(Constants.PASSWORD));
         }
     }
 
@@ -137,7 +133,6 @@ public class LoginActivity extends AppCompatActivity {
             edPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
         if (passwordStyle == HideReturnsTransformationMethod.getInstance())
             edPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-
     }
 
     /**
@@ -146,21 +141,18 @@ public class LoginActivity extends AppCompatActivity {
      * @param viewId
      */
     public void onLoginButtonClicked(View viewId) {
-        String user     = "53581.akhyar";
+
+        SocketTransaction.init();
+        socketTransaction = SocketTransaction.prepareStatement();
+
+        String user = "53581.akhyar" +
+                "";
         String password = "icon+123";
         //String user     = edUser.getText().toString();
         //String password = edPassword.getText().toString();
 
         if (validateInput(user, password))
             doLogin(user, password);
-    }
-
-    private boolean isReadExternalAllowed() {
-        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-
-        if (result == PackageManager.PERMISSION_GRANTED)
-            return true;
-        return false;
     }
 
     private boolean validateInput(String username, String password) {
@@ -192,6 +184,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onLoginSuccess(UserProfile userProfile) {
         hideLoginFormView();
+
+        if (AppConfig.isRemember) {
+            AppConfig.saveUserRemember(AppConfig.USERNAME, AppConfig.PASSWORD);
+        }
 
         /**
          * Save user information into local
@@ -285,13 +281,10 @@ public class LoginActivity extends AppCompatActivity {
         MASTER_TUSBUNG_COMPLETE = true;
         listenDataToComplete();
 
-        //TODO save to Realm in here <DONE>
         realm.beginTransaction();
-        for (FlagTusbung aFlagTusbung : flagTusbung) {
-            realm.copyToRealm(aFlagTusbung);
-        }
+        realm.delete(FlagTusbung.class);
+        realm.copyToRealmOrUpdate(Arrays.asList(flagTusbung));
         realm.commitTransaction();
-
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -301,8 +294,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSocketFailure(ErrorMessageEvent messageEvent) {
-        Toast.makeText(this, messageEvent.getMessage(), Toast.LENGTH_SHORT).show();
-        clearViewStuff();
+    public void onErrorConnection(ErrorMessageEvent messageEvent) {
     }
 }

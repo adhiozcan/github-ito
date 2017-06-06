@@ -60,6 +60,7 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView txtNomorWo;
         private TextView txtPelangganId;
         private TextView txtPelangganNama;
         private TextView txtPelangganAlamat;

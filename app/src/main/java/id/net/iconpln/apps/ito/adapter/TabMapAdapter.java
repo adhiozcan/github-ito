@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.ArrayList;
 
 import id.net.iconpln.apps.ito.model.WorkOrder;
-import id.net.iconpln.apps.ito.ui.PelaksanaanItemFragment;
+import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
 
 
 /**

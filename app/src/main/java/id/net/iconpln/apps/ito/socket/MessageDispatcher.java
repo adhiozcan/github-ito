@@ -56,10 +56,19 @@ public class MessageDispatcher {
         if (messageEvent.entities != null) {
             // check if there is no data we've got from response.
             if (messageEvent.response_code.equals("302")) {
-                Log.d(TAG, "dispatch: Tidak ada data dari response [302]");
+                //make exception special for womonitoring.
+                if (runFunction.equals("getwomonitoring")) {
+                    eventBus.post(produceMessageMonitoring(null));
+                    Log.d(TAG, "dispatch: Tidak ada data dari response [302]");
+                }
+                //make exception special for login.
+                if (runFunction.equals("login")) {
+                    eventBus.post(produceMessageUserProfile(null));
+                }
+
                 return;
             } else if (messageEvent.entities.length == 0) {
-                eventBus.post(produceErrorMessageEvent("Maaf, ada gangguan pada server, coba beberapa saat lagi"));
+                //eventBus.post(produceErrorMessageEvent("Maaf, ada gangguan pada server, coba beberapa saat lagi"));
                 Log.d(TAG, "dispatch: Tidak ada data dari response [402]");
                 return;
             }
@@ -71,8 +80,7 @@ public class MessageDispatcher {
                 // special for work order list entitites.
                 messages = messageEvent.entities;
             }
-        } else
-            return;
+        }
 
         /**
          * Start to corespond between response and subscriber content
@@ -114,6 +122,8 @@ public class MessageDispatcher {
      * @return
      */
     private WoMonitoring[] produceMessageMonitoring(Object[] messages) {
+        if (messages == null) return new WoMonitoring[0];
+
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .serializeNulls()
@@ -134,6 +144,8 @@ public class MessageDispatcher {
      * @return
      */
     private UserProfile produceMessageUserProfile(String message) {
+        if (message == null) return new UserProfile();
+
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .setPrettyPrinting()

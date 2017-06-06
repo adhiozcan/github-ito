@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.ui;
+package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -28,6 +28,7 @@ import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import io.realm.Realm;
 
 /**
  * Created by Ozcan on 23/03/2017.
@@ -189,16 +190,20 @@ public class HomeFragment extends Fragment {
 
     private void cleanAllData() {
         String message = "Apakah anda yakin akan menghapus semua data ?";
-        UniversalDialog.Action action = new UniversalDialog.Action() {
+        ItoDialog.Action action = new ItoDialog.Action() {
             @Override
             public void onYesButtonClicked() {
                 Hawk.deleteAll();
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                realm.deleteAll();
+                realm.commitTransaction();
             }
 
             @Override
             public void onNoButtonClicked() {
             }
         };
-        UniversalDialog.simpleAlert(getActivity(), message, action);
+        ItoDialog.simpleAlert(getActivity(), message, action);
     }
 }

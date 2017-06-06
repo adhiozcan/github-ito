@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
 
 /**
  * Created by Ozcan on 20/04/2017.
@@ -11,9 +12,9 @@ import io.realm.RealmObject;
 
 public class FlagTusbung extends RealmObject {
 
-    public FlagTusbung(){
-
+    public FlagTusbung() {
     }
+
     @SerializedName("flag_tusbung")
     private String kode;
     @SerializedName("keterangan")

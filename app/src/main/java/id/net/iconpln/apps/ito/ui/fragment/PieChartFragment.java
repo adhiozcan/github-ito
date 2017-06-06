@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.ui;
+package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -47,7 +47,7 @@ public class PieChartFragment extends Fragment {
 
     private void initPieChart(View rootView) {
         mPieChart = (PieChart) rootView.findViewById(R.id.chart_pie);
-        ChartUtils.Pie.setChartConfiguration(getActivity(), mPieChart);
+        ChartUtils.Pie.setChartConfiguration(mPieChart);
         ChartUtils.Pie.setData(getActivity(), mPieChart, mPieChartData);
     }
 

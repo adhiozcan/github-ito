@@ -18,15 +18,25 @@ import android.widget.Toast;
 
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
+import id.net.iconpln.apps.ito.ui.fragment.MonitoringFragment;
+import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
+import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
+import id.net.iconpln.apps.ito.ui.fragment.PerancanganFragment;
+import id.net.iconpln.apps.ito.ui.fragment.SinkronisasiFragment;
+import id.net.iconpln.apps.ito.utility.StringUtils;
 
 public class MainActivity extends AppCompatActivity implements
         PelaksanaanFragment.OnFragmentInteractionListener,
-        PelaksanaanItemFragment.OnFragmentInteractionListener{
+        PelaksanaanItemFragment.OnFragmentInteractionListener {
     private NavigationView navigationView;
-    private DrawerLayout drawer;
+    private DrawerLayout   drawer;
     private View           navHeader;
-    private Toolbar toolbar;
+    private Toolbar        toolbar;
     private TextView       txtName;
+    private TextView       txtNamaUnitUp;
 
     // index to identify current nav menu item
     public static int navItemIndex = 0;
@@ -43,8 +53,6 @@ public class MainActivity extends AppCompatActivity implements
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
 
-    // flag to load home fragment when user presses back key
-    private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
 
     @Override
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements
         // Navigation view header
         navHeader = navigationView.getHeaderView(0);
         txtName = (TextView) navHeader.findViewById(R.id.namajob);
+        txtNamaUnitUp = (TextView) navHeader.findViewById(R.id.unitup);
 
         // load toolbar titles from string resources
         activityTitles = getResources().getStringArray(R.array.navigation_drawer_items_array);
@@ -87,8 +96,10 @@ public class MainActivity extends AppCompatActivity implements
      * name, website, notifications action view (dot)
      */
     private void loadNavHeader() {
-        // name, website
-        txtName.setText("Ojan Suherman");
+        StorageTransaction<UserProfile> storageTransaction = new StorageTransaction<>();
+        UserProfile                     userProfile        = storageTransaction.find(UserProfile.class);
+        txtName.setText(userProfile.getNama());
+        txtNamaUnitUp.setText(StringUtils.normalize(userProfile.getNamaunitup()));
     }
 
     /***
@@ -117,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void run() {
                 // update the main content by replacing fragments
-                Fragment fragment            = getHomeFragment();
+                Fragment            fragment            = getHomeFragment();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);

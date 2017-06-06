@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.ui;
+package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.animation.Animator;
 import android.content.res.Resources;
@@ -196,13 +196,13 @@ public class PelaksanaanFragmentOld extends Fragment implements OnMapReadyCallba
             case R.id.action_search:
                 Toast.makeText(getActivity(), "Search", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_list:
+            /*case R.id.action_list:
                 getActivity().findViewById(R.id.recycler_view).setVisibility(View.GONE);
                 getActivity().findViewById(R.id.recycler_view).setVisibility(View.VISIBLE);
                 break;
             case R.id.action_map:
                 getActivity().findViewById(R.id.recycler_view).setVisibility(View.GONE);
-                break;
+                break;*/
         }
         return super.onOptionsItemSelected(item);
     }

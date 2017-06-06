@@ -1,12 +1,17 @@
 package id.net.iconpln.apps.ito.model;
 
+import io.realm.RealmObject;
+
 /**
  * Created by Ozcan on 11/04/2017.
  */
 
-public class Tusbung {
+public class Tusbung extends RealmObject {
     private String noTul;
     private String noWo;
+    private String pelangganId;
+    private String namaPelanggan;
+    private String alamat;
     private String unitUpId;
     private String base64Foto;
     private String jumlahFoto;
@@ -19,6 +24,9 @@ public class Tusbung {
     private String namaPetugas;
     private String gagalPutus;
     private String status;
+
+    public Tusbung() {
+    }
 
     public String getNoTul() {
         return noTul;
@@ -34,6 +42,30 @@ public class Tusbung {
 
     public void setNoWo(String noWo) {
         this.noWo = noWo;
+    }
+
+    public String getAlamat() {
+        return alamat;
+    }
+
+    public void setAlamat(String alamat) {
+        this.alamat = alamat;
+    }
+
+    public String getPelangganId() {
+        return pelangganId;
+    }
+
+    public void setPelangganId(String pelangganId) {
+        this.pelangganId = pelangganId;
+    }
+
+    public String getNamaPelanggan() {
+        return namaPelanggan;
+    }
+
+    public void setNamaPelanggan(String namaPelanggan) {
+        this.namaPelanggan = namaPelanggan;
     }
 
     public String getUnitUpId() {
@@ -136,7 +168,9 @@ public class Tusbung {
     public String toString() {
         return "Tusbung{" +
                 "noTul='" + noTul + '\'' +
-                ", noWo='" + noWo + '\'' +
+                ", pelangganId='" + pelangganId + '\'' +
+                ", namaPelanggan='" + namaPelanggan + '\'' +
+                ", alamat='" + alamat + '\'' +
                 ", unitUpId='" + unitUpId + '\'' +
                 ", base64Foto='" + base64Foto + '\'' +
                 ", jumlahFoto='" + jumlahFoto + '\'' +

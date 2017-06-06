@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.ui;
+package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.content.Context;
 import android.net.Uri;
