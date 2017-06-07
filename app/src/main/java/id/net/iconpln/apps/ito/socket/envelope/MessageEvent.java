@@ -15,13 +15,16 @@ public class MessageEvent {
     public String   method;
     @SerializedName("data")
     public Object[] entities;
+    @SerializedName("pesan")
+    public String   message;
 
     @Override
     public String toString() {
         return "MessageEvent{" +
                 "response_code='" + response_code + '\'' +
                 ", method='" + method + '\'' +
-                ", value=" + Arrays.toString(entities) +
+                ", entities=" + Arrays.toString(entities) +
+                ", message='" + message + '\'' +
                 '}';
     }
 }

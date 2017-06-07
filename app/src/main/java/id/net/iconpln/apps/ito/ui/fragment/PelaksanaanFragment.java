@@ -1,17 +1,13 @@
 package id.net.iconpln.apps.ito.ui.fragment;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,35 +31,35 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
+import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
-import id.net.iconpln.apps.ito.adapter.PelaksanaanAdapter;
 import id.net.iconpln.apps.ito.adapter.TabMapAdapter;
 import id.net.iconpln.apps.ito.config.AppConfig;
-import id.net.iconpln.apps.ito.helper.Anim;
 import id.net.iconpln.apps.ito.model.RefreshEvent;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
+import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.ui.PencarianActivity;
+import id.net.iconpln.apps.ito.utility.DateUtils;
 import io.realm.Realm;
 
+public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback {
 
-public class PelaksanaanFragment extends Fragment
-        implements PelaksanaanItemFragment.OnFragmentInteractionListener,
-        OnMapReadyCallback {
-
-    private OnFragmentInteractionListener mListener;
-    private View                          view;
+    private View view;
 
     private final String TAG = getClass().getSimpleName();
     private LinearLayout mLayoutContent, mLayoutContainer;
 
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
+
+    private View loadingView;
 
     private int     heightContainer = 0;
     private boolean isPanelExpand   = true;
@@ -74,10 +70,6 @@ public class PelaksanaanFragment extends Fragment
     private ArrayList<WorkOrder> workOrderBelumLunasList = new ArrayList<>();
     private ArrayList<WorkOrder> workOrderSelesaiList    = new ArrayList<>();
     private List<WorkOrder>      woList                  = new ArrayList<>();
-
-    private RecyclerView       mRecyclerView;
-    private PelaksanaanAdapter mAdapter;
-    private View               viewNotification;
 
     private int WO_NETWORK_ITERATION = 100;
 
@@ -95,7 +87,6 @@ public class PelaksanaanFragment extends Fragment
         EventBusProvider.getInstance().register(this);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
     }
 
     @Override
@@ -169,6 +160,9 @@ public class PelaksanaanFragment extends Fragment
         mLayoutContainer = (LinearLayout) view.findViewById(R.id.layout_main_container);
         mTabLayout = (TabLayout) view.findViewById(R.id.tabs);
         mViewPager = (ViewPager) view.findViewById(R.id.viewPager);
+        mViewPager.setVisibility(View.GONE);
+        loadingView = view.findViewById(R.id.loading_view);
+        loadingView.setVisibility(View.VISIBLE);
     }
 
     private void initViewPager() {
@@ -226,6 +220,9 @@ public class PelaksanaanFragment extends Fragment
                     hidePanel();
             }
         });
+
+        loadingView.setVisibility(View.GONE);
+        mViewPager.setVisibility(View.VISIBLE);
     }
 
     private void hidePanel() {
@@ -238,29 +235,6 @@ public class PelaksanaanFragment extends Fragment
     private void showPanel() {
         isPanelExpand = true;
         mLayoutContainer.animate().translationY(0);
-    }
-
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
     }
 
     @Override
@@ -361,19 +335,13 @@ public class PelaksanaanFragment extends Fragment
         AppConfig.NO_WO_LOCAL = "";
     }
 
-    private void showCompletePostMessage() {
-        Snackbar snackbar = Snackbar.make(view.findViewById(R.id.coordinator_layout),
-                "Tusbung berhasil dikerjakan",
-                Snackbar.LENGTH_LONG);
-        snackbar.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.material_light_green));
-        snackbar.show();
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEventReceived(WorkOrder[] workOrder) {
         Log.d(TAG, "[onWoAllReceived] ------------------------------------------------------------");
-        System.out.println(workOrder);
-        Log.d(TAG, "" + workOrder);
+        for (WorkOrder _wo : workOrder) {
+            Log.d(TAG, _wo.toString());
+        }
+
         if (workOrder == null) return;
 
         // update marker on map
@@ -415,7 +383,6 @@ public class PelaksanaanFragment extends Fragment
         woList.clear();
         woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
         initViewPager();
-        showCompletePostMessage();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -428,9 +395,18 @@ public class PelaksanaanFragment extends Fragment
 
             @Override
             public void onFinish() {
-                Anim.slideUp(viewNotification);
+                Toast.makeText(getActivity(), "Tidak ada jaringan internet", Toast.LENGTH_SHORT).show();
+
             }
         }.start();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEventReceived(PingEvent pingEvent) {
+        System.out.println(pingEvent.getDate());
+        Date   date       = DateUtils.parseToDate(pingEvent.getDate());
+        String dateString = DateUtils.parseToString(date);
+        ItoApplication.pingDate = dateString;
     }
 
 }

@@ -2,6 +2,7 @@ package id.net.iconpln.apps.ito.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,10 +23,12 @@ import id.net.iconpln.apps.ito.ui.StatusPiutangActivity;
 
 public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.ViewHolder> {
     private Context         context;
+    private String          tagTab;
     private List<WorkOrder> woList;
 
-    public PelaksanaanAdapter(Context context, List<WorkOrder> woList) {
+    public PelaksanaanAdapter(Context context, String tagTab, List<WorkOrder> woList) {
         this.context = context;
+        this.tagTab = tagTab;
         this.woList = woList;
     }
 
@@ -43,12 +46,26 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
         holder.txtPelangganId.setText(wo.getPelangganId());
         holder.txtPelangganNama.setText(wo.getNama());
         holder.txtPelangganAlamat.setText(wo.getAlamat());
+
+        if (tagTab.equals("selesai")) {
+            if (wo.isUploaded()) {
+                holder.txtStatusUpload.setText("Sukses Upload");
+                holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.material_green));
+                holder.txtStatusUpload.setVisibility(View.VISIBLE);
+            } else {
+                holder.txtStatusUpload.setText("Pending");
+                holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.colorOrange));
+                holder.txtStatusUpload.setVisibility(View.VISIBLE);
+            }
+        }
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d("Pelaksanaan Adapter", "onClick: --------------------------------------------");
                 EventBusProvider.getInstance().postSticky(wo);
                 Intent statusPiutang = new Intent(context, StatusPiutangActivity.class);
+                statusPiutang.putExtra("tag_tab", tagTab);
                 context.startActivity(statusPiutang);
             }
         });
@@ -62,12 +79,14 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtNomorWo;
         private TextView txtPelangganId;
+        private TextView txtStatusUpload;
         private TextView txtPelangganNama;
         private TextView txtPelangganAlamat;
 
         public ViewHolder(View itemView) {
             super(itemView);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
+            txtStatusUpload = (TextView) itemView.findViewById(R.id.status_upload);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganAlamat = (TextView) itemView.findViewById(R.id.pelanggan_alamat);
         }

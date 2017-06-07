@@ -29,11 +29,11 @@ public class TabMapAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return PelaksanaanItemFragment.newInstance(woBelumLunas);
+                return PelaksanaanItemFragment.newInstance(woBelumLunas, "pelaksanaan");
             case 1:
-                return PelaksanaanItemFragment.newInstance(woLunas);
+                return PelaksanaanItemFragment.newInstance(woLunas, "selesai");
             case 2:
-                return PelaksanaanItemFragment.newInstance(woSelesai);
+                return PelaksanaanItemFragment.newInstance(woSelesai, "lunas");
         }
         return null;
     }

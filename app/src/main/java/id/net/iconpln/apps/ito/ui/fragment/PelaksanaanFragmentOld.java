@@ -96,7 +96,7 @@ public class PelaksanaanFragmentOld extends Fragment implements OnMapReadyCallba
 
         woList = new ArrayList<>();
         //provideDummyData();
-        mAdapter = new PelaksanaanAdapter(getActivity(), woList);
+        mAdapter = new PelaksanaanAdapter(getActivity(), "", woList);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));

@@ -23,6 +23,7 @@ public class ItoDialog {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         action.onNoButtonClicked();
+                        dialog.dismiss();
                     }
                 });
         builder.setPositiveButton("YES",

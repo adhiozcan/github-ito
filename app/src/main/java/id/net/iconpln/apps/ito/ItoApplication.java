@@ -25,6 +25,7 @@ import okhttp3.OkHttpClient;
 
 public class ItoApplication extends Application {
 
+    public static String pingDate = "";
 
     @Override
     public void onCreate() {

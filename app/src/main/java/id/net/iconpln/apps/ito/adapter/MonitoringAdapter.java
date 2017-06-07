@@ -1,6 +1,7 @@
 package id.net.iconpln.apps.ito.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,11 +37,17 @@ public class MonitoringAdapter extends RecyclerView.Adapter<MonitoringAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         WoMonitoring wo = woMonitoringList.get(position);
-        holder.txtNoTul.setText(wo.getNoTul601());
+        holder.txtNoTul.setText("VI-1-" + wo.getNoTul601());
+        holder.txtPelangganId.setText(wo.getIdPelanggan());
         holder.txtNamaPelanggan.setText(wo.getNama());
         holder.txtAlamatPelanggan.setText(wo.getAlamat());
         String status = (wo.getTanggalPelunasan() == null) ? "Belum Lunas" : "Lunas";
         holder.txtStatusLunas.setText(status);
+        if (status.equals("Belum Lunas")) {
+            holder.txtStatusLunas.setTextColor(ContextCompat.getColor(context, R.color.colorOrange));
+        } else if (status.equals("Lunas")) {
+            holder.txtStatusLunas.setTextColor(ContextCompat.getColor(context, R.color.material_green));
+        }
     }
 
     @Override
@@ -50,6 +57,7 @@ public class MonitoringAdapter extends RecyclerView.Adapter<MonitoringAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtNoTul;
+        private TextView txtPelangganId;
         private TextView txtStatusLunas;
         private TextView txtNamaPelanggan;
         private TextView txtAlamatPelanggan;
@@ -57,6 +65,7 @@ public class MonitoringAdapter extends RecyclerView.Adapter<MonitoringAdapter.Vi
         public ViewHolder(View itemView) {
             super(itemView);
             txtNoTul = (TextView) itemView.findViewById(R.id.nomor_tul);
+            txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
             txtStatusLunas = (TextView) itemView.findViewById(R.id.status_lunas);
             txtNamaPelanggan = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtAlamatPelanggan = (TextView) itemView.findViewById(R.id.pelanggan_alamat);

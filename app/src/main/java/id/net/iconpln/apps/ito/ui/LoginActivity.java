@@ -4,19 +4,19 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.text.method.TransformationMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -128,11 +128,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onRevealPassword(View viewId) {
-        TransformationMethod passwordStyle = edPassword.getTransformationMethod();
-        if (passwordStyle == PasswordTransformationMethod.getInstance())
-            edPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-        if (passwordStyle == HideReturnsTransformationMethod.getInstance())
-            edPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        if (viewId.getTag() == "true") {
+            edPassword.setTransformationMethod(new HideReturnsTransformationMethod());
+            edPassword.setSelection(edPassword.getText().length());
+            viewId.setTag("false");
+        } else {
+            edPassword.setTransformationMethod(new PasswordTransformationMethod());
+            edPassword.setSelection(edPassword.getText().length());
+            viewId.setTag("true");
+        }
     }
 
     /**
@@ -145,11 +149,10 @@ public class LoginActivity extends AppCompatActivity {
         SocketTransaction.init();
         socketTransaction = SocketTransaction.prepareStatement();
 
-        String user = "53581.akhyar" +
-                "";
-        String password = "icon+123";
-        //String user     = edUser.getText().toString();
-        //String password = edPassword.getText().toString();
+        //String user = "53581.akhyar" +"";
+        //String password = "icon+123";
+        String user     = edUser.getText().toString();
+        String password = edPassword.getText().toString();
 
         if (validateInput(user, password))
             doLogin(user, password);
@@ -271,7 +274,10 @@ public class LoginActivity extends AppCompatActivity {
             LOGIN_COMPLETE = true;
             listenDataToComplete();
         } else {
-            Toast.makeText(this, "Username atau password tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout), "Username atau Password tidak ditemukan",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
+            snackbar.show();
         }
     }
 
@@ -294,6 +300,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onErrorConnection(ErrorMessageEvent messageEvent) {
+    public void onError(ErrorMessageEvent messageEvent) {
+        SmileyLoading.close();
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout), messageEvent.getMessage(), Snackbar.LENGTH_LONG);
+        snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
+        snackbar.show();
     }
 }

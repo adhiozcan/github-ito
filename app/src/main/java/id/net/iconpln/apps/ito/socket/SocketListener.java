@@ -9,6 +9,7 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.socket.envelope.MessageEvent;
@@ -71,7 +72,8 @@ class SocketListener extends WebSocketListener {
             System.out.println("Yes, it is SocketTimeoutException");
             MessageEvent message = new MessageEvent();
             message.response_code = Constants.SOCKET_FAILURE;
-            //new MessageDispatcher().dispatch(null, message);
+            new MessageDispatcher().dispatch(null, message);
+            EventBusProvider.getInstance().post(new ErrorMessageEvent("Timeout! Periksa jaringan Anda."));
         }
     }
 

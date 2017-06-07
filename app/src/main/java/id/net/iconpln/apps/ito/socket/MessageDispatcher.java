@@ -13,6 +13,7 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.helper.JsonNullConverter;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
+import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoMonitoring;
 import id.net.iconpln.apps.ito.model.WoSummary;
@@ -44,6 +45,21 @@ public class MessageDispatcher {
         return false;
     }
 
+    private void woMonitoringTreatment(String runFunction) {
+        //make exception special for womonitoring.
+        if (runFunction.equals("getwomonitoring")) {
+            eventBus.post(produceMessageMonitoring(null));
+            Log.d(TAG, "dispatch: Tidak ada data dari response [302]");
+        }
+    }
+
+    private void loginTreatment(String runFunction, MessageEvent messageEvent) {
+        //make exception special for login.
+        if (runFunction.equals("login")) {
+            eventBus.post(new ErrorMessageEvent(messageEvent.message));
+        }
+    }
+
     public void dispatch(String runFunction, MessageEvent messageEvent) {
 
         if (isFailureConnection(messageEvent.response_code))
@@ -56,16 +72,8 @@ public class MessageDispatcher {
         if (messageEvent.entities != null) {
             // check if there is no data we've got from response.
             if (messageEvent.response_code.equals("302")) {
-                //make exception special for womonitoring.
-                if (runFunction.equals("getwomonitoring")) {
-                    eventBus.post(produceMessageMonitoring(null));
-                    Log.d(TAG, "dispatch: Tidak ada data dari response [302]");
-                }
-                //make exception special for login.
-                if (runFunction.equals("login")) {
-                    eventBus.post(produceMessageUserProfile(null));
-                }
-
+                loginTreatment(runFunction, messageEvent);
+                woMonitoringTreatment(runFunction);
                 return;
             } else if (messageEvent.entities.length == 0) {
                 //eventBus.post(produceErrorMessageEvent("Maaf, ada gangguan pada server, coba beberapa saat lagi"));
@@ -99,6 +107,7 @@ public class MessageDispatcher {
                 eventBus.post(produceMessageMonitoring(messages));
                 break;
             case "updateprogressworkorder":
+                eventBus.post(produceProgressUpdate(message));
                 break;
             case "tempuploadwo":
                 break;
@@ -110,7 +119,7 @@ public class MessageDispatcher {
                 eventBus.post(produceMessagePingEvent(message));
                 break;
             default:
-                Log.d(TAG, "[Unknown Response]");
+                Log.d(TAG, "[Unknown Response] " + messageEvent.toString());
                 break;
         }
     }
@@ -195,6 +204,17 @@ public class MessageDispatcher {
     private FlagTusbung[] produceMessageFlagTusbung(Object[] messages) {
         FlagTusbung[] flagTusbung = new Gson().fromJson(Arrays.toString(messages), FlagTusbung[].class);
         return flagTusbung;
+    }
+
+    /**
+     * Produce progress update
+     *
+     * @param message
+     * @return
+     */
+    private ProgressUpdateEvent produceProgressUpdate(String message) {
+        ProgressUpdateEvent progressEvent = new Gson().fromJson(message, ProgressUpdateEvent.class);
+        return progressEvent;
     }
 
     /**

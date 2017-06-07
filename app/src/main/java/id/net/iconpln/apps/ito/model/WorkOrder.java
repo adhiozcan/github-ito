@@ -21,6 +21,8 @@ public class WorkOrder extends RealmObject implements Parcelable {
     private String nama;
     @SerializedName("tgl_wo")
     private String tanggalWo;
+    @SerializedName("tgl_pelaksanaan_putus")
+    private String tanggalPutus;
     @SerializedName("tgl_pelunasan_601")
     private String tanggalPelunasan;
     @SerializedName("alamat")
@@ -74,57 +76,11 @@ public class WorkOrder extends RealmObject implements Parcelable {
     private String jumlahData;
 
     private boolean isSelesai;
+    private boolean isUploaded;
 
     public WorkOrder() {
     }
 
-
-    protected WorkOrder(Parcel in) {
-        noWo = in.readString();
-        pelangganId = in.readString();
-        nama = in.readString();
-        tanggalWo = in.readString();
-        tanggalPelunasan = in.readString();
-        alamat = in.readString();
-        tarif = in.readString();
-        daya = in.readString();
-        noTul601 = in.readString();
-        noTul = in.readString();
-        tagihan601 = in.readString();
-        unitUpi = in.readString();
-        unitUp = in.readString();
-        unitAp = in.readString();
-        noGardu = in.readString();
-        noTiang = in.readString();
-        kddk = in.readString();
-        rbm = in.readString();
-        statusPiutang = in.readString();
-        rpTotal = in.readString();
-        jumlahRpTag = in.readString();
-        jumlahRbpk = in.readString();
-        jumlahLembar = in.readString();
-        total = in.readString();
-        koordinatX = in.readString();
-        koordinatY = in.readString();
-        kodeVendor = in.readString();
-        expired = in.readString();
-        kodePetugas = in.readString();
-        flag = in.readString();
-        jumlahData = in.readString();
-        isSelesai = in.readByte() != 0;
-    }
-
-    public static final Creator<WorkOrder> CREATOR = new Creator<WorkOrder>() {
-        @Override
-        public WorkOrder createFromParcel(Parcel in) {
-            return new WorkOrder(in);
-        }
-
-        @Override
-        public WorkOrder[] newArray(int size) {
-            return new WorkOrder[size];
-        }
-    };
 
     public String getJumlahData() {
         return jumlahData;
@@ -172,6 +128,14 @@ public class WorkOrder extends RealmObject implements Parcelable {
 
     public void setTanggalWo(String tanggalWo) {
         this.tanggalWo = tanggalWo;
+    }
+
+    public String getTanggalPutus() {
+        return tanggalPutus;
+    }
+
+    public void setTanggalPutus(String tanggalPutus) {
+        this.tanggalPutus = tanggalPutus;
     }
 
     public String getTanggalPelunasan() {
@@ -294,7 +258,6 @@ public class WorkOrder extends RealmObject implements Parcelable {
         }
     }
 
-
     public void setStatusPiutang(String statusPiutang) {
         this.statusPiutang = statusPiutang;
     }
@@ -387,6 +350,14 @@ public class WorkOrder extends RealmObject implements Parcelable {
         isSelesai = selesai;
     }
 
+    public boolean isUploaded() {
+        return isUploaded;
+    }
+
+    public void setUploaded(boolean uploaded) {
+        isUploaded = uploaded;
+    }
+
     @Override
     public String toString() {
         return "WorkOrder{" +
@@ -394,6 +365,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
                 ", pelangganId='" + pelangganId + '\'' +
                 ", nama='" + nama + '\'' +
                 ", tanggalWo='" + tanggalWo + '\'' +
+                ", tanggalPutus='" + tanggalPutus + '\'' +
                 ", tanggalPelunasan='" + tanggalPelunasan + '\'' +
                 ", alamat='" + alamat + '\'' +
                 ", tarif='" + tarif + '\'' +
@@ -419,11 +391,16 @@ public class WorkOrder extends RealmObject implements Parcelable {
                 ", kodeVendor='" + kodeVendor + '\'' +
                 ", expired='" + expired + '\'' +
                 ", kodePetugas='" + kodePetugas + '\'' +
+                ", flag='" + flag + '\'' +
+                ", jumlahData='" + jumlahData + '\'' +
+                ", isSelesai=" + isSelesai +
+                ", isUploaded=" + isUploaded +
                 '}';
     }
 
     public void formatPretty() {
         this.nama = StringUtils.normalize(nama);
+        this.tanggalWo = StringUtils.normalize(tanggalWo);
         this.alamat = StringUtils.normalize(alamat);
         this.noTul = StringUtils.normalize(noTul);
         this.noTiang = StringUtils.normalize(noTiang);
@@ -440,6 +417,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
         parcel.writeString(pelangganId);
         parcel.writeString(nama);
         parcel.writeString(tanggalWo);
+        parcel.writeString(tanggalPutus);
         parcel.writeString(tanggalPelunasan);
         parcel.writeString(alamat);
         parcel.writeString(tarif);

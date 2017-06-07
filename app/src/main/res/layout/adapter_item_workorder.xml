@@ -31,6 +31,15 @@
             android:text="97823123"
             android:textColor="@color/colorVulcan"
             android:textSize="@dimen/text_size_12sp"/>
+
+        <TextView
+            android:id="@+id/status_upload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Berhasil diupload"
+            android:textColor="@color/colorVulcan"
+            android:textSize="@dimen/text_size_12sp"
+            android:visibility="gone"/>
     </LinearLayout>
 
     <LinearLayout

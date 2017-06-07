@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -22,12 +23,17 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.NumberFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
+import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
+import id.net.iconpln.apps.ito.utility.DateUtils;
+import id.net.iconpln.apps.ito.utility.StringUtils;
 
 /**
  * Created by Ozcan on 30/03/2017.
@@ -35,6 +41,9 @@ import id.net.iconpln.apps.ito.utility.CommonUtils;
 
 public class StatusPiutangActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = StatusPiutangActivity.class.getSimpleName();
+
+    private String tabName;
+
     private TextView txtPelangganId;
     private TextView txtName;
     private TextView txtTanggalTul;
@@ -43,7 +52,8 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     private TextView txtAlamat;
     private TextView txtTarifDaya;
     private TextView txtGarduTiang;
-    private TextView txtTanggalPutus;
+    private TextView txtTanggalPutusLunasLabel;
+    private TextView txtTanggalPutusLunas;
     private TextView txtStatusPelunasan;
     private TextView txtJumlahLembar;
     private TextView txtNominalRpTag;
@@ -61,8 +71,15 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_status_piutang);
         CommonUtils.installToolbar(this);
+        getDataFromIntent();
         initView();
         initMap();
+    }
+
+    private void getDataFromIntent() {
+        if (getIntent().getExtras() != null) {
+            tabName = getIntent().getExtras().getString("tag_tab");
+        }
     }
 
     private void initMap() {
@@ -80,7 +97,8 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         txtAlamat = (TextView) findViewById(R.id.pelanggan_alamat);
         txtTarifDaya = (TextView) findViewById(R.id.tarif_daya);
         txtGarduTiang = (TextView) findViewById(R.id.gardu_tiang);
-        txtTanggalPutus = (TextView) findViewById(R.id.tanggal_putus);
+        txtTanggalPutusLunasLabel = (TextView) findViewById(R.id.lbl_tanggal_putus_lunas);
+        txtTanggalPutusLunas = (TextView) findViewById(R.id.tanggal_putus_lunas);
         txtStatusPelunasan = (TextView) findViewById(R.id.status_pelunasan);
         txtJumlahLembar = (TextView) findViewById(R.id.jumlah_lembar);
         txtNominalRpTag = (TextView) findViewById(R.id.nilai_rp_tag);
@@ -89,20 +107,53 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         btnTusbung = (TextView) findViewById(R.id.btnTusbung);
     }
 
+    private void adjustingFieldWithTabType(WorkOrder workOrder) {
+        if (tabName != null || tabName.isEmpty()) {
+            switch (tabName) {
+                case "pelaksanaan":
+                    txtTanggalPutusLunasLabel.setText("Tanggal Putus");
+                    txtTanggalPutusLunas.setText("Tidak ada data");
+                    txtTanggalPutusLunas.setTextColor(ContextCompat.getColor(this, R.color.colorVulcan));
+                    break;
+                case "selesai":
+                    txtTanggalPutusLunasLabel.setText("Tanggal Putus");
+                    txtTanggalPutusLunas.setText(StringUtils.normalize(workOrder.getTanggalWo()));
+                    txtTanggalPutusLunas.setTextColor(ContextCompat.getColor(this, R.color.colorOrange));
+                    break;
+                case "lunas":
+                    txtTanggalPutusLunasLabel.setText("Tanggal Lunas");
+                    txtTanggalPutusLunas.setText(StringUtils.normalize(workOrder.getTanggalPelunasan()));
+                    txtTanggalPutusLunas.setTextColor(ContextCompat.getColor(this, R.color.colorVulcan));
+                    break;
+            }
+        }
+    }
+
     private void updateCustomerInfoDisplay(WorkOrder workOrder) {
         txtStatusPelunasan.setText(workOrder.getStatusPiutang());
         txtPelangganId.setText(workOrder.getPelangganId());
         txtName.setText(workOrder.getNama());
+        txtTanggalTul.setText(StringUtils.normalize(workOrder.getTanggalWo()));
         txtNoTul.setText(workOrder.getNoTul());
         txtKodeKddk.setText(workOrder.getKddk());
         txtAlamat.setText(workOrder.getAlamat());
         txtTarifDaya.setText(workOrder.getTarif());
         txtGarduTiang.setText(workOrder.getNoGardu());
+        adjustingFieldWithTabType(workOrder);
 
         String jumlahLembar = "Jumlah Lembar (" + workOrder.getJumlahLembar() + ")";
         txtJumlahLembar.setText(jumlahLembar);
 
-        // check if status pelunasan is belum lunas, then show the tusbung button
+        shouldShowTusbung(workOrder);
+        showCustomerLocationOnMap(workOrder);
+
+        NumberFormat nf                = NumberFormat.getCurrencyInstance(new Locale("in", "ID"));
+        int          tagihan_raw       = Integer.parseInt(workOrder.getTagihan601());
+        String       tagihan_terformat = nf.format(tagihan_raw) + ",00";
+        txtTagihanTul601.setText(tagihan_terformat);
+    }
+
+    private boolean shouldShowTusbung(WorkOrder workOrder) {
         if (workOrder.getStatusPiutang().equals("Belum Lunas")) {
             btnTusbung.setVisibility(View.VISIBLE);
             if (workOrder.isSelesai()) {
@@ -112,22 +163,22 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
                 btnTusbung.setText("Tusbung");
                 btnTusbung.setEnabled(true);
             }
+
+            return true;
         } else {
             btnTusbung.setVisibility(View.GONE);
+            return false;
         }
+    }
 
-        // parse customer location using lat lng in order to show in google map
-        double lat = Double.parseDouble(workOrder.getKoordinatX());
-        double lng = Double.parseDouble(workOrder.getKoordinatY());
-        System.out.println("------------- " + lat + " | " + lng);
-        customerLocation = new LatLng(lat, lng);
-        shouldUpdateMarker();
-
-
-        NumberFormat nf                = NumberFormat.getCurrencyInstance(new Locale("in", "ID"));
-        int          tagihan_raw       = Integer.parseInt(workOrder.getTagihan601());
-        String       tagihan_terformat = nf.format(tagihan_raw) + ",00";
-        txtTagihanTul601.setText(tagihan_terformat);
+    private void showCustomerLocationOnMap(WorkOrder workOrder) {
+        if ((workOrder.getKoordinatX() != null) && workOrder.getKoordinatY() != null) {
+            double lat = Double.parseDouble(workOrder.getKoordinatX());
+            double lng = Double.parseDouble(workOrder.getKoordinatY());
+            System.out.println("------------- " + lat + " | " + lng);
+            customerLocation = new LatLng(lat, lng);
+            shouldUpdateMarker();
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
@@ -213,5 +264,13 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEventReceived(PingEvent pingEvent) {
+        System.out.println("[PING] -----------------------");
+        System.out.println(pingEvent.getDate());
+        Date   date       = DateUtils.parseToDate(pingEvent.getDate());
+        String dateString = DateUtils.parseToString(date);
+        ItoApplication.pingDate = dateString;
+    }
 
 }

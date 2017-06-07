@@ -5,10 +5,12 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -30,19 +32,23 @@ import java.util.Date;
 import java.util.List;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
+import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
+import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.RefreshEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
+import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.Realm;
 
@@ -264,6 +270,8 @@ public class PemutusanActivity extends AppCompatActivity {
     }
 
     private void doPemutusan() {
+        SmileyLoading.show(this, "Sedang memproses tusbung");
+
         String noTul       = txtNoTul.getText().toString();
         String noTul601    = mWo.getNoTul601();
         String noWo        = mWo.getNoWo();
@@ -272,18 +280,24 @@ public class PemutusanActivity extends AppCompatActivity {
         String alamat      = mWo.getAlamat();
         String unitUpId    = mWo.getUnitUp();
         String kodePetugas = mWo.getKodePetugas();
-        //String tanggalPutus  = edTanggalPutus.getText().toString();
-        String tanggalPutus = "20170413";
-        String selectedVal  = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
-        String lwbp         = "2000018990";
-        String wbp          = null;
-        String kvarh        = null;
+        //String tanggalPutus = edTanggalPutus.getText().toString();
+        //String tanggalPutus = "20170413";
+        String selectedVal = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
+        String lwbp        = "2000018990";
+        String wbp         = null;
+        String kvarh       = null;
         //String lwbp          = edLwbp.getText().toString();
         //String wbp           = edWbp.getText().toString();
         //String kvarh         = edKvarh.getText().toString();
         String isGagalPutus = "0";
         String status       = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
         String namaPetugas  = mWo.getNama();
+        String tanggalPutus = "";
+        if (ItoApplication.pingDate.isEmpty()) {
+            tanggalPutus = edTanggalPutus.getText().toString();
+        } else {
+            tanggalPutus = ItoApplication.pingDate;
+        }
 
         Uri[] fotoTobePosted = new Uri[4];
         int   jumlahFoto     = 0;
@@ -327,9 +341,6 @@ public class PemutusanActivity extends AppCompatActivity {
         realm.insert(tusbung);
         realm.commitTransaction();
 
-        EventBusProvider.getInstance().post(new RefreshEvent());
-        finish();
-
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
         Log.d(TAG, "doPemutusan: Param No Tul\t" + tusbung.getNoTul());
         Log.d(TAG, "doPemutusan: Param Id Unit UP\t" + tusbung.getUnitUpId());
@@ -342,8 +353,18 @@ public class PemutusanActivity extends AppCompatActivity {
     }
 
     public void onProsesButtonClicked(View btnId) {
-        if (cekFieldContent())
-            doPemutusan();
+        ItoDialog.simpleAlert(this, "Apakah Anda yakin akan memproses tusbung Work Order ini?", new ItoDialog.Action() {
+            @Override
+            public void onYesButtonClicked() {
+                if (cekFieldContent())
+                    doPemutusan();
+            }
+
+            @Override
+            public void onNoButtonClicked() {
+            }
+        });
+
     }
 
     private boolean cekFieldContent() {
@@ -407,7 +428,51 @@ public class PemutusanActivity extends AppCompatActivity {
         System.out.println(pingEvent.getDate());
         Date   date       = DateUtils.parseToDate(pingEvent.getDate());
         String dateString = DateUtils.parseToString(date);
+        ItoApplication.pingDate = dateString;
         updateTanggalDisplay(dateString);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTusbungRespond(ProgressUpdateEvent progressEvent) {
+        Log.d(TAG, "---------------------------------------------");
+        Log.d(TAG, progressEvent.toString());
+
+        SmileyLoading.close();
+        if (progressEvent.kode == "1") {
+            // mark mWo has done.
+            Realm realm = Realm.getDefaultInstance();
+            realm.beginTransaction();
+            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(true);
+            realm.commitTransaction();
+
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "Tusbung berhasil dikerjakan dan terunggah ke server",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_light_green));
+            snackbar.show();
+        } else {
+            Realm realm = Realm.getDefaultInstance();
+            realm.beginTransaction();
+            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(false);
+
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    StringUtils.normalize(progressEvent.message),
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(PemutusanActivity.this, R.color.material_pink));
+            snackbar.show();
+        }
+
+        new CountDownTimer(3_500, 1_000) {
+            @Override
+            public void onTick(long l) {
+            }
+
+            @Override
+            public void onFinish() {
+                EventBusProvider.getInstance().post(new RefreshEvent());
+                finish();
+            }
+        }.start();
     }
 
     private void updateTanggalDisplay(String date) {

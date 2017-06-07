@@ -19,6 +19,7 @@ import id.net.iconpln.apps.ito.utility.CommonUtils;
 
 public class PelaksanaanItemFragment extends Fragment {
 
+    private String                        tagTab;
     private OnFragmentInteractionListener mListener;
     private ArrayList<WorkOrder> workOrders = new ArrayList<>();
     private View view;
@@ -28,10 +29,11 @@ public class PelaksanaanItemFragment extends Fragment {
     }
 
 
-    public static PelaksanaanItemFragment newInstance(ArrayList<WorkOrder> workOrders) {
+    public static PelaksanaanItemFragment newInstance(ArrayList<WorkOrder> workOrders, String tagTab) {
         PelaksanaanItemFragment fragment = new PelaksanaanItemFragment();
-        Bundle args = new Bundle();
+        Bundle                  args     = new Bundle();
         args.putParcelableArrayList("woList", workOrders);
+        args.putString("tag", tagTab);
         fragment.setArguments(args);
         return fragment;
     }
@@ -41,7 +43,7 @@ public class PelaksanaanItemFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             workOrders = getArguments().getParcelableArrayList("woList");
-         //   mParam2 = getArguments().getString(ARG_PARAM2);
+            tagTab = getArguments().getString("tag");
         }
     }
 
@@ -51,7 +53,7 @@ public class PelaksanaanItemFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_pelaksanaan_item, container, false);
         RecyclerView mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        mRecyclerView.setAdapter(new PelaksanaanAdapter(getActivity(), workOrders));
+        mRecyclerView.setAdapter(new PelaksanaanAdapter(getActivity(), tagTab, workOrders));
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
         return view;
     }
