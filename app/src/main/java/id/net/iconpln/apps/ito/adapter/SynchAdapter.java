@@ -11,8 +11,8 @@ import java.util.List;
  */
 
 public class SynchAdapter extends FragmentPagerAdapter {
-    final int RIWAYAT_SINKRONISASI = 0;
-    final int PENDING_SINKRONISASI = 1;
+    final int PENDING_SINKRONISASI = 0;
+    final int RIWAYAT_SINKRONISASI = 1;
 
     private List<Fragment> fragmentList;
 
@@ -34,10 +34,10 @@ public class SynchAdapter extends FragmentPagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         switch (position) {
-            case RIWAYAT_SINKRONISASI:
-                return "Riwayat";
             case PENDING_SINKRONISASI:
                 return "Pending Transaksi";
+            case RIWAYAT_SINKRONISASI:
+                return "Riwayat";
             default:
                 return "Riwayat";
         }

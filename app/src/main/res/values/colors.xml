@@ -38,6 +38,7 @@
     <!-- material -->
     <color name="material_red">#F44336</color>
     <color name="material_pink">#FF4081</color>
+    <color name="material_orange">#FF9800</color>
     <color name="material_blue">#1976D2</color>
     <color name="material_purple">#E040FB</color>
     <color name="material_yellow">#FFEB3B</color>

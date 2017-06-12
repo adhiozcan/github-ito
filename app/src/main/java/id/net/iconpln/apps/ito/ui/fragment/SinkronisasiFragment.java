@@ -54,8 +54,8 @@ public class SinkronisasiFragment extends Fragment {
         tabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
 
         List<Fragment> fragmentList = new ArrayList<>();
-        fragmentList.add(new SynchRiwayatFragment());
         fragmentList.add(new SynchPendingFragment());
+        fragmentList.add(new SynchRiwayatFragment());
 
         adapter = new SynchAdapter(getChildFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
