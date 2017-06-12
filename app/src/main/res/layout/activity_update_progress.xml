@@ -16,6 +16,13 @@
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Proses Tusbung"/>
 
+    <View
+        android:id="@+id/signal_condition"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/space_4dp"
+        android:background="@color/material_pink"
+        android:elevation="@dimen/space_2dp"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -46,8 +46,10 @@ import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
+import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import id.net.iconpln.apps.ito.utility.SignalListener;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.Realm;
@@ -56,7 +58,7 @@ import io.realm.Realm;
  * Created by Ozcan on 30/03/2017.
  */
 
-public class PemutusanActivity extends AppCompatActivity {
+public class PemutusanActivity extends AppCompatActivity implements SignalListener {
     private static final String TAG = PemutusanActivity.class.getSimpleName();
 
     public static final int CAMERA_REQUEST_CODE_1 = 101;
@@ -100,6 +102,11 @@ public class PemutusanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_update_progress);
         CommonUtils.installToolbar(this);
         initView();
+
+        // -- listeing signal strength
+        if (ConnectivityUtils.isHaveInternetConnection(this)) {
+            ConnectivityUtils.register(this, this);
+        }
 
         mFlagTusbung = new ArrayList<>();
         mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
@@ -267,6 +274,7 @@ public class PemutusanActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         EventBusProvider.getInstance().unregister(this);
+        ConnectivityUtils.unregister(this);
     }
 
     private void doPemutusan() {
@@ -477,5 +485,28 @@ public class PemutusanActivity extends AppCompatActivity {
 
     private void updateTanggalDisplay(String date) {
         edTanggalPutus.setText(date);
+    }
+
+    private void updateSignalColorBar(int color) {
+        findViewById(R.id.signal_condition).setBackgroundResource(color);
+    }
+
+    @Override
+    public void onReceived(int strength) {
+        System.out.println(strength);
+        switch (strength) {
+            case ConnectivityUtils.DISCONNECT:
+                updateSignalColorBar(R.color.material_pink);
+                break;
+            case ConnectivityUtils.SIGNAL_WEAK:
+                updateSignalColorBar(R.color.material_orange);
+                break;
+            case ConnectivityUtils.SIGNAL_STRONG:
+                updateSignalColorBar(R.color.material_light_green);
+                break;
+            default:
+                updateSignalColorBar(R.color.colorGrey);
+                break;
+        }
     }
 }

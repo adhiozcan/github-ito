@@ -2,6 +2,7 @@ package id.net.iconpln.apps.ito;
 
 import android.Manifest;
 import android.app.Application;
+import android.content.Context;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.Stetho;

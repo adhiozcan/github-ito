@@ -56,8 +56,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     private TextView txtTanggalPutusLunas;
     private TextView txtStatusPelunasan;
     private TextView txtJumlahLembar;
-    private TextView txtNominalRpTag;
-    private TextView txtNominalRpbk;
     private TextView txtTagihanTul601;
     private TextView btnTusbung;
 
@@ -101,8 +99,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         txtTanggalPutusLunas = (TextView) findViewById(R.id.tanggal_putus_lunas);
         txtStatusPelunasan = (TextView) findViewById(R.id.status_pelunasan);
         txtJumlahLembar = (TextView) findViewById(R.id.jumlah_lembar);
-        txtNominalRpTag = (TextView) findViewById(R.id.nilai_rp_tag);
-        txtNominalRpbk = (TextView) findViewById(R.id.nilai_rbpk);
         txtTagihanTul601 = (TextView) findViewById(R.id.tagihan_tul_601);
         btnTusbung = (TextView) findViewById(R.id.btnTusbung);
     }
