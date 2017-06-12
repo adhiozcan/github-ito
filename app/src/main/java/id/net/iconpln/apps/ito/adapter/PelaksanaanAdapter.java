@@ -43,6 +43,7 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         final WorkOrder wo = woList.get(position);
+        holder.txtNoTul.setText("VI-I | " + wo.getNoTul601());
         holder.txtPelangganId.setText(wo.getPelangganId());
         holder.txtPelangganNama.setText(wo.getNama());
         holder.txtPelangganAlamat.setText(wo.getAlamat());
@@ -77,7 +78,7 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView txtNomorWo;
+        private TextView txtNoTul;
         private TextView txtPelangganId;
         private TextView txtStatusUpload;
         private TextView txtPelangganNama;
@@ -85,6 +86,7 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
 
         public ViewHolder(View itemView) {
             super(itemView);
+            txtNoTul = (TextView) itemView.findViewById(R.id.nomor_tul);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
             txtStatusUpload = (TextView) itemView.findViewById(R.id.status_upload);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);

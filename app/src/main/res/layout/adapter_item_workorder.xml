@@ -16,12 +16,13 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/notul"
+            android:id="@+id/nomor_tul"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="VI-1"
             android:textColor="@color/colorAccent"
+            android:textSize="@dimen/text_size_12sp"
             android:textStyle="bold"/>
 
         <TextView
