@@ -30,26 +30,11 @@ public class SinkronisasiFragment extends Fragment {
     private TabLayout    tabLayout;
     private SynchAdapter adapter;
 
-    private TextView mTxtLastSynch;
-
-    private View btnSync;
-
-    private Realm realm;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sinkronisasi, container, false);
-        realm = Realm.getDefaultInstance();
 
-        btnSync = view.findViewById(R.id.btn_sync);
-        btnSync.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onSyncButtonClicked();
-            }
-        });
-        mTxtLastSynch = (TextView) view.findViewById(R.id.last_sync);
         viewPager = (ViewPager) view.findViewById(R.id.view_pager);
         tabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
 
@@ -61,38 +46,10 @@ public class SinkronisasiFragment extends Fragment {
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        setLastSyncInfo();
         return view;
     }
 
-    private void setLastSyncInfo() {
-        if (getLatest() == null) return;
-        mTxtLastSynch.setText(getLatest().getTanggal() + " " + getLatest().getWaktu());
-    }
 
-    private Riwayat getLatest() {
-        List<Riwayat> riwayats = new ArrayList<>();
-        riwayats.addAll(realm.copyFromRealm(realm.where(Riwayat.class).findAllSorted("unixTimeStamp", Sort.DESCENDING)));
-        if (!riwayats.isEmpty()) {
-            return riwayats.get(0);
-        } else {
-            return null;
-        }
-    }
 
-    private void onSyncButtonClicked() {
-        String unixTimeStamp = Formater.getTimeStamp();
-        String date          = Formater.unixTimeToDateString(unixTimeStamp);
-        String time          = Formater.unixTimeToTimeString(unixTimeStamp);
 
-        Riwayat riwayat = new Riwayat(Long.parseLong(unixTimeStamp), date, time);
-
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        realm.insert(riwayat);
-        realm.commitTransaction();
-
-        EventBusProvider.getInstance().post(riwayat);
-        setLastSyncInfo();
-    }
 }

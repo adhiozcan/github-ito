@@ -90,6 +90,7 @@ public class ImageUtils {
         bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY, stream);
         byte[] byteFormat = stream.toByteArray();
         Log.d(TAG, "\t|---Final Size " + byteFormat.length / 1024 + "kb");
+        resetCompressionQuality();
         return byteFormat;
     }
 

@@ -6,7 +6,16 @@
     android:layout_marginBottom="2dp"
     android:layout_marginTop="2dp"
     android:background="@drawable/adapter_item_background"
+    android:gravity="center_vertical"
     android:orientation="horizontal">
+
+    <ProgressBar
+        android:id="@+id/loading_sync_up"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginLeft="@dimen/space_16dp"
+        android:layout_marginRight="@dimen/space_16dp"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="0dp"

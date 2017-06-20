@@ -14,4 +14,9 @@ public class Constants {
     // for network purpose
     public static final String SOCKET_FAILURE         = "app.ito.socket_failure";
     public static final String SOCKET_FAILURE_PARSING = "app.ito.socket_failure_parsing";
+
+    // for synchronize purpose
+    public static final String SINKRONISASI_SUKSES  = "Sukses";
+    public static final String SINKRONISASI_PROSES  = "Proses";
+    public static final String SINKRONISASI_PENDING = "Pending";
 }

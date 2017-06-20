@@ -108,6 +108,8 @@ public class Param {
                 "\"gagalputus\": \"" + tusbung.getGagalPutus() + "\",\n" +
                 "\"nomorwo\": \"" + tusbung.getNoWo() + "\",\n" +
                 "\"kodepetugas\": \"" + tusbung.getKodePetugas() + "\",\n" +
+                "\"latitude\": \"" + tusbung.getLatitude() + "\",\n" +
+                "\"longitude\": \"" + tusbung.getLongitude() + "\",\n" +
                 "\"notul\": \"" + tusbung.getNoTul() + "\",\n" +
                 "\"idunitup\": \"" + tusbung.getUnitUpId() + "\",\n" +
                 "\"status\": \"" + tusbung.getStatus() + "\"\n" +

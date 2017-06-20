@@ -5,13 +5,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.List;
 
 import id.net.iconpln.apps.ito.R;
+import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.Tusbung;
-import id.net.iconpln.apps.ito.model.WorkOrder;
 
 /**
  * Created by Ozcan on 11/04/2017.
@@ -39,6 +40,17 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
         holder.txtPelangganNama.setText(tusbung.getNamaPelanggan());
         holder.txtPelangganId.setText(tusbung.getKodePetugas());
         holder.txtPelangganAlamat.setText(tusbung.getAlamat());
+
+        String status = tusbung.getStatusSinkron();
+        if (status != null) {
+            if (status.equals(Constants.SINKRONISASI_PROSES)) {
+                holder.progressBar.setVisibility(View.VISIBLE);
+                holder.txtStatusSynch.setText("Proses");
+            } else {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.txtStatusSynch.setText("Pending");
+            }
+        }
     }
 
     @Override
@@ -47,13 +59,15 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView txtPelangganId;
-        private TextView txtPelangganNama;
-        private TextView txtPelangganAlamat;
-        private TextView txtStatusSynch;
+        private ProgressBar progressBar;
+        private TextView    txtPelangganId;
+        private TextView    txtPelangganNama;
+        private TextView    txtPelangganAlamat;
+        private TextView    txtStatusSynch;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            progressBar = (ProgressBar) itemView.findViewById(R.id.loading_sync_up);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);

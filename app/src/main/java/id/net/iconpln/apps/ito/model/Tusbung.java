@@ -24,6 +24,14 @@ public class Tusbung extends RealmObject {
     private String namaPetugas;
     private String gagalPutus;
     private String status;
+    private String latitude;
+    private String longitude;
+    private String photoPath1;
+    private String photoPath2;
+    private String photoPath3;
+    private String photoPath4;
+
+    private String statusSinkron;
 
     public Tusbung() {
     }
@@ -164,10 +172,67 @@ public class Tusbung extends RealmObject {
         this.status = status;
     }
 
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getPhotoPath1() {
+        return photoPath1;
+    }
+
+    public void setPhotoPath1(String photoPath1) {
+        this.photoPath1 = photoPath1;
+    }
+
+    public String getPhotoPath2() {
+        return photoPath2;
+    }
+
+    public void setPhotoPath2(String photoPath2) {
+        this.photoPath2 = photoPath2;
+    }
+
+    public String getPhotoPath3() {
+        return photoPath3;
+    }
+
+    public void setPhotoPath3(String photoPath3) {
+        this.photoPath3 = photoPath3;
+    }
+
+    public String getPhotoPath4() {
+        return photoPath4;
+    }
+
+    public void setPhotoPath4(String photoPath4) {
+        this.photoPath4 = photoPath4;
+    }
+
+    public String getStatusSinkron() {
+        return statusSinkron;
+    }
+
+    public void setStatusSinkron(String statusSinkron) {
+        this.statusSinkron = statusSinkron;
+    }
+
     @Override
     public String toString() {
         return "Tusbung{" +
                 "noTul='" + noTul + '\'' +
+                ", noWo='" + noWo + '\'' +
                 ", pelangganId='" + pelangganId + '\'' +
                 ", namaPelanggan='" + namaPelanggan + '\'' +
                 ", alamat='" + alamat + '\'' +
@@ -183,6 +248,13 @@ public class Tusbung extends RealmObject {
                 ", namaPetugas='" + namaPetugas + '\'' +
                 ", gagalPutus='" + gagalPutus + '\'' +
                 ", status='" + status + '\'' +
+                ", latitude='" + latitude + '\'' +
+                ", longitude='" + longitude + '\'' +
+                ", photoPath1='" + photoPath1 + '\'' +
+                ", photoPath2='" + photoPath2 + '\'' +
+                ", photoPath3='" + photoPath3 + '\'' +
+                ", photoPath4='" + photoPath4 + '\'' +
+                ", statusSinkron='" + statusSinkron + '\'' +
                 '}';
     }
 }

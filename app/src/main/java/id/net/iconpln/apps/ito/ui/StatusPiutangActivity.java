@@ -154,6 +154,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
             btnTusbung.setVisibility(View.VISIBLE);
             if (workOrder.isSelesai()) {
                 btnTusbung.setText("Selesai Dikerjakan");
+                btnTusbung.setBackgroundResource(R.color.material_green);
                 btnTusbung.setEnabled(false);
             } else {
                 btnTusbung.setText("Tusbung");

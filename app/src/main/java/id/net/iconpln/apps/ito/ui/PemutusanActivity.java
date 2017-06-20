@@ -2,13 +2,19 @@ package id.net.iconpln.apps.ito.ui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +26,11 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -35,6 +46,7 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.RefreshEvent;
@@ -58,43 +70,53 @@ import io.realm.Realm;
  * Created by Ozcan on 30/03/2017.
  */
 
-public class PemutusanActivity extends AppCompatActivity implements SignalListener {
+public class PemutusanActivity extends AppCompatActivity
+        implements SignalListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
+
     private static final String TAG = PemutusanActivity.class.getSimpleName();
 
-    public static final int CAMERA_REQUEST_CODE_1 = 101;
-    public static final int CAMERA_REQUEST_CODE_2 = 102;
-    public static final int CAMERA_REQUEST_CODE_3 = 103;
-    public static final int CAMERA_REQUEST_CODE_4 = 104;
+    private static final int DO_OFFLINE            = 0;
+    private static final int DO_ONLINE             = 1;
+    public static final  int CAMERA_REQUEST_CODE_1 = 101;
+    public static final  int CAMERA_REQUEST_CODE_2 = 102;
+    public static final  int CAMERA_REQUEST_CODE_3 = 103;
+    public static final  int CAMERA_REQUEST_CODE_4 = 104;
 
     private static int REQUEST_TAKE_PHOTO = 0;
 
-    private Spinner spnStatus,
-            spnKeterangan;
+    private Spinner spnStatus;
+    private Spinner spnKeterangan;
 
-    private TextView txtNoTul,
-            txtIdPelanggan,
-            txtNama,
-            txtAlamat,
-            txtTanggal;
+    private TextView txtNoTul;
+    private TextView txtIdPelanggan;
+    private TextView txtNama;
+    private TextView txtAlamat;
+    private TextView txtTanggal;
 
-    private EditText edTanggalPutus,
-            edLwbp,
-            edWbp,
-            edKvarh;
+    private EditText edTanggalPutus;
+    private EditText edLwbp;
+    private EditText edWbp;
+    private EditText edKvarh;
 
-    private ImageView imgFoto1,
-            imgFoto2,
-            imgFoto3,
-            imgFoto4;
+    private ImageView imgFoto1;
+    private ImageView imgFoto2;
+    private ImageView imgFoto3;
+    private ImageView imgFoto4;
 
-    private String petugasId,
-            petugasUnitUpId;
+    private GoogleApiClient mGoogleClient;
+    private LocationRequest mLocationRequest;
 
     private String mCurrentPhotoPath;
     private Uri[] mPhotoPath = new Uri[4];
 
     private List<FlagTusbung> mFlagTusbung;
     private WorkOrder         mWo;
+
+    private int mStatusSignal = ConnectivityUtils.SEARCHING;
+
+    private Tusbung tusbung = new Tusbung();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,15 +125,20 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
         CommonUtils.installToolbar(this);
         initView();
 
-        // -- listeing signal strength
+        // -- listening signal strength
         if (ConnectivityUtils.isHaveInternetConnection(this)) {
             ConnectivityUtils.register(this, this);
         }
 
-        mFlagTusbung = new ArrayList<>();
-        mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
+        mGoogleClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         List<String> keteranganList = new ArrayList<>();
+        mFlagTusbung = new ArrayList<>();
+        mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
         for (FlagTusbung flagTusbung : mFlagTusbung) {
             String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
             keteranganList.add(keterangan);
@@ -181,16 +208,18 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+
             // Create the File where the photo should go
             File photoFile = null;
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
                 Log.e(TAG, "dispatchTakePictureIntent: ", ex);
-                // Error occurred while creating the File
             }
+
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = Uri.fromFile(photoFile);
@@ -268,38 +297,37 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
     protected void onStart() {
         super.onStart();
         EventBusProvider.getInstance().register(this);
+        mGoogleClient.connect();
     }
 
     @Override
     protected void onStop() {
+        mGoogleClient.disconnect();
         super.onStop();
         EventBusProvider.getInstance().unregister(this);
         ConnectivityUtils.unregister(this);
     }
 
-    private void doPemutusan() {
+    private void doPemutusan(int typeWork) {
         SmileyLoading.show(this, "Sedang memproses tusbung");
 
-        String noTul       = txtNoTul.getText().toString();
-        String noTul601    = mWo.getNoTul601();
-        String noWo        = mWo.getNoWo();
-        String idpel       = mWo.getPelangganId();
-        String nama        = mWo.getNama();
-        String alamat      = mWo.getAlamat();
-        String unitUpId    = mWo.getUnitUp();
-        String kodePetugas = mWo.getKodePetugas();
-        //String tanggalPutus = edTanggalPutus.getText().toString();
-        //String tanggalPutus = "20170413";
-        String selectedVal = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
-        String lwbp        = "2000018990";
-        String wbp         = null;
-        String kvarh       = null;
-        //String lwbp          = edLwbp.getText().toString();
-        //String wbp           = edWbp.getText().toString();
-        //String kvarh         = edKvarh.getText().toString();
+        String noTul        = txtNoTul.getText().toString();
+        String noTul601     = mWo.getNoTul601();
+        String noWo         = mWo.getNoWo();
+        String idpel        = mWo.getPelangganId();
+        String nama         = mWo.getNama();
+        String alamat       = mWo.getAlamat();
+        String unitUpId     = mWo.getUnitUp();
+        String kodePetugas  = mWo.getKodePetugas();
+        String selectedVal  = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
+        String lwbp         = edLwbp.getText().toString();
+        String wbp          = edWbp.getText().toString();
+        String kvarh        = edKvarh.getText().toString();
         String isGagalPutus = "0";
         String status       = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
         String namaPetugas  = mWo.getNama();
+        String latitude     = "";
+        String longitude    = "";
         String tanggalPutus = "";
         if (ItoApplication.pingDate.isEmpty()) {
             tanggalPutus = edTanggalPutus.getText().toString();
@@ -316,7 +344,6 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
             }
         }
 
-        Tusbung tusbung = new Tusbung();
         tusbung.setKodePetugas(kodePetugas);
         tusbung.setNamaPetugas(namaPetugas);
         tusbung.setPelangganId(idpel);
@@ -333,30 +360,62 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
         tusbung.setStatus(status);
         tusbung.setJumlahFoto(String.valueOf(jumlahFoto));
 
-        int part = 1;
-        for (int i = 0; i < jumlahFoto; i++) {
-            tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
-            tusbung.setPart(String.valueOf(part));
-            AppConfig.TUSBUNG = tusbung;
-            SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
-            part++;
+        if (fotoTobePosted[0] != null) tusbung.setPhotoPath1(fotoTobePosted[0].toString());
+        if (fotoTobePosted[1] != null) tusbung.setPhotoPath2(fotoTobePosted[1].toString());
+        if (fotoTobePosted[2] != null) tusbung.setPhotoPath3(fotoTobePosted[2].toString());
+        if (fotoTobePosted[3] != null) tusbung.setPhotoPath4(fotoTobePosted[3].toString());
+
+        if (typeWork == DO_ONLINE) {
+            Log.d(TAG, "[DO ONLINE : Simpan di penyimpanan server]");
+            int part = 1;
+            for (int i = 0; i < jumlahFoto; i++) {
+                tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
+                tusbung.setPart(String.valueOf(part));
+
+                AppConfig.TUSBUNG = tusbung;
+                SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
+                part++;
+            }
+        }
+
+        // mark wo to be pending and will be uploaded later
+        if (typeWork == DO_OFFLINE) {
+            Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
+
+            Realm realm = Realm.getDefaultInstance();
+            if (!realm.isInTransaction())
+                realm.beginTransaction();
+            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(false);
+            realm.insert(tusbung);
+            if (realm.isInTransaction())
+                realm.commitTransaction();
+
+            SmileyLoading.close();
+
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "[Offline Mode] Tusbung tersimpan di local.",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                @Override
+                public void onDismissed(Snackbar transientBottomBar, int event) {
+                    EventBusProvider.getInstance().post(new RefreshEvent());
+                    finish();
+                }
+            });
+            snackbar.show();
         }
 
         // mark mWo has done.
         Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
+        if (!realm.isInTransaction())
+            realm.beginTransaction();
         realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setSelesai(true);
         realm.insert(tusbung);
-        realm.commitTransaction();
+        if (realm.isInTransaction())
+            realm.commitTransaction();
 
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
-        Log.d(TAG, "doPemutusan: Param No Tul\t" + tusbung.getNoTul());
-        Log.d(TAG, "doPemutusan: Param Id Unit UP\t" + tusbung.getUnitUpId());
-        Log.d(TAG, "doPemutusan: Param Tanggal \t" + tusbung.getTanggalPemutusan());
-        Log.d(TAG, "doPemutusan: Param LWBP\t" + tusbung.getStandLWBP());
-        Log.d(TAG, "doPemutusan: Param WBP\t" + tusbung.getStandWBP());
-        Log.d(TAG, "doPemutusan: Param KVARH\t" + tusbung.getStandKVARH());
-        Log.d(TAG, "doPemutusan: Param Kode Petugas\t" + tusbung.getKodePetugas());
         Log.d(TAG, "doPemutusan: " + tusbung.toString());
     }
 
@@ -364,8 +423,14 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
         ItoDialog.simpleAlert(this, "Apakah Anda yakin akan memproses tusbung Work Order ini?", new ItoDialog.Action() {
             @Override
             public void onYesButtonClicked() {
-                if (cekFieldContent())
-                    doPemutusan();
+                if (cekFieldContent()) {
+                    if (mStatusSignal == ConnectivityUtils.SIGNAL_WEAK ||
+                            mStatusSignal == ConnectivityUtils.SIGNAL_STRONG) {
+                        doPemutusan(DO_ONLINE);
+                    } else {
+                        doPemutusan(DO_OFFLINE);
+                    }
+                }
             }
 
             @Override
@@ -457,30 +522,33 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
                     "Tusbung berhasil dikerjakan dan terunggah ke server",
                     Snackbar.LENGTH_LONG);
             snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_light_green));
+            snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                @Override
+                public void onDismissed(Snackbar transientBottomBar, int event) {
+                    EventBusProvider.getInstance().post(new RefreshEvent());
+                    finish();
+                }
+            });
             snackbar.show();
         } else {
             Realm realm = Realm.getDefaultInstance();
             realm.beginTransaction();
             realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(false);
+            realm.commitTransaction();
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
                     StringUtils.normalize(progressEvent.message),
                     Snackbar.LENGTH_LONG);
             snackbar.getView().setBackgroundColor(ContextCompat.getColor(PemutusanActivity.this, R.color.material_pink));
+            snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                @Override
+                public void onDismissed(Snackbar transientBottomBar, int event) {
+                    EventBusProvider.getInstance().post(new RefreshEvent());
+                    finish();
+                }
+            });
             snackbar.show();
         }
-
-        new CountDownTimer(3_500, 1_000) {
-            @Override
-            public void onTick(long l) {
-            }
-
-            @Override
-            public void onFinish() {
-                EventBusProvider.getInstance().post(new RefreshEvent());
-                finish();
-            }
-        }.start();
     }
 
     private void updateTanggalDisplay(String date) {
@@ -494,6 +562,7 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
     @Override
     public void onReceived(int strength) {
         System.out.println(strength);
+        mStatusSignal = strength;
         switch (strength) {
             case ConnectivityUtils.DISCONNECT:
                 updateSignalColorBar(R.color.material_pink);
@@ -508,5 +577,42 @@ public class PemutusanActivity extends AppCompatActivity implements SignalListen
                 updateSignalColorBar(R.color.colorGrey);
                 break;
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        tusbung.setLatitude(String.valueOf(location.getLatitude()));
+        tusbung.setLongitude(String.valueOf(location.getLongitude()));
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        Log.d(TAG, "onStatusChanged: GoogleApiClient connection has been changed");
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(10);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(TAG, "onConnectionSuspended: GoogleApiClient connection has been suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed: GoogleApiClient connection has failed");
     }
 }
