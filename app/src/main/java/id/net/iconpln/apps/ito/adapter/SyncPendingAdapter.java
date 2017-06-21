@@ -36,6 +36,7 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Tusbung tusbung = tusbungList.get(position);
+        holder.txtNotul.setText("VI-1 | " + tusbung.getNoTul());
         holder.txtPelangganId.setText(tusbung.getPelangganId());
         holder.txtPelangganNama.setText(tusbung.getNamaPelanggan());
         holder.txtPelangganId.setText(tusbung.getKodePetugas());
@@ -43,12 +44,20 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
 
         String status = tusbung.getStatusSinkron();
         if (status != null) {
-            if (status.equals(Constants.SINKRONISASI_PROSES)) {
+            if (status.equals(Constants.SINKRONISASI_SUKSES)) {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.txtStatusSynch.setText("Sukses");
+            } else if (status.equals(Constants.SINKRONISASI_PROSES)) {
                 holder.progressBar.setVisibility(View.VISIBLE);
                 holder.txtStatusSynch.setText("Proses");
-            } else {
+            } else if (status.equals(Constants.SINKRONISASI_PENDING)) {
                 holder.progressBar.setVisibility(View.GONE);
                 holder.txtStatusSynch.setText("Pending");
+            } else {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.txtStatusSynch.setText("Gagal");
+                holder.txtKeterangan.setVisibility(View.VISIBLE);
+                holder.txtKeterangan.setText(tusbung.getKeteranganSinkron());
             }
         }
     }
@@ -60,19 +69,23 @@ public class SyncPendingAdapter extends RecyclerView.Adapter<SyncPendingAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private ProgressBar progressBar;
+        private TextView    txtNotul;
         private TextView    txtPelangganId;
         private TextView    txtPelangganNama;
         private TextView    txtPelangganAlamat;
         private TextView    txtStatusSynch;
+        private TextView    txtKeterangan;
 
         public ViewHolder(View itemView) {
             super(itemView);
             progressBar = (ProgressBar) itemView.findViewById(R.id.loading_sync_up);
+            txtNotul = (TextView) itemView.findViewById(R.id.nomor_tul);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganAlamat = (TextView) itemView.findViewById(R.id.pelanggan_alamat);
             txtStatusSynch = (TextView) itemView.findViewById(R.id.status_sinkronisasi_upload);
+            txtKeterangan = (TextView) itemView.findViewById(R.id.keterangan_sinkronisasi);
         }
     }
 }

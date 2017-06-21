@@ -73,7 +73,7 @@ class SocketListener extends WebSocketListener {
             MessageEvent message = new MessageEvent();
             message.response_code = Constants.SOCKET_FAILURE;
             new MessageDispatcher().dispatch(null, message);
-            EventBusProvider.getInstance().post(new ErrorMessageEvent("Timeout! Periksa jaringan Anda."));
+            EventBusProvider.getInstance().post(new ErrorMessageEvent("Timeout! Gagal menghubungi server. Sementara itu, periksa jaringan Anda."));
         }
     }
 

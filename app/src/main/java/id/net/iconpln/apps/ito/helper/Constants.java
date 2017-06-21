@@ -18,5 +18,6 @@ public class Constants {
     // for synchronize purpose
     public static final String SINKRONISASI_SUKSES  = "Sukses";
     public static final String SINKRONISASI_PROSES  = "Proses";
+    public static final String SINKRONISASI_GAGAL   = "Gagal";
     public static final String SINKRONISASI_PENDING = "Pending";
 }

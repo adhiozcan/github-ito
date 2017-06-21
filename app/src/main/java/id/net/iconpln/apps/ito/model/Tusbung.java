@@ -32,6 +32,7 @@ public class Tusbung extends RealmObject {
     private String photoPath4;
 
     private String statusSinkron;
+    private String keteranganSinkron;
 
     public Tusbung() {
     }
@@ -228,6 +229,14 @@ public class Tusbung extends RealmObject {
         this.statusSinkron = statusSinkron;
     }
 
+    public String getKeteranganSinkron() {
+        return keteranganSinkron;
+    }
+
+    public void setKeteranganSinkron(String keteranganSinkron) {
+        this.keteranganSinkron = keteranganSinkron;
+    }
+
     @Override
     public String toString() {
         return "Tusbung{" +
@@ -255,6 +264,7 @@ public class Tusbung extends RealmObject {
                 ", photoPath3='" + photoPath3 + '\'' +
                 ", photoPath4='" + photoPath4 + '\'' +
                 ", statusSinkron='" + statusSinkron + '\'' +
+                ", keteranganSinkron='" + keteranganSinkron + '\'' +
                 '}';
     }
 }

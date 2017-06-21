@@ -10,8 +10,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -23,6 +27,8 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.adapter.SyncPendingAdapter;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.helper.Constants;
+import id.net.iconpln.apps.ito.helper.JunkTrashDialog;
 import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.RefreshEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
@@ -34,7 +40,9 @@ import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
+import io.realm.Case;
 import io.realm.Realm;
+import io.realm.RealmObject;
 
 /**
  * Created by Ozcan on 11/04/2017.
@@ -47,14 +55,13 @@ public class SynchPendingFragment extends Fragment {
     private RecyclerView       mRecyclerView;
     private List<Tusbung>      mTusbungList;
 
-    private final int MAX_POOL_UPLOAD  = 3;
-    private       int BEGIN_POSITION   = 0;
-    private       int CURRENT_POSITION = 0;
-    private       int END_POSITION     = 0;
-
     private View btnSyncStart;
 
-    private String in_progress_wo = "";
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Nullable
     @Override
@@ -81,32 +88,14 @@ public class SynchPendingFragment extends Fragment {
     }
 
     private void onButtonStartClicked() {
-        int totalData = mTusbungList.size();
-        if (totalData > MAX_POOL_UPLOAD) {
-            BEGIN_POSITION = 0;
-            CURRENT_POSITION = 0;
-            END_POSITION = MAX_POOL_UPLOAD;
-
-            upload();
-        } else {
-            //TODO buat algoritma jika total data <= MAX_POOL_UPLOAD
-            BEGIN_POSITION = 0;
-            CURRENT_POSITION = 0;
-            END_POSITION = totalData;
-
-            upload();
+        for (int i = 0; i < mTusbungList.size(); i++) {
+            if (mTusbungList.get(i).getStatusSinkron().equals(Constants.SINKRONISASI_PENDING))
+                upload(mTusbungList.get(i));
         }
     }
 
-    private void upload() {
-        Log.d(TAG, "upload: \n" +
-                "Begin Position : " + BEGIN_POSITION + "\n" +
-                "End Position : " + END_POSITION + "\n" +
-                "Current Position : " + CURRENT_POSITION);
-
-        Tusbung tusbung = mTusbungList.get(CURRENT_POSITION);
-        tusbung.setStatusSinkron("Proses");
-        in_progress_wo = tusbung.getNoWo();
+    private void upload(Tusbung tusbung) {
+        tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
         mAdapter.notifyDataSetChanged();
 
         if (tusbung.getPhotoPath1() != null) {
@@ -157,36 +146,29 @@ public class SynchPendingFragment extends Fragment {
         Log.d(TAG, "---------------------------------------------");
         Log.d(TAG, progressEvent.toString());
 
-        SmileyLoading.close();
-        if (progressEvent.kode == "1") {
-            Realm realm = Realm.getDefaultInstance();
+        String statusSinkron = progressEvent.isSuccess() ? Constants.SINKRONISASI_SUKSES : Constants.SINKRONISASI_GAGAL;
+
+        if (statusSinkron.equals(Constants.SINKRONISASI_GAGAL)) {
+        }
+
+        Realm realm = Realm.getDefaultInstance();
+        if (!realm.isInTransaction())
             realm.beginTransaction();
-            realm.where(Tusbung.class).equalTo("noWo", in_progress_wo).findFirst().deleteFromRealm();
+        realm.where(Tusbung.class)
+                .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                .findFirst()
+                .setStatusSinkron(statusSinkron);
+        realm.where(Tusbung.class)
+                .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                .findFirst()
+                .setKeteranganSinkron(StringUtils.normalize(progressEvent.message));
+        if (realm.isInTransaction())
             realm.commitTransaction();
 
-            mTusbungList.clear();
-            mTusbungList.addAll(getDataLocal());
-            mAdapter.notifyDataSetChanged();
-        } else {
-            //TODO ganti label
-        }
-
-        CURRENT_POSITION++;
-        if (CURRENT_POSITION == END_POSITION) {
-            BEGIN_POSITION = END_POSITION;
-            if (mTusbungList.size() - END_POSITION > MAX_POOL_UPLOAD) {
-                END_POSITION = END_POSITION + MAX_POOL_UPLOAD;
-            } else {
-                END_POSITION = mTusbungList.size() - END_POSITION;
-            }
-        }
-
-        upload();
-
-        Log.d(TAG, "onTusbungRespond: \n" +
-                "Begin Position     : " + BEGIN_POSITION + "\n" +
-                "Current Position   : " + CURRENT_POSITION + "\n" +
-                "End Position       : " + END_POSITION);
+        mTusbungList.clear();
+        mTusbungList.addAll(getDataLocal());
+        mAdapter.notifyDataSetChanged();
+        SmileyLoading.close();
     }
 
     @Override
@@ -199,5 +181,71 @@ public class SynchPendingFragment extends Fragment {
     public void onStop() {
         EventBusProvider.getInstance().unregister(this);
         super.onStop();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().getMenuInflater().inflate(R.menu.menu_synch, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_trash) {
+            ItoDialog.simpleAlert(getActivity(), "Peringatan",
+                    "Data yang dihapus tidak dapat dikembalikan lagi.",
+                    "Mengerti, Lanjutkan",
+                    "Batalkan",
+                    new ItoDialog.Action() {
+                        @Override
+                        public void onYesButtonClicked() {
+                            doHapusDataSinkronisasi();
+                        }
+
+                        @Override
+                        public void onNoButtonClicked() {
+                        }
+                    });
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void doHapusDataSinkronisasi() {
+        new JunkTrashDialog(new JunkTrashDialog.OnClickListener() {
+            @Override
+            public void onHapusClicked(int type) {
+                Realm realm = Realm.getDefaultInstance();
+                if (!realm.isInTransaction())
+                    realm.beginTransaction();
+                switch (type) {
+                    case JunkTrashDialog.OPT_PENDING:
+                        realm.where(Tusbung.class)
+                                .equalTo("statusSinkron", Constants.SINKRONISASI_PENDING)
+                                .findAll()
+                                .deleteAllFromRealm();
+                        break;
+                    case JunkTrashDialog.OPT_GAGAL:
+                        realm.where(Tusbung.class)
+                                .equalTo("statusSinkron", Constants.SINKRONISASI_GAGAL)
+                                .findAll()
+                                .deleteAllFromRealm();
+                        break;
+                    case JunkTrashDialog.OPT_ALL:
+                        realm.where(Tusbung.class)
+                                .equalTo("statusSinkron", Constants.SINKRONISASI_PENDING)
+                                .equalTo("statusSinkron", Constants.SINKRONISASI_GAGAL)
+                                .findAll()
+                                .deleteAllFromRealm();
+                        break;
+                }
+                if (realm.isInTransaction())
+                    realm.commitTransaction();
+
+                mTusbungList.clear();
+                mTusbungList.addAll(getDataLocal());
+                mAdapter.notifyDataSetChanged();
+            }
+        }).show(getFragmentManager(), "trash");
     }
 }

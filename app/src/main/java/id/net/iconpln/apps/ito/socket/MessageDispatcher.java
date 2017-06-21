@@ -37,6 +37,7 @@ public class MessageDispatcher {
      */
     private boolean isFailureConnection(String responseCode) {
         if (responseCode != null) {
+            Log.d(TAG, "Response Code Monitor : " + responseCode);
             if (responseCode.equals(Constants.SOCKET_FAILURE)) {
                 eventBus.post(produceErrorMessageEvent("Tidak dapat menghubungi server"));
                 return true;

@@ -45,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/space_12dp"
-            android:text="Mengunduh data"
+            android:text="Memperbarui data..."
             android:textColor="@android:color/white"/>
     </LinearLayout>
 
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_span="2"
                 android:layout_weight="1"
-                android:background="@drawable/mkeh"
+                android:background="@drawable/background_edittext"
                 android:gravity="center_vertical"
                 android:hint="Username"
                 android:inputType="text"
@@ -114,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/mkeh"
+                android:background="@drawable/background_edittext"
                 android:gravity="center_vertical"
                 android:hint="Password"
                 android:inputType="textPassword"

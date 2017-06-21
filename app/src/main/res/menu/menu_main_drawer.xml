@@ -24,16 +24,22 @@
             android:id="@+id/nav_monitoring"
             android:icon="@drawable/ic_drawer_monitoring"
             android:title="Monitoring"/>
+
         <item
-            android:id="@+id/nav_about_us"
-            android:icon="@drawable/ic_drawer_about"
-            android:title="Tentang Aplikasi"/>
-        <item
-            android:id="@+id/nav_help"
-            android:icon="@drawable/ic_drawer_help"
-            android:title="Help"/>
-        <item
-            android:id="@+id/nav_logout"
-            android:title="Logout"/>
+            android:title="Lainnya">
+            <menu>
+                <item
+                    android:id="@+id/nav_about_us"
+                    android:icon="@drawable/ic_drawer_about"
+                    android:title="Tentang Aplikasi"/>
+                <item
+                    android:id="@+id/nav_help"
+                    android:icon="@drawable/ic_drawer_help"
+                    android:title="Help"/>
+                <item
+                    android:id="@+id/nav_logout"
+                    android:title="Logout"/>
+            </menu>
+        </item>
     </group>
 </menu>

@@ -1,8 +1,12 @@
 package id.net.iconpln.apps.ito.ui;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -61,6 +66,7 @@ import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import id.net.iconpln.apps.ito.utility.LocationUtils;
 import id.net.iconpln.apps.ito.utility.SignalListener;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
@@ -72,8 +78,7 @@ import io.realm.Realm;
 
 public class PemutusanActivity extends AppCompatActivity
         implements SignalListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = PemutusanActivity.class.getSimpleName();
 
@@ -95,6 +100,7 @@ public class PemutusanActivity extends AppCompatActivity
     private TextView txtAlamat;
     private TextView txtTanggal;
 
+    private EditText edLokasi;
     private EditText edTanggalPutus;
     private EditText edLwbp;
     private EditText edWbp;
@@ -155,6 +161,7 @@ public class PemutusanActivity extends AppCompatActivity
         txtNama = (TextView) findViewById(R.id.pelanggan_nama);
         txtAlamat = (TextView) findViewById(R.id.pelanggan_alamat);
         txtTanggal = (TextView) findViewById(R.id.tanggal_tul);
+        edLokasi = (EditText) findViewById(R.id.lokasi);
         edTanggalPutus = (EditText) findViewById(R.id.tanggal_putus);
         edLwbp = (EditText) findViewById(R.id.lwbp);
         edWbp = (EditText) findViewById(R.id.wbp);
@@ -163,6 +170,28 @@ public class PemutusanActivity extends AppCompatActivity
         imgFoto2 = (ImageView) findViewById(R.id.foto_2);
         imgFoto3 = (ImageView) findViewById(R.id.foto_3);
         imgFoto4 = (ImageView) findViewById(R.id.foto_4);
+    }
+
+    protected void startLocationUpdates() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(15000);
+        mLocationRequest.setFastestInterval(5000);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "Enable Permissions", Toast.LENGTH_LONG).show();
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleClient, mLocationRequest, new com.google.android.gms.location.LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        edLokasi.setText("Lokasi telah ditemukan");
+                        tusbung.setLatitude(String.valueOf(location.getLatitude()));
+                        tusbung.setLongitude(String.valueOf(location.getLongitude()));
+                    }
+                });
+
+
     }
 
     /**
@@ -326,8 +355,6 @@ public class PemutusanActivity extends AppCompatActivity
         String isGagalPutus = "0";
         String status       = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
         String namaPetugas  = mWo.getNama();
-        String latitude     = "";
-        String longitude    = "";
         String tanggalPutus = "";
         if (ItoApplication.pingDate.isEmpty()) {
             tanggalPutus = edTanggalPutus.getText().toString();
@@ -365,8 +392,10 @@ public class PemutusanActivity extends AppCompatActivity
         if (fotoTobePosted[2] != null) tusbung.setPhotoPath3(fotoTobePosted[2].toString());
         if (fotoTobePosted[3] != null) tusbung.setPhotoPath4(fotoTobePosted[3].toString());
 
+        System.out.println(tusbung.toString());
         if (typeWork == DO_ONLINE) {
             Log.d(TAG, "[DO ONLINE : Simpan di penyimpanan server]");
+            tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
             int part = 1;
             for (int i = 0; i < jumlahFoto; i++) {
                 tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
@@ -381,6 +410,7 @@ public class PemutusanActivity extends AppCompatActivity
         // mark wo to be pending and will be uploaded later
         if (typeWork == DO_OFFLINE) {
             Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
+            tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
 
             Realm realm = Realm.getDefaultInstance();
             if (!realm.isInTransaction())
@@ -411,7 +441,6 @@ public class PemutusanActivity extends AppCompatActivity
         if (!realm.isInTransaction())
             realm.beginTransaction();
         realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setSelesai(true);
-        realm.insert(tusbung);
         if (realm.isInTransaction())
             realm.commitTransaction();
 
@@ -443,6 +472,16 @@ public class PemutusanActivity extends AppCompatActivity
     private boolean cekFieldContent() {
         if (edLwbp.getText().toString().trim().length() == 0) {
             Toast.makeText(this, "No. LWBP Wajib diisi", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (edTanggalPutus.getText().toString().trim().equals("Menghubungi server")) {
+            Toast.makeText(this, "Tanggal harus tersedia dari server", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!edLokasi.getText().toString().trim().equals("Lokasi telah ditemukan")) {
+            Toast.makeText(this, "Sistem belum menemukan lokasi Anda", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -515,7 +554,14 @@ public class PemutusanActivity extends AppCompatActivity
             // mark mWo has done.
             Realm realm = Realm.getDefaultInstance();
             realm.beginTransaction();
-            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(true);
+            realm.where(WorkOrder.class)
+                    .equalTo("noWo", mWo.getNoWo())
+                    .findFirst()
+                    .setUploaded(true);
+            realm.where(WorkOrder.class)
+                    .equalTo("noWo", mWo.getNoWo())
+                    .findFirst()
+                    .setStatusSinkronisasi(Constants.SINKRONISASI_SUKSES);
             realm.commitTransaction();
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
@@ -533,7 +579,16 @@ public class PemutusanActivity extends AppCompatActivity
         } else {
             Realm realm = Realm.getDefaultInstance();
             realm.beginTransaction();
-            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(false);
+            realm.where(WorkOrder.class)
+                    .equalTo("noWo", mWo.getNoWo())
+                    .findFirst()
+                    .setUploaded(false);
+            realm.where(WorkOrder.class)
+                    .equalTo("noWo", mWo.getNoWo())
+                    .findFirst()
+                    .setStatusSinkronisasi(Constants.SINKRONISASI_GAGAL);
+            tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
+            realm.insert(tusbung);
             realm.commitTransaction();
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
@@ -580,30 +635,13 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        tusbung.setLatitude(String.valueOf(location.getLatitude()));
-        tusbung.setLongitude(String.valueOf(location.getLongitude()));
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.d(TAG, "onStatusChanged: GoogleApiClient connection has been changed");
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
-    }
-
-    @Override
     public void onConnected(@Nullable Bundle bundle) {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(10);
+        Log.d(TAG, "onConnected: GoogleApiClient connection has connected");
+
+        startLocationUpdates();
     }
 
     @Override

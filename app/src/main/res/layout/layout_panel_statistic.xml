@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:id="@+id/panel_statistic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:tag="0"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_belum_putus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_yellow"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Belum Putus Belum Lunas"
+                    android:textSize="@dimen/text_size_14sp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="0.2dip"
+                android:layout_marginRight="0.2dip"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_belum_putus_sudah_lunas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_pink"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Belum Putus Sudah Lunas"
+                    android:textSize="@dimen/text_size_14sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_sudah_putus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_green"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Sudah Putus Belum Lunas"
+                    android:textSize="@dimen/text_size_14sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0.2dip"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_sudah_putus_sudah_lunas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_blue"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Sudah Putus Sudah Lunas"
+                    android:textSize="@dimen/text_size_14sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="0.2dip"
+                android:layout_marginRight="0.2dip"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_sambung"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_light_green"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Sambung"
+                    android:textSize="@dimen/text_size_14sp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_belum_bongkar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_amber"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Belum Bongkar"
+                    android:textSize="@dimen/text_size_14sp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0.2dip"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:gravity="center|top"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+
+                <TextView
+                    android:id="@+id/value_bongkar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/material_purple"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6dp"
+                    android:gravity="center"
+                    android:text="Bongkar"
+                    android:textSize="@dimen/text_size_14sp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/space_8dp">
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</merge>

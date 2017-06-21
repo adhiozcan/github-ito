@@ -77,10 +77,61 @@ public class WorkOrder extends RealmObject implements Parcelable {
 
     private boolean isSelesai;
     private boolean isUploaded;
+    private String  statusSinkronisasi;
 
     public WorkOrder() {
     }
 
+
+    protected WorkOrder(Parcel in) {
+        noWo = in.readString();
+        pelangganId = in.readString();
+        nama = in.readString();
+        tanggalWo = in.readString();
+        tanggalPutus = in.readString();
+        tanggalPelunasan = in.readString();
+        alamat = in.readString();
+        tarif = in.readString();
+        daya = in.readString();
+        noTul601 = in.readString();
+        noTul = in.readString();
+        tagihan601 = in.readString();
+        unitUpi = in.readString();
+        unitUp = in.readString();
+        unitAp = in.readString();
+        noGardu = in.readString();
+        noTiang = in.readString();
+        kddk = in.readString();
+        rbm = in.readString();
+        statusPiutang = in.readString();
+        rpTotal = in.readString();
+        jumlahRpTag = in.readString();
+        jumlahRbpk = in.readString();
+        jumlahLembar = in.readString();
+        total = in.readString();
+        koordinatX = in.readString();
+        koordinatY = in.readString();
+        kodeVendor = in.readString();
+        expired = in.readString();
+        kodePetugas = in.readString();
+        flag = in.readString();
+        jumlahData = in.readString();
+        isSelesai = in.readByte() != 0;
+        isUploaded = in.readByte() != 0;
+        statusSinkronisasi = in.readString();
+    }
+
+    public static final Creator<WorkOrder> CREATOR = new Creator<WorkOrder>() {
+        @Override
+        public WorkOrder createFromParcel(Parcel in) {
+            return new WorkOrder(in);
+        }
+
+        @Override
+        public WorkOrder[] newArray(int size) {
+            return new WorkOrder[size];
+        }
+    };
 
     public String getJumlahData() {
         return jumlahData;
@@ -358,44 +409,12 @@ public class WorkOrder extends RealmObject implements Parcelable {
         isUploaded = uploaded;
     }
 
-    @Override
-    public String toString() {
-        return "WorkOrder{" +
-                "noWo='" + noWo + '\'' +
-                ", pelangganId='" + pelangganId + '\'' +
-                ", nama='" + nama + '\'' +
-                ", tanggalWo='" + tanggalWo + '\'' +
-                ", tanggalPutus='" + tanggalPutus + '\'' +
-                ", tanggalPelunasan='" + tanggalPelunasan + '\'' +
-                ", alamat='" + alamat + '\'' +
-                ", tarif='" + tarif + '\'' +
-                ", daya='" + daya + '\'' +
-                ", noTul601='" + noTul601 + '\'' +
-                ", noTul='" + noTul + '\'' +
-                ", tagihan601='" + tagihan601 + '\'' +
-                ", unitUpi='" + unitUpi + '\'' +
-                ", unitUp='" + unitUp + '\'' +
-                ", unitAp='" + unitAp + '\'' +
-                ", noGardu='" + noGardu + '\'' +
-                ", noTiang='" + noTiang + '\'' +
-                ", kddk='" + kddk + '\'' +
-                ", rbm='" + rbm + '\'' +
-                ", statusPiutang='" + statusPiutang + '\'' +
-                ", rpTotal='" + rpTotal + '\'' +
-                ", jumlahRpTag='" + jumlahRpTag + '\'' +
-                ", jumlahRbpk='" + jumlahRbpk + '\'' +
-                ", jumlahLembar='" + jumlahLembar + '\'' +
-                ", total='" + total + '\'' +
-                ", koordinatX='" + koordinatX + '\'' +
-                ", koordinatY='" + koordinatY + '\'' +
-                ", kodeVendor='" + kodeVendor + '\'' +
-                ", expired='" + expired + '\'' +
-                ", kodePetugas='" + kodePetugas + '\'' +
-                ", flag='" + flag + '\'' +
-                ", jumlahData='" + jumlahData + '\'' +
-                ", isSelesai=" + isSelesai +
-                ", isUploaded=" + isUploaded +
-                '}';
+    public String getStatusSinkronisasi() {
+        return statusSinkronisasi;
+    }
+
+    public void setStatusSinkronisasi(String statusSinkronisasi) {
+        this.statusSinkronisasi = statusSinkronisasi;
     }
 
     public void formatPretty() {
@@ -446,5 +465,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
         parcel.writeString(flag);
         parcel.writeString(jumlahData);
         parcel.writeByte((byte) (isSelesai ? 1 : 0));
+        parcel.writeByte((byte) (isUploaded ? 1 : 0));
+        parcel.writeString(statusSinkronisasi);
     }
 }

@@ -11,12 +11,19 @@ public class ProgressUpdateEvent {
     public String kode;
     @SerializedName("pesan")
     public String message;
+    @SerializedName("nowo")
+    public String noWo;
+
+    public boolean isSuccess() {
+        return kode == "1" ? true : false;
+    }
 
     @Override
     public String toString() {
         return "ProgressUpdateEvent{" +
                 "kode='" + kode + '\'' +
                 ", message='" + message + '\'' +
+                ", noWo='" + noWo + '\'' +
                 '}';
     }
 }

@@ -1,68 +1,81 @@
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorWhite"
-    android:fillViewport="true"
-    android:onClick="onRevealPassword"
-    android:orientation="vertical">
+    android:background="#F8F8F8"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:animateLayoutChanges="true"
+        android:background="#F8F8F8"
+        android:fillViewport="true"
+        android:orientation="vertical">
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tab_layout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="3"
-            app:tabGravity="center"
-            app:tabMode="fixed"
-            app:tabSelectedTextColor="@color/colorOrange"
-            app:tabTextColor="@color/colorWhite"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginBottom="@dimen/space_4dp"
+                android:background="@drawable/background_home"/>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/vp_chart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_below="@+id/tab_layout"/>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/space_16dp"
+                app:tabMode="fixed"
+                app:tabSelectedTextColor="@color/colorOrange"
+                app:tabTextColor="@color/colorWhite"/>
+
+        </RelativeLayout>
 
         <TextView
-            android:id="@+id/btn_clean_all"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/space_16dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_rounded_yellow"
-            android:gravity="center"
-            android:padding="@dimen/space_8dp"
-            android:text="Bersihkan"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"/>
-    </LinearLayout>
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/vp_chart"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/colorPrimary"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
+            android:layout_margin="@dimen/space_4dp"
+            android:text="Statistik data"
+            android:textColor="#564F4F"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_margin="@dimen/space_4dp"
+            android:layout_marginBottom="@dimen/space_4dp"
+            android:background="#FFFFFF"
+            android:paddingBottom="@dimen/space_4dp"
+            android:paddingLeft="@dimen/space_16dp"
+            android:paddingRight="@dimen/space_12dp"
+            android:paddingTop="@dimen/space_16dp">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginRight="@dimen/space_16dp"
+                android:src="@drawable/ic_file"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_border_grey"
-                android:gravity="center|top"
-                android:orientation="vertical"
-                android:padding="@dimen/space_8dp">
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total work order terunduh saat ini"/>
 
                 <TextView
                     android:id="@+id/value_total"
@@ -73,246 +86,79 @@
                     android:textSize="@dimen/text_size_24sp"
                     android:textStyle="bold"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_6dp"
-                    android:text="Total"
-                    android:textColor="@color/colorVulcan"
-                    android:textSize="@dimen/text_size_14sp"
-                    android:textStyle="bold"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/action_statistic_arrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:background="@drawable/button_round_white"
+                        android:src="@drawable/ic_arrow_down"/>
+                </RelativeLayout>
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_belum_putus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_yellow"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Belum Putus Belum Lunas"
-                        android:textSize="@dimen/text_size_14sp"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_belum_putus_sudah_lunas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_pink"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Belum Putus Sudah Lunas"
-                        android:textSize="@dimen/text_size_14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_sudah_putus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_green"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Sudah Putus Belum Lunas"
-                        android:textSize="@dimen/text_size_14sp"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_sudah_putus_sudah_lunas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_blue"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Sudah Putus Sudah Lunas"
-                        android:textSize="@dimen/text_size_14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_sambung"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_light_green"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Sambung"
-                        android:textSize="@dimen/text_size_14sp"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_belum_bongkar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_amber"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Belum Bongkar"
-                        android:textSize="@dimen/text_size_14sp"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_border_grey"
-                    android:gravity="center|top"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-
-                    <TextView
-                        android:id="@+id/value_bongkar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/material_purple"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_6dp"
-                        android:gravity="center"
-                        android:text="Bongkar"
-                        android:textSize="@dimen/text_size_14sp"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_8dp">
-                </LinearLayout>
-            </LinearLayout>
-
         </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+
+        <include layout="@layout/layout_panel_statistic"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/space_4dp"
+            android:text="Pembersihan"
+            android:textColor="#564F4F"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/space_4dp"
+            android:layout_marginBottom="@dimen/space_4dp"
+            android:background="#FFFFFF"
+            android:padding="@dimen/space_16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_marginRight="@dimen/space_16dp"
+                    android:src="@drawable/ic_waste"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Hapus data sampah yang tertinggal"/>
+
+                    <TextView
+                        android:id="@+id/btn_clean_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_8dp"
+                        android:background="@drawable/bg_rounded_yellow"
+                        android:fontFamily="sans-serif-light"
+                        android:gravity="center"
+                        android:padding="@dimen/space_8dp"
+                        android:text="Bersihkan"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</ScrollView>

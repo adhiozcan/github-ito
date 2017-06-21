@@ -34,4 +34,24 @@ public class ItoDialog {
                 });
         builder.show();
     }
+
+    public static void simpleAlert(Context context, String title, String message, String yesButton, String noButton, final Action action) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setNegativeButton(noButton, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                action.onNoButtonClicked();
+                dialog.dismiss();
+            }
+        });
+        builder.setPositiveButton(yesButton, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                action.onYesButtonClicked();
+            }
+        });
+        builder.show();
+    }
 }

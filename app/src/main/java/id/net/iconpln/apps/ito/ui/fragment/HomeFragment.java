@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -57,6 +58,9 @@ public class HomeFragment extends Fragment {
             txtBongkar,
             btnCleanAll;
 
+    private View      statisticPanel;
+    private ImageView btnArrowStatistic;
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
@@ -67,6 +71,13 @@ public class HomeFragment extends Fragment {
         mBarChartData = new int[7];
 
         checkAvailableData();
+
+        btnArrowStatistic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toogleStatisticPanel();
+            }
+        });
 
         btnCleanAll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +103,9 @@ public class HomeFragment extends Fragment {
         txtSambung = (TextView) rootView.findViewById(R.id.value_sambung);
         txtBelumBongkar = (TextView) rootView.findViewById(R.id.value_belum_bongkar);
         txtBongkar = (TextView) rootView.findViewById(R.id.value_bongkar);
+
+        statisticPanel = rootView.findViewById(R.id.panel_statistic);
+        btnArrowStatistic = (ImageView) rootView.findViewById(R.id.action_statistic_arrow);
     }
 
     private void initViewPager() {
@@ -162,6 +176,19 @@ public class HomeFragment extends Fragment {
     private int checkNull(String object) {
         if (object == null) return 0;
         return Integer.parseInt(object);
+    }
+
+    private void toogleStatisticPanel() {
+        boolean isShown = Integer.parseInt(statisticPanel.getTag().toString()) == 1 ? true : false;
+        if (isShown) {
+            btnArrowStatistic.setImageResource(R.drawable.ic_arrow_down);
+            statisticPanel.setVisibility(View.GONE);
+            statisticPanel.setTag(0);
+        } else {
+            btnArrowStatistic.setImageResource(R.drawable.ic_arrow_up);
+            statisticPanel.setVisibility(View.VISIBLE);
+            statisticPanel.setTag(1);
+        }
     }
 
     @Override
