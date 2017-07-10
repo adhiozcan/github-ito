@@ -1,5 +1,13 @@
 package id.net.iconpln.apps.ito.model;
 
+import android.util.Log;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import io.realm.RealmObject;
 
 /**
@@ -30,6 +38,7 @@ public class Tusbung extends RealmObject {
     private String photoPath2;
     private String photoPath3;
     private String photoPath4;
+    private String expired;
 
     private String statusSinkron;
     private String keteranganSinkron;
@@ -221,6 +230,32 @@ public class Tusbung extends RealmObject {
         this.photoPath4 = photoPath4;
     }
 
+    public String getExpired() {
+        return expired;
+    }
+
+    public void setExpired(String expired) {
+        this.expired = expired;
+    }
+
+    public boolean isExpired() {
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        Log.d("Tusbung", "isExpired: " + getExpired());
+        try {
+            Date date  = df.parse(getExpired());
+            Date today = new Date();
+            //date.before(today);
+            Log.d("Tusbung", "isExpired: " + today.toString() + " | " + date.toString());
+            Log.d("Tusbung", "isExpired: " + today.after(date));
+
+            if (today.after(date)) return true;
+            else return false;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public String getStatusSinkron() {
         return statusSinkron;
     }
@@ -263,6 +298,8 @@ public class Tusbung extends RealmObject {
                 ", photoPath2='" + photoPath2 + '\'' +
                 ", photoPath3='" + photoPath3 + '\'' +
                 ", photoPath4='" + photoPath4 + '\'' +
+                ", expired='" + expired + '\'' +
+                ", isExpired='" + isExpired() + '\'' +
                 ", statusSinkron='" + statusSinkron + '\'' +
                 ", keteranganSinkron='" + keteranganSinkron + '\'' +
                 '}';

@@ -11,15 +11,17 @@ public class Riwayat extends RealmObject {
     private String tanggal;
     private String waktu;
     private String jumlahData;
+    private String activity;
 
     public Riwayat() {
     }
 
 
-    public Riwayat(long unixTimeStamp, String tanggal, String waktu) {
+    public Riwayat(long unixTimeStamp, String tanggal, String waktu, String activity) {
         this.unixTimeStamp = unixTimeStamp;
         this.tanggal = tanggal;
         this.waktu = waktu;
+        this.activity = activity;
     }
 
     public long getUnixTimeStamp() {
@@ -54,11 +56,22 @@ public class Riwayat extends RealmObject {
         this.jumlahData = jumlahData;
     }
 
+    public String getActivity() {
+        return activity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
+    }
+
     @Override
     public String toString() {
         return "Riwayat{" +
-                "tanggal='" + tanggal + '\'' +
+                "unixTimeStamp=" + unixTimeStamp +
+                ", tanggal='" + tanggal + '\'' +
+                ", waktu='" + waktu + '\'' +
                 ", jumlahData='" + jumlahData + '\'' +
+                ", activity='" + activity + '\'' +
                 '}';
     }
 }

@@ -2,8 +2,14 @@ package id.net.iconpln.apps.ito.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.RealmObject;
@@ -415,6 +421,25 @@ public class WorkOrder extends RealmObject implements Parcelable {
 
     public void setStatusSinkronisasi(String statusSinkronisasi) {
         this.statusSinkronisasi = statusSinkronisasi;
+    }
+
+    public boolean isExpired() {
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        try {
+            Date expired = df.parse(getExpired());
+            Date today   = new Date();
+            //date.before(today);
+            Log.d("WorkOrder", "isExpired: -------------------------------------------------------");
+            Log.d("WorkOrder", "isExpired: [Today]" + today.toString() + " | [Exp]" + expired.toString());
+            Log.d("WorkOrder", "isExpired: " + today.after(expired));
+            Log.d("WorkOrder", "isExpired: -------------------------------------------------------");
+
+            if (today.after(expired)) return true;
+            else return false;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void formatPretty() {

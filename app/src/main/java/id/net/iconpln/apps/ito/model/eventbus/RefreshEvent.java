@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.model;
+package id.net.iconpln.apps.ito.model.eventbus;
 
 /**
  * Created by Ozcan on 04/05/2017.

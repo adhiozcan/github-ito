@@ -1,4 +1,4 @@
-package id.net.iconpln.apps.ito.model;
+package id.net.iconpln.apps.ito.model.eventbus;
 
 import com.google.gson.annotations.SerializedName;
 

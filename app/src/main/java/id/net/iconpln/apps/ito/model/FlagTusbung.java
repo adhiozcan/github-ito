@@ -22,6 +22,12 @@ public class FlagTusbung extends RealmObject {
     @SerializedName("desktipsi")
     private String deskripsi;
 
+    public FlagTusbung(String kode, String keterangan, String deskripsi) {
+        this.kode = kode;
+        this.keterangan = keterangan;
+        this.deskripsi = deskripsi;
+    }
+
     public String getKode() {
         return kode;
     }
