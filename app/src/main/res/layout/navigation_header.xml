@@ -8,7 +8,7 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="196dp"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
         android:src="@drawable/img_nav_header"/>
@@ -23,6 +23,7 @@
         <ImageView
             android:layout_width="70dp"
             android:layout_height="70dp"
+            android:layout_marginTop="@dimen/space_16dp"
             android:adjustViewBounds="true"
             android:background="@drawable/background_circle"
             android:padding="16dp"
@@ -46,6 +47,21 @@
             android:text="Cimahi Kota"
             android:textAlignment="center"
             android:textColor="@android:color/white"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_16dp"
+            android:layout_marginTop="@dimen/space_8dp"
+            android:background="@drawable/style_button_mode_orange"
+            android:onClick="onProfilClicked"
+            android:paddingBottom="@dimen/space_6dp"
+            android:paddingLeft="@dimen/space_12dp"
+            android:paddingRight="@dimen/space_12dp"
+            android:paddingTop="@dimen/space_6dp"
+            android:text="Lihat Profil"
+            android:textSize="@dimen/text_size_12sp"
+            android:textStyle="bold"/>
     </LinearLayout>
 
 </RelativeLayout>

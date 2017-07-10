@@ -71,8 +71,8 @@ public class SynchPendingFragment extends Fragment {
         mTusbungList = new ArrayList<>();
         mTusbungList.addAll(getDataLocal());
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mAdapter = new SyncPendingAdapter(mTusbungList);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
 
@@ -217,6 +217,7 @@ public class SynchPendingFragment extends Fragment {
     @Override
     public void onStop() {
         EventBusProvider.getInstance().unregister(this);
+        setHasOptionsMenu(false);
         super.onStop();
     }
 

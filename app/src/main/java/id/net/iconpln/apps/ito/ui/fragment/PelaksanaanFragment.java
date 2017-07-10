@@ -143,8 +143,8 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
 
     private List<WorkOrder> getWoDataLocal() {
         ArrayList<WorkOrder> woList = new ArrayList<>();
-        woList.addAll(realm.copyFromRealm(
-                realm.where(WorkOrder.class)
+        woList.addAll(LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
                         .equalTo("kodePetugas", AppConfig.KODE_PETUGAS).findAll()));
         return woList;
     }

@@ -25,24 +25,25 @@
                 android:id="@+id/tanggal_riwayat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="160dp"
+                android:minWidth="132dp"
                 android:text="17 April 2017"
-                android:textSize="@dimen/text_size_16sp"
                 android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/jam_riwayat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="20:13"
-                android:textSize="@dimen/text_size_16sp"/>
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginRight="@dimen/space_24dp"
+                android:text="20:13"/>
+
+            <TextView
+                android:id="@+id/log_activity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:text="Unduh data"/>
         </TableRow>
     </TableLayout>
 
-    <TextView
-        android:id="@+id/log_activity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Unduh data"
-        android:textSize="@dimen/text_size_16sp"/>
 </LinearLayout>
