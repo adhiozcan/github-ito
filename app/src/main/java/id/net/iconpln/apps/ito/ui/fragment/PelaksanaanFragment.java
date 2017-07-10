@@ -39,6 +39,7 @@ import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.adapter.TabMapAdapter;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.eventbus.RefreshEvent;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
@@ -93,8 +94,7 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_pelaksanaan, container, false);
         initView();
         initMap();
@@ -109,7 +109,7 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
     private void checkAvailableData() {
         Log.d(TAG, "[Check Data] :-----------------------------------------------------------");
         Log.d(TAG, "checkAvailableData: " + getWoDataLocal().size());
-        ;
+
         if (getWoDataLocal() != null)
             if ((!getWoDataLocal().isEmpty()) || (getWoDataLocal().size() > 0)) {
                 Log.d(TAG, "[Get Local] : WorkOrder");
@@ -143,7 +143,9 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
 
     private List<WorkOrder> getWoDataLocal() {
         ArrayList<WorkOrder> woList = new ArrayList<>();
-        woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
+        woList.addAll(realm.copyFromRealm(
+                realm.where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS).findAll()));
         return woList;
     }
 
