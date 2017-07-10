@@ -31,20 +31,15 @@ public class ItoHttpClient {
     }
 
     public static OkHttpClient getItoHttpClient() {
-        // its called double check locking pattern
         if (itoHttpClient == null) {
-            synchronized (ItoHttpClient.class) {
-                if (itoHttpClient == null) {
-                    itoHttpClient = new OkHttpClient.Builder()
-                            .connectTimeout(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .writeTimeout(DEFAULT_WRITE_TIMEOUT, TimeUnit.SECONDS)
-                            .readTimeout(DEFAULT_READ_TIMEOUT, TimeUnit.SECONDS)
-                            .cache(itoCache())
-                            .addInterceptor(provideLoggingAbility())
-                            .addNetworkInterceptor(new StethoInterceptor())
-                            .build();
-                }
-            }
+            itoHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                    .writeTimeout(DEFAULT_WRITE_TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(DEFAULT_READ_TIMEOUT, TimeUnit.SECONDS)
+                    .cache(itoCache())
+                    .addInterceptor(provideLoggingAbility())
+                    .addNetworkInterceptor(new StethoInterceptor())
+                    .build();
         }
         return itoHttpClient;
     }
