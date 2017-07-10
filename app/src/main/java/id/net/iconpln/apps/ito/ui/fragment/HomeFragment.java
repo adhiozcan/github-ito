@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.PieChart;
 import com.orhanobut.hawk.Hawk;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -33,6 +31,8 @@ import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
 
+import static id.net.iconpln.apps.ito.utility.IntegerUtils.checkNull;
+
 /**
  * Created by Ozcan on 23/03/2017.
  */
@@ -40,10 +40,8 @@ import io.realm.Realm;
 public class HomeFragment extends Fragment {
     private static final String TAG = HomeFragment.class.getSimpleName();
 
-    private PieChart mPieChart;
-    private BarChart mBarChart;
-    private int[]    mPieChartData;
-    private int[]    mBarChartData;
+    private int[] mPieChartData;
+    private int[] mBarChartData;
 
     private ChartVPAdapter mVpAdapter;
     private ViewPager      mViewPager;
@@ -173,11 +171,6 @@ public class HomeFragment extends Fragment {
         txtBelumBongkar.setText(woSummary.getBelumBongkar());
         txtBongkar.setText(woSummary.getBongkar());
         txtTotal.setText(woSummary.countTotal());
-    }
-
-    private int checkNull(String object) {
-        if (object == null) return 0;
-        return Integer.parseInt(object);
     }
 
     private void toogleStatisticPanel() {
