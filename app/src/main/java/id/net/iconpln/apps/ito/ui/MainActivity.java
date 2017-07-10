@@ -24,6 +24,7 @@ import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
+import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanUlangFragment;
 import id.net.iconpln.apps.ito.ui.fragment.SinkronisasiFragment;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 
@@ -45,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TAG_PELAKSANAAN       = "nav.pelaksanaan";
     private static final String TAG_PELAKSANAAN_ULANG = "nav.pelaksanaan_ulang";
     private static final String TAG_SINKRONISASI      = "nav.sinkronisasi";
-    private static final String TAG_ABOUT             = "nav.about";
-    public static        String CURRENT_TAG           = TAG_HOME;
+
+    public static String CURRENT_TAG = TAG_HOME;
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements
         setUpNavigationView();
 
         if (savedInstanceState == null) {
-            loadHomeFragment();
+            loadLastFragment();
         }
     }
 
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements
      * Returns respected fragment that user
      * selected from navigation menu
      */
-    private void loadHomeFragment() {
+    private void loadLastFragment() {
         // selecting appropriate nav menu item
         selectNavMenu();
 
@@ -126,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void run() {
                 // update the main content by replacing fragments
-                Fragment            fragment            = getHomeFragment();
+                Fragment            fragment            = getLastFragment();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
@@ -140,26 +141,30 @@ public class MainActivity extends AppCompatActivity implements
             mHandler.post(mPendingRunnable);
         }
 
-        //Closing drawer on item click
-
         // refresh toolbar menu
         invalidateOptionsMenu();
     }
 
-    private Fragment getHomeFragment() {
+    private Fragment getLastFragment() {
+        System.out.println("navItemIndex : " + navItemIndex);
         switch (navItemIndex) {
+            // Home
             case 0:
-                // home
                 HomeFragment homeFragment = new HomeFragment();
                 return homeFragment;
+
+            // Pelaksanaan
             case 1:
-                // PelaksanaanRealm
                 PelaksanaanFragment pelaksanaanFragment = new PelaksanaanFragment();
                 return pelaksanaanFragment;
+
+            // Pelaksanaan Ulang
             case 2:
-                // Pelaksanaan Ulang
+                PelaksanaanUlangFragment pelaksanaanUlangFragment = new PelaksanaanUlangFragment();
+                return pelaksanaanUlangFragment;
+
+            // Sinkronisasi
             case 3:
-                // Sinkronisasi
                 SinkronisasiFragment sinkronisasiFragment = new SinkronisasiFragment();
                 return sinkronisasiFragment;
             default:
@@ -172,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void selectNavMenu() {
+        System.out.println("Select Nav Menu : " + navItemIndex);
         navigationView.getMenu().getItem(navItemIndex).setChecked(true);
     }
 
@@ -213,12 +219,10 @@ public class MainActivity extends AppCompatActivity implements
                     case R.id.nav_help:
                         // launch new intent instead of loading fragment
                         startActivity(new Intent(MainActivity.this, HelpActivity.class));
-                        drawer.closeDrawers();
                         return true;
                     case R.id.nav_logout:
                         logout();
                         SocketTransaction.getInstance().stop();
-
                         return true;
                     default:
                         navItemIndex = 0;
@@ -237,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public void onDrawerClosed(View drawerView) {
-                loadHomeFragment();
+                loadLastFragment();
 
                 // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
                 super.onDrawerClosed(drawerView);
@@ -263,15 +267,6 @@ public class MainActivity extends AppCompatActivity implements
         outState.putInt("FRAGMENT_POSITION", navItemIndex);
     }
 
-    @Override
-    public void onBackPressed() {
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private void logout() {
         System.out.println("User will be logout, entering mode cleaning.");
         AppConfig.cleanDataSafely();
@@ -283,6 +278,5 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-
     }
 }
