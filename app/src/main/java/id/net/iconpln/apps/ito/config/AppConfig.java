@@ -51,12 +51,29 @@ public class AppConfig {
         return result;
     }
 
+    public static void saveUserLoggedIn(String kodePetugas, String idunitup) {
+        Hawk.put(Constants.KODE_PETUGAS, kodePetugas);
+        Hawk.put(Constants.ID_UNIT_UP, idunitup);
+    }
+
+    public static Map<String, String> getUserLoggedIn() {
+        Map<String, String> userIdentity = new HashMap<>();
+        userIdentity.put(Constants.KODE_PETUGAS, Hawk.get(Constants.KODE_PETUGAS, ""));
+        userIdentity.put(Constants.ID_UNIT_UP, Hawk.get(Constants.ID_UNIT_UP, ""));
+        return userIdentity;
+    }
+
     public static void cleanDataSafely() {
         USERNAME = "";
         PASSWORD = "";
         KODE_PETUGAS = "";
         ID_UNIT_UP = "";
-        saveUserRememberConfiguration(false);
-        saveUserRemember("", "");
+        Hawk.delete(Constants.IS_REMEMBER);
+        Hawk.delete(Constants.USERNAME);
+        Hawk.delete(Constants.PASSWORD);
+        Hawk.delete(Constants.KODE_PETUGAS);
+        Hawk.delete(Constants.ID_UNIT_UP);
+        //saveUserRememberConfiguration(false);
+        //saveUserRemember("", "");
     }
 }
