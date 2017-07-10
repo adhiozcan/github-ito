@@ -22,7 +22,6 @@ import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
-import id.net.iconpln.apps.ito.ui.fragment.MonitoringFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PerancanganFragment;
@@ -169,8 +168,6 @@ public class MainActivity extends AppCompatActivity implements
                 return sinkronisasiFragment;
             case 4:
                 // Monitoring
-                MonitoringFragment monitoringFragment = new MonitoringFragment();
-                return monitoringFragment;
             default:
                 return new HomeFragment();
         }

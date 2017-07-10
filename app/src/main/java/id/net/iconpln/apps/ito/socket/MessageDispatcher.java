@@ -16,7 +16,6 @@ import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.eventbus.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
 import id.net.iconpln.apps.ito.model.UserProfile;
-import id.net.iconpln.apps.ito.model.WoMonitoring;
 import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
@@ -54,14 +53,6 @@ public class MessageDispatcher {
         }
     }
 
-    private void woMonitoringTreatment(String runFunction) {
-        //make exception special for womonitoring.
-        if (runFunction.equals("getwomonitoring")) {
-            eventBus.post(produceMessageMonitoring(null));
-            Log.d(TAG, "dispatch: Tidak ada data dari response [302]");
-        }
-    }
-
     private void woPelaksanaanTreatment(String runFunction) {
         //make exception special for wopelaksanaan.
         if (runFunction.equals("getwosync")) {
@@ -84,7 +75,6 @@ public class MessageDispatcher {
             // check if there is no data we've got from response.
             if (messageEvent.response_code.equals("302")) {
                 loginTreatment(runFunction, messageEvent);
-                woMonitoringTreatment(runFunction);
                 woPelaksanaanTreatment(runFunction);
                 return;
             } else if (messageEvent.entities.length == 0) {
@@ -115,9 +105,6 @@ public class MessageDispatcher {
             case "getwosync":
                 eventBus.post(produceMessageWorkOrder(messages));
                 break;
-            case "getwomonitoring":
-                eventBus.post(produceMessageMonitoring(messages));
-                break;
             case "updateprogressworkorder":
                 eventBus.post(produceProgressUpdate(message));
                 break;
@@ -136,27 +123,6 @@ public class MessageDispatcher {
         }
     }
 
-    /**
-     * Produce broadcast for monitoring data
-     *
-     * @param messages
-     * @return
-     */
-    private WoMonitoring[] produceMessageMonitoring(Object[] messages) {
-        if (messages == null) return new WoMonitoring[0];
-
-        Gson gson = new GsonBuilder()
-                .setLenient()
-                .serializeNulls()
-                .registerTypeAdapter(String.class, new JsonNullConverter())
-                .create();
-
-        WoMonitoring[] woList = gson.fromJson(Arrays.toString(messages), WoMonitoring[].class);
-        for (WoMonitoring _wo : woList) {
-            _wo.formatPretty();
-        }
-        return woList;
-    }
 
     /**
      * Produce broadcast for user profile data
