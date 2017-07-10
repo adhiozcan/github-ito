@@ -6,10 +6,10 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
-import id.net.iconpln.apps.ito.config.AppConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * Created by Ozcan on 23/03/2017.
@@ -21,46 +21,59 @@ public class SocketTransaction {
     private static          OkHttpClient          client;
     private static          Request               request;
     private static          WebSocket             ws;
-    private static          SocketListener        listener;
     private static          WeakReference<String> socketRequest;
 
-    public static SocketTransaction prepareStatement() {
+    public static SocketTransaction getInstance() {
         // its called double check locking pattern
         if (socketTransaction == null) {
             synchronized (SocketTransaction.class) {
-                if (socketTransaction == null) socketTransaction = new SocketTransaction();
+                if (socketTransaction == null) {
+                    socketTransaction = new SocketTransaction();
+                }
             }
         }
+
         if (ws == null)
             throw new NullPointerException("Tidak dapat menggunakan websocket, instance belum terinisialisasi");
         if (client == null)
             throw new NullPointerException("Tidak dapat menggunakan socket tanpa Http Client");
-        if (listener == null)
-            throw new NullPointerException("tidak dapat menggunakan socket tanpa listener");
         return socketTransaction;
     }
 
-    public static void init() {
-        listener = new SocketListener();
-        client = ItoHttpClient.getItoHttpClient();
+    public static void start() {
+        //client = ItoHttpClient.getItoHttpClient();
+        client = new OkHttpClient.Builder()
+                .addInterceptor(provideLoggingAbility())
+                .build();
         request = new Request.Builder().url(SocketAddress.SOCKET_ITO).build();
-        ws = client.newWebSocket(request, listener);
-        Log.d(TAG, "[Success] Socket Transaction has been init");
+        ws = client.newWebSocket(request, new SocketListener());
+        Log.d(TAG, "[Socket][OK] Socket Transaction has been start");
     }
 
-    public static void doReInit() {
-        listener = null;
-        client = null;
-        request = null;
-        ws = null;
-
-        Log.d(TAG, "We will re-init our socket.");
-        init();
+    private static HttpLoggingInterceptor provideLoggingAbility() {
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        return httpLoggingInterceptor;
     }
 
-    public void close() {
-        ws.close(1000, "Socket will be terminated");
+    public static void close() {
+        if (ws != null) {
+            ws.close(1000, "Goodbye!");
+        }
+    }
+
+    public static void shouldReinitSocket() {
+        Log.d(TAG, "[Socket] Re init our socket");
+        getInstance().stop();
+
+        socketTransaction = null;
+        socketTransaction.start();
+    }
+
+    public static void stop() {
+        close();
         client.dispatcher().executorService().shutdown();
+
     }
 
     private void composeParam(String parameter) {
@@ -93,15 +106,9 @@ public class SocketTransaction {
                 break;
         }
         ws.send(socketRequest.get());
-        Log.d(TAG, "[Send]: -");
-        Log.d(TAG, "[Send]: --");
-        Log.d(TAG, "[Send]: -----");
         Log.d(TAG, "[Send]: -----------------------------------------------------------------");
         Log.d(TAG, "[Body]: >>>" + socketRequest.get());
         Log.d(TAG, "[Send]: -----------------------------------------------------------------");
-        Log.d(TAG, "[Send]: -----");
-        Log.d(TAG, "[Send]: --");
-        Log.d(TAG, "[Send]: -");
     }
 
     /**
@@ -109,7 +116,7 @@ public class SocketTransaction {
      */
     private SocketTransaction() {
         if (socketTransaction != null) {
-            throw new RuntimeException("Please use prepareStatement() to get the single instance of this class.");
+            throw new RuntimeException("Please use getInstance() to get the single instance of this class.");
         }
     }
 }
