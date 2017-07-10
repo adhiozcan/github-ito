@@ -24,7 +24,6 @@ import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
-import id.net.iconpln.apps.ito.ui.fragment.PerancanganFragment;
 import id.net.iconpln.apps.ito.ui.fragment.SinkronisasiFragment;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 
@@ -42,13 +41,12 @@ public class MainActivity extends AppCompatActivity implements
     public static int navItemIndex = 0;
 
     // tags used to attach the fragments
-    private static final String TAG_HOME         = "home";
-    private static final String TAG_PERANCANGAN  = "perencanaan";
-    private static final String TAG_PELAKSANAAN  = "pelaksanaan";
-    private static final String TAG_SINKRONISASI = "sinkronisasi";
-    private static final String TAG_MONITORING   = "monitoring";
-    private static final String TAG_ABOUT        = "about";
-    public static        String CURRENT_TAG      = TAG_HOME;
+    private static final String TAG_HOME              = "nav.home";
+    private static final String TAG_PELAKSANAAN       = "nav.pelaksanaan";
+    private static final String TAG_PELAKSANAAN_ULANG = "nav.pelaksanaan_ulang";
+    private static final String TAG_SINKRONISASI      = "nav.sinkronisasi";
+    private static final String TAG_ABOUT             = "nav.about";
+    public static        String CURRENT_TAG           = TAG_HOME;
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
@@ -155,19 +153,15 @@ public class MainActivity extends AppCompatActivity implements
                 HomeFragment homeFragment = new HomeFragment();
                 return homeFragment;
             case 1:
-                // Perencanaan
-                PerancanganFragment perancanganFragment = new PerancanganFragment();
-                return perancanganFragment;
-            case 2:
                 // PelaksanaanRealm
                 PelaksanaanFragment pelaksanaanFragment = new PelaksanaanFragment();
                 return pelaksanaanFragment;
+            case 2:
+                // Pelaksanaan Ulang
             case 3:
                 // Sinkronisasi
                 SinkronisasiFragment sinkronisasiFragment = new SinkronisasiFragment();
                 return sinkronisasiFragment;
-            case 4:
-                // Monitoring
             default:
                 return new HomeFragment();
         }
@@ -199,21 +193,17 @@ public class MainActivity extends AppCompatActivity implements
                         navItemIndex = 0;
                         CURRENT_TAG = TAG_HOME;
                         break;
-                    case R.id.nav_perancangan:
-                        navItemIndex = 1;
-                        CURRENT_TAG = TAG_PERANCANGAN;
-                        break;
                     case R.id.nav_pelaksanaan:
-                        navItemIndex = 2;
+                        navItemIndex = 1;
                         CURRENT_TAG = TAG_PELAKSANAAN;
+                        break;
+                    case R.id.nav_pelaksanaan_ulang:
+                        navItemIndex = 2;
+                        CURRENT_TAG = TAG_PELAKSANAAN_ULANG;
                         break;
                     case R.id.nav_sync:
                         navItemIndex = 3;
                         CURRENT_TAG = TAG_SINKRONISASI;
-                        break;
-                    case R.id.nav_monitoring:
-                        navItemIndex = 4;
-                        CURRENT_TAG = TAG_MONITORING;
                         break;
                     case R.id.nav_about_us:
                         // launch new intent instead of loading fragment
@@ -235,13 +225,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 //Checking if the item is in checked state or not, if not make it in checked state
-                if (menuItem.isChecked()) {
-                    menuItem.setChecked(false);
-                } else {
-                    menuItem.setChecked(true);
-                }
-                menuItem.setChecked(true);
-
+                menuItem.setChecked(menuItem.isChecked() ? false : true);
                 drawer.closeDrawers();
 
                 return true;

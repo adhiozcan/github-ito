@@ -1,6 +1,5 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#F8F8F8"
@@ -16,35 +15,40 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_4dp">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_marginBottom="@dimen/space_4dp"
+                android:layout_height="260dp"
                 android:background="@drawable/background_home"/>
+
+            <TextView
+                android:id="@+id/lbl_grafik_statistik"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_4dp"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginTop="@dimen/space_12dp"
+                android:text="Grafik Statistik"
+                android:textColor="@color/colorSnow"
+                android:textSize="@dimen/text_size_18sp"
+                android:textStyle="bold"/>
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/vp_chart"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_below="@+id/tab_layout"/>
-
-            <android.support.design.widget.TabLayout
-                android:id="@+id/tab_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/space_16dp"
-                app:tabMode="fixed"
-                app:tabSelectedTextColor="@color/colorOrange"
-                app:tabTextColor="@color/colorWhite"/>
+                android:layout_height="220dp"
+                android:layout_below="@id/lbl_grafik_statistik"/>
 
         </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/space_4dp"
+            android:layout_marginBottom="@dimen/space_4dp"
+            android:layout_marginLeft="@dimen/space_16dp"
+            android:layout_marginTop="@dimen/space_4dp"
             android:text="Statistik data"
             android:textColor="#564F4F"/>
 
@@ -106,7 +110,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/space_4dp"
+            android:layout_marginBottom="@dimen/space_4dp"
+            android:layout_marginLeft="@dimen/space_16dp"
+            android:layout_marginTop="@dimen/space_4dp"
             android:text="Pembersihan"
             android:textColor="#564F4F"/>
 

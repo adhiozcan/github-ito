@@ -17,13 +17,13 @@
             android:icon="@drawable/ic_drawer_pelaksanaan"
             android:title="Pelaksanaan WO"/>
         <item
+            android:id="@+id/nav_pelaksanaan_ulang"
+            android:icon="@drawable/ic_drawer_monitoring"
+            android:title="Pelaksanaan Ulang"/>
+        <item
             android:id="@+id/nav_sync"
             android:icon="@drawable/ic_drawer_sinkronisasi"
             android:title="Sinkronisasi"/>
-        <item
-            android:id="@+id/nav_monitoring"
-            android:icon="@drawable/ic_drawer_monitoring"
-            android:title="Monitoring"/>
 
         <item
             android:title="Lainnya">

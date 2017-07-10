@@ -2,10 +2,9 @@
     <string name="app_name">I-To</string>
     <string-array name="navigation_drawer_items_array">
         <item>Home</item>
-        <item>Perencanaan WO</item>
         <item>Pelaksanaan WO</item>
+        <item>Pelaksanaan Ulang</item>
         <item>Sinkronisasi</item>
-        <item>Monitoring</item>
         <item>Tentang Aplikasi</item>
         <item>Help</item>
         <item>Logout</item>

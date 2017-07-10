@@ -46,7 +46,6 @@ public class HomeFragment extends Fragment {
     private ChartVPAdapter mVpAdapter;
     private ViewPager      mViewPager;
     private List<Fragment> mChartFragments;
-    private TabLayout      mTabLayout;
 
     private TextView txtBelumPutus,
             txtBelumPutusLunas,
@@ -91,7 +90,6 @@ public class HomeFragment extends Fragment {
 
     private void initViewComponents(View rootView) {
         mViewPager = (ViewPager) rootView.findViewById(R.id.vp_chart);
-        mTabLayout = (TabLayout) rootView.findViewById(R.id.tab_layout);
 
         btnCleanAll = (TextView) rootView.findViewById(R.id.btn_clean_all);
         txtTotal = (TextView) rootView.findViewById(R.id.value_total);
@@ -112,7 +110,6 @@ public class HomeFragment extends Fragment {
         mChartFragments = new ArrayList<>();
         mVpAdapter = new ChartVPAdapter(getChildFragmentManager(), mChartFragments);
         mViewPager.setAdapter(mVpAdapter);
-        mTabLayout.setupWithViewPager(mViewPager);
     }
 
     private void checkAvailableData() {
