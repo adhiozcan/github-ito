@@ -100,7 +100,7 @@ public class SmileyLoadingView extends View {
         mAnimRepeatCount = ta.getInt(R.styleable.SmileyLoadingView_animRepeatCount, ValueAnimator.INFINITE);
         ta.recycle();
 
-        mSweepAngle = 180; // init sweepAngle, the mouth line sweep angle
+        mSweepAngle = 180; // start sweepAngle, the mouth line sweep angle
         mCirclePath = new Path();
         mArcPath = new Path();
 

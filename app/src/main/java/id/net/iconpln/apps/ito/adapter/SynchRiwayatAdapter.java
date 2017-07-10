@@ -11,6 +11,7 @@ import java.util.List;
 
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.model.Riwayat;
+import id.net.iconpln.apps.ito.utility.SynchUtils;
 
 /**
  * Created by Ozcan on 11/04/2017.
@@ -36,6 +37,23 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
         Riwayat riwayat = riwayatList.get(position);
         holder.txtTanggal.setText(riwayat.getTanggal());
         holder.txtWaktu.setText(riwayat.getWaktu());
+        switch (riwayat.getActivity()) {
+            case SynchUtils.LOG_UNDUH:
+                holder.txtActivity.setText("Unduh Work Order");
+                break;
+            case SynchUtils.LOG_UPLOAD:
+                holder.txtActivity.setText("Unggah Work Order Local");
+                break;
+            case SynchUtils.LOG_DEL_GAGAL:
+                holder.txtActivity.setText("Hapus Work Order Gagal Sinkronisasi");
+                break;
+            case SynchUtils.LOG_DEL_PENDING:
+                holder.txtActivity.setText("Hapus Work Order Pending");
+                break;
+            case SynchUtils.LOG_DEL_ALL:
+                holder.txtActivity.setText("Hapus Semua Data");
+                break;
+        }
     }
 
     @Override
@@ -46,11 +64,13 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtTanggal;
         private TextView txtWaktu;
+        private TextView txtActivity;
 
         public ViewHolder(View itemView) {
             super(itemView);
             txtTanggal = (TextView) itemView.findViewById(R.id.tanggal_riwayat);
             txtWaktu = (TextView) itemView.findViewById(R.id.jam_riwayat);
+            txtActivity = (TextView) itemView.findViewById(R.id.log_activity);
         }
     }
 }
