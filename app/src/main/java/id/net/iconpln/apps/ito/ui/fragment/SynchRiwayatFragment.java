@@ -18,8 +18,10 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.adapter.SynchRiwayatAdapter;
 import id.net.iconpln.apps.ito.model.Riwayat;
+import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.Formater;
+import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
 import io.realm.Sort;
 
@@ -82,17 +84,7 @@ public class SynchRiwayatFragment extends Fragment {
     }
 
     private void onSyncButtonClicked() {
-        String unixTimeStamp = Formater.getTimeStamp();
-        String date          = Formater.unixTimeToDateString(unixTimeStamp);
-        String time          = Formater.unixTimeToTimeString(unixTimeStamp);
-
-        Riwayat riwayat = new Riwayat(Long.parseLong(unixTimeStamp), date, time);
-
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        realm.insert(riwayat);
-        realm.commitTransaction();
-
+        Riwayat riwayat = SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH);
         EventBusProvider.getInstance().post(riwayat);
         setLastSyncInfo();
     }

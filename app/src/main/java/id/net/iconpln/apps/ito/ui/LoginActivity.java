@@ -35,9 +35,11 @@ import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
+import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.utility.DeviceUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
+import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
 
 /**
@@ -67,7 +69,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        realm = Realm.getDefaultInstance();
+        realm = LocalDb.getInstance();
+        SocketTransaction.start();
 
         formLogin = findViewById(R.id.login_form);
         viewLoading = findViewById(R.id.view_loading);
@@ -108,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         setHardwareIdInfo();
-        checkUserIsRemember();
+        checkUserStillLoggedIn();
     }
 
     private void setHardwareIdInfo() {
@@ -124,6 +127,17 @@ public class LoginActivity extends AppCompatActivity {
             Map<String, String> userInfo = AppConfig.getUserRemember();
             edUser.setText(userInfo.get(Constants.USERNAME));
             edPassword.setText(userInfo.get(Constants.PASSWORD));
+        }
+    }
+
+    private void checkUserStillLoggedIn() {
+        String kodeUser = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
+        if (!kodeUser.isEmpty()) {
+            AppConfig.KODE_PETUGAS = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
+            AppConfig.ID_UNIT_UP = AppConfig.getUserLoggedIn().get(Constants.ID_UNIT_UP);
+            moveToDashboard();
+        } else {
+            checkUserIsRemember();
         }
     }
 
@@ -145,9 +159,7 @@ public class LoginActivity extends AppCompatActivity {
      * @param viewId
      */
     public void onLoginButtonClicked(View viewId) {
-
-        SocketTransaction.init();
-        socketTransaction = SocketTransaction.prepareStatement();
+        socketTransaction = SocketTransaction.getInstance();
 
         //String user = "53581.akhyar" +"";
         //String password = "icon+123";
@@ -187,6 +199,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onLoginSuccess(UserProfile userProfile) {
         hideLoginFormView();
+
+        AppConfig.saveUserLoggedIn(userProfile.getKodePetugas(), userProfile.getUnitup());
 
         if (AppConfig.isRemember) {
             AppConfig.saveUserRemember(AppConfig.USERNAME, AppConfig.PASSWORD);
@@ -236,6 +250,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void listenDataToComplete() {
         if (LOGIN_COMPLETE && MASTER_TUSBUNG_COMPLETE && WORK_ORDER_COMPLETE) {
+            SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH);
             moveToDashboard();
         }
     }
@@ -267,7 +282,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onLoginResponse(UserProfile userProfile) {
         Log.d(TAG, "onLoginResponse: ------------------------------------------------------------");
         Log.d(TAG, userProfile.toString());
-        SmileyLoading.close();
+        SmileyLoading.shouldCloseDialog();
 
         if (isLoginSuccess(userProfile)) {
             onLoginSuccess(userProfile);
@@ -301,7 +316,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onError(ErrorMessageEvent messageEvent) {
-        SmileyLoading.close();
+        SmileyLoading.shouldCloseDialog();
         Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout), messageEvent.getMessage(), Snackbar.LENGTH_LONG);
         snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
         snackbar.show();

@@ -5,6 +5,7 @@
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context="id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment">
 
     <RelativeLayout
@@ -26,14 +27,77 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:orientation="horizontal">
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/no_data_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/space_16dp"
+                android:background="@color/colorSnow"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/space_32dp"
+                android:paddingLeft="@dimen/space_24dp"
+                android:paddingRight="@dimen/space_24dp"
+                android:paddingTop="@dimen/space_32dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/no_data_image"
+                    android:layout_width="92dp"
+                    android:layout_height="92dp"
+                    android:src="@drawable/no_data_image"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_12dp"
+                    android:text="Tidak ada data"
+                    android:textSize="@dimen/text_size_18sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kami tidak menemukan data baik di lokal maupun di server"
+                    android:textAlignment="center"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/loading_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/space_32dp"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginRight="@dimen/space_16dp"
+                android:background="@color/colorSnow"
+                android:elevation="@dimen/space_4dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_24dp">
+
+                <ProgressBar
+                    android:id="@+id/progressbar"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/space_16dp"
+                    android:text="Sedang memuat data"/>
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/layout_content"
                 android:layout_width="match_parent"
                 android:layout_height="280dp"
                 android:background="@color/colorWhite"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <android.support.design.widget.TabLayout
                     android:id="@+id/tabs"
@@ -44,24 +108,6 @@
                     app:tabMode="scrollable"
                     app:tabSelectedTextColor="@color/colorWhite"
                     app:tabTextColor="@color/colorWhite"/>
-
-                <LinearLayout
-                    android:id="@+id/loading_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center">
-
-                    <ProgressBar
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/space_16dp"
-                        android:text="Sedang memuat data"/>
-                </LinearLayout>
 
                 <android.support.v4.view.ViewPager
                     android:id="@+id/viewPager"

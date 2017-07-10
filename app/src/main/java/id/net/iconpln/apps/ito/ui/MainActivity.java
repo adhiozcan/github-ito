@@ -19,6 +19,7 @@ import android.widget.Toast;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
 import id.net.iconpln.apps.ito.ui.fragment.MonitoringFragment;
@@ -229,6 +230,8 @@ public class MainActivity extends AppCompatActivity implements
                         return true;
                     case R.id.nav_logout:
                         logout();
+                        SocketTransaction.getInstance().stop();
+
                         return true;
                     default:
                         navItemIndex = 0;
@@ -277,6 +280,10 @@ public class MainActivity extends AppCompatActivity implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("FRAGMENT_POSITION", navItemIndex);
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 
     @Override

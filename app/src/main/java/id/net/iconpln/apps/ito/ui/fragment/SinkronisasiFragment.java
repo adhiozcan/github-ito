@@ -48,8 +48,4 @@ public class SinkronisasiFragment extends Fragment {
 
         return view;
     }
-
-
-
-
 }

@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="VI | Sinkronisasi Data"
+        android:textColor="@color/material_pink"
         android:textSize="@dimen/text_size_12sp"/>
 
     <TableLayout
@@ -38,4 +39,10 @@
         </TableRow>
     </TableLayout>
 
+    <TextView
+        android:id="@+id/log_activity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Unduh data"
+        android:textSize="@dimen/text_size_16sp"/>
 </LinearLayout>

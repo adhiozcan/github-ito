@@ -156,6 +156,10 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
                 btnTusbung.setText("Selesai Dikerjakan");
                 btnTusbung.setBackgroundResource(R.color.material_green);
                 btnTusbung.setEnabled(false);
+            } else if (workOrder.isExpired()) {
+                btnTusbung.setText("Sudah Expired");
+                btnTusbung.setBackgroundResource(R.color.material_pink);
+                btnTusbung.setEnabled(false);
             } else {
                 btnTusbung.setText("Tusbung");
                 btnTusbung.setEnabled(true);

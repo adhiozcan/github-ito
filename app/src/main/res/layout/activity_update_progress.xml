@@ -3,6 +3,7 @@
               android:id="@+id/container_layout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:animateLayoutChanges="true"
               android:background="@color/colorSnow"
               android:fillViewport="true"
               android:orientation="vertical">
@@ -400,8 +401,7 @@
                         android:textSize="14sp"/>
                 </TableRow>
 
-                <TableRow
-                    android:layout_marginTop="5dp">
+                <TableRow android:layout_marginTop="5dp">
 
                     <TextView
                         android:layout_width="140dp"
@@ -417,11 +417,14 @@
                         android:layout_width="100dp"
                         android:layout_height="40dp"
                         android:layout_weight="1"
-                        android:spinnerMode="dropdown"
+                        android:spinnerMode="dialog"
                         android:textSize="14sp"/>
                 </TableRow>
 
-                <TableRow android:layout_marginTop="10dp">
+                <TableRow
+                    android:id="@+id/form_meter_lwbp"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="120dp"
@@ -445,8 +448,9 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/layoutwbp"
-                    android:layout_marginTop="5dp">
+                    android:id="@+id/form_meter_wbp"
+                    android:layout_marginTop="5dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="120dp"
@@ -469,8 +473,9 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/layoutkvarh"
-                    android:layout_marginTop="5dp">
+                    android:id="@+id/form_meter_kvarh"
+                    android:layout_marginTop="5dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="120dp"

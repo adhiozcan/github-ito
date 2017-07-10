@@ -1,15 +1,9 @@
 package id.net.iconpln.apps.ito.ui;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -53,20 +48,21 @@ import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
-import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
-import id.net.iconpln.apps.ito.model.RefreshEvent;
+import id.net.iconpln.apps.ito.model.eventbus.ProgressUpdateEvent;
+import id.net.iconpln.apps.ito.model.eventbus.RefreshEvent;
+import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
 import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
+import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
-import id.net.iconpln.apps.ito.utility.LocationUtils;
 import id.net.iconpln.apps.ito.utility.SignalListener;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
@@ -115,7 +111,8 @@ public class PemutusanActivity extends AppCompatActivity
     private LocationRequest mLocationRequest;
 
     private String mCurrentPhotoPath;
-    private Uri[] mPhotoPath = new Uri[4];
+    private Uri[] mPhotoPath     = new Uri[4];
+    private Uri[] fotoTobePosted = new Uri[4];
 
     private List<FlagTusbung> mFlagTusbung;
     private WorkOrder         mWo;
@@ -124,13 +121,15 @@ public class PemutusanActivity extends AppCompatActivity
 
     private Tusbung tusbung = new Tusbung();
 
+    private String[] kodeMeterException = {"A", "B", "C", "D", "E", "F", "G"};
+    private boolean  wajibIsiLwbp       = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_progress);
         CommonUtils.installToolbar(this);
         initView();
-
         // -- listening signal strength
         if (ConnectivityUtils.isHaveInternetConnection(this)) {
             ConnectivityUtils.register(this, this);
@@ -144,13 +143,38 @@ public class PemutusanActivity extends AppCompatActivity
 
         List<String> keteranganList = new ArrayList<>();
         mFlagTusbung = new ArrayList<>();
+        mFlagTusbung.add(0, new FlagTusbung("-", "Pilih keterangan pemutusan", "Pilih keterangan pemutusan"));
         mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
         for (FlagTusbung flagTusbung : mFlagTusbung) {
             String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
             keteranganList.add(keterangan);
+            Log.d(TAG, "Flag Tusbung : \n" + flagTusbung.toString());
         }
         ArrayAdapter userAdapter = new ArrayAdapter(this, R.layout.adapter_item_spinner_keterangan, keteranganList);
         spnKeterangan.setAdapter(userAdapter);
+        spnKeterangan.setSelection(0);
+        spnKeterangan.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                List<FlagTusbung> valueKeterangan = getDataMasterTusbungFromLocal();
+                if (valueKeterangan != null && valueKeterangan.get(position) != null) {
+                    for (String kodeMeter : kodeMeterException) {
+                        if (kodeMeter.toLowerCase().trim().equals(valueKeterangan.get(position).getKode().toString().toLowerCase().trim())) {
+                            toggleFormMeter(View.GONE);
+                            wajibIsiLwbp = false;
+                            break;
+                        } else {
+                            toggleFormMeter(View.VISIBLE);
+                            wajibIsiLwbp = true;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
     }
 
     private void initView() {
@@ -209,8 +233,11 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     private List<FlagTusbung> getDataMasterTusbungFromLocal() {
-        Realm realm = Realm.getDefaultInstance();
-        return realm.copyFromRealm(realm.where(FlagTusbung.class).findAll());
+        return LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance()
+                        .where(FlagTusbung.class)
+                        .findAll()
+        );
     }
 
     public void takePicture(View viewId) {
@@ -337,33 +364,46 @@ public class PemutusanActivity extends AppCompatActivity
         ConnectivityUtils.unregister(this);
     }
 
-    private void doPemutusan(int typeWork) {
-        SmileyLoading.show(this, "Sedang memproses tusbung");
+    public void toggleFormMeter(int isShow) {
+        View formLwbp  = findViewById(R.id.form_meter_lwbp);
+        View formWbp   = findViewById(R.id.form_meter_wbp);
+        View formKvarh = findViewById(R.id.form_meter_kvarh);
 
-        String noTul        = txtNoTul.getText().toString();
-        String noTul601     = mWo.getNoTul601();
-        String noWo         = mWo.getNoWo();
-        String idpel        = mWo.getPelangganId();
-        String nama         = mWo.getNama();
-        String alamat       = mWo.getAlamat();
-        String unitUpId     = mWo.getUnitUp();
-        String kodePetugas  = mWo.getKodePetugas();
-        String selectedVal  = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
-        String lwbp         = edLwbp.getText().toString();
-        String wbp          = edWbp.getText().toString();
-        String kvarh        = edKvarh.getText().toString();
-        String isGagalPutus = "0";
-        String status       = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
-        String namaPetugas  = mWo.getNama();
-        String tanggalPutus = "";
-        if (ItoApplication.pingDate.isEmpty()) {
-            tanggalPutus = edTanggalPutus.getText().toString();
-        } else {
-            tanggalPutus = ItoApplication.pingDate;
+        formLwbp.setVisibility(isShow);
+        formWbp.setVisibility(isShow);
+        formKvarh.setVisibility(isShow);
+
+        if (formLwbp.getVisibility() == View.VISIBLE) {
+            edLwbp.requestFocus();
         }
+    }
 
-        Uri[] fotoTobePosted = new Uri[4];
-        int   jumlahFoto     = 0;
+
+    private void doPemutusan(int typeWork) {
+        SmileyLoading.show(this, "Sedang memproses tusbung", 15000);
+
+        String noTul          = txtNoTul.getText().toString();
+        String noTul601       = mWo.getNoTul601();
+        String noWo           = mWo.getNoWo();
+        String idpel          = mWo.getPelangganId();
+        String nama           = mWo.getNama();
+        String alamat         = mWo.getAlamat();
+        String unitUpId       = mWo.getUnitUp();
+        String kodePetugas    = mWo.getKodePetugas();
+        String selectedVal    = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
+        String lwbp           = edLwbp.getText().toString();
+        String wbp            = edWbp.getText().toString();
+        String kvarh          = edKvarh.getText().toString();
+        String isGagalPutus   = "0";
+        String status         = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
+        String namaPetugas    = mWo.getNama();
+        String tanggalExpired = mWo.getExpired();
+
+        String tanggalPutus =
+                ItoApplication.pingDate.isEmpty() ?
+                        edTanggalPutus.getText().toString() : ItoApplication.pingDate;
+
+        int jumlahFoto = 0;
         for (Uri uri : mPhotoPath) {
             if (uri != null) {
                 fotoTobePosted[jumlahFoto] = uri;
@@ -383,44 +423,50 @@ public class PemutusanActivity extends AppCompatActivity
         tusbung.setStandLWBP(lwbp);
         tusbung.setStandWBP(wbp);
         tusbung.setStandKVARH(kvarh);
+
         tusbung.setGagalPutus(isGagalPutus);
         tusbung.setStatus(status);
         tusbung.setJumlahFoto(String.valueOf(jumlahFoto));
+        tusbung.setExpired(tanggalExpired);
 
         if (fotoTobePosted[0] != null) tusbung.setPhotoPath1(fotoTobePosted[0].toString());
         if (fotoTobePosted[1] != null) tusbung.setPhotoPath2(fotoTobePosted[1].toString());
         if (fotoTobePosted[2] != null) tusbung.setPhotoPath3(fotoTobePosted[2].toString());
         if (fotoTobePosted[3] != null) tusbung.setPhotoPath4(fotoTobePosted[3].toString());
 
-        System.out.println(tusbung.toString());
+        Log.d(TAG, tusbung.toString());
+
         if (typeWork == DO_ONLINE) {
             Log.d(TAG, "[DO ONLINE : Simpan di penyimpanan server]");
+
             tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
-            int part = 1;
-            for (int i = 0; i < jumlahFoto; i++) {
-                tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[i]));
-                tusbung.setPart(String.valueOf(part));
+            tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[0]));
+            tusbung.setPart("1");
 
-                AppConfig.TUSBUNG = tusbung;
-                SocketTransaction.prepareStatement().sendMessage(ParamDef.DO_TUSBUNG);
-                part++;
-            }
-        }
+            Log.d(TAG, "doPemutusan: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
+            AppConfig.TUSBUNG = tusbung;
+            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
 
-        // mark wo to be pending and will be uploaded later
-        if (typeWork == DO_OFFLINE) {
+        } else if (typeWork == DO_OFFLINE) {
+            // mark wo to be pending and will be uploaded later
             Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
             tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
+            LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setUploaded(false);
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setStatusSinkronisasi(Constants.SINKRONISASI_PENDING);
+                    LocalDb.getInstance().insert(tusbung);
+                }
+            });
 
-            Realm realm = Realm.getDefaultInstance();
-            if (!realm.isInTransaction())
-                realm.beginTransaction();
-            realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setUploaded(false);
-            realm.insert(tusbung);
-            if (realm.isInTransaction())
-                realm.commitTransaction();
-
-            SmileyLoading.close();
+            SmileyLoading.shouldCloseDialog();
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
                     "[Offline Mode] Tusbung tersimpan di local.",
@@ -437,12 +483,20 @@ public class PemutusanActivity extends AppCompatActivity
         }
 
         // mark mWo has done.
-        Realm realm = Realm.getDefaultInstance();
-        if (!realm.isInTransaction())
-            realm.beginTransaction();
-        realm.where(WorkOrder.class).equalTo("noWo", mWo.getNoWo()).findFirst().setSelesai(true);
-        if (realm.isInTransaction())
-            realm.commitTransaction();
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                LocalDb.getInstance()
+                        .where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setStatusSinkronisasi(Constants.SINKRONISASI_SUKSES);
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setSelesai(true);
+            }
+        });
 
         Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
         Log.d(TAG, "doPemutusan: " + tusbung.toString());
@@ -452,7 +506,13 @@ public class PemutusanActivity extends AppCompatActivity
         ItoDialog.simpleAlert(this, "Apakah Anda yakin akan memproses tusbung Work Order ini?", new ItoDialog.Action() {
             @Override
             public void onYesButtonClicked() {
-                if (cekFieldContent()) {
+                if (mWo.isExpired()) {
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                            "Tidak dapat melanjutkan proses, karena sudah mencapai tanggal expired.",
+                            Snackbar.LENGTH_LONG);
+                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(PemutusanActivity.this, R.color.material_pink));
+                    snackbar.show();
+                } else if (cekFieldContent()) {
                     if (mStatusSignal == ConnectivityUtils.SIGNAL_WEAK ||
                             mStatusSignal == ConnectivityUtils.SIGNAL_STRONG) {
                         doPemutusan(DO_ONLINE);
@@ -470,19 +530,45 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     private boolean cekFieldContent() {
-        if (edLwbp.getText().toString().trim().length() == 0) {
-            Toast.makeText(this, "No. LWBP Wajib diisi", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
         if (edTanggalPutus.getText().toString().trim().equals("Menghubungi server")) {
-            Toast.makeText(this, "Tanggal harus tersedia dari server", Toast.LENGTH_SHORT).show();
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "Tanggal harus tersedia dari server",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            snackbar.show();
             return false;
         }
 
         if (!edLokasi.getText().toString().trim().equals("Lokasi telah ditemukan")) {
-            Toast.makeText(this, "Sistem belum menemukan lokasi Anda", Toast.LENGTH_SHORT).show();
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "Sistem belum menemukan lokasi Anda",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            snackbar.show();
             return false;
+        }
+
+        if (spnKeterangan.getSelectedItemPosition() == 0) {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "Anda belum menentukan keterangan pemutusan",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            snackbar.show();
+            return false;
+        } else {
+            if (!wajibIsiLwbp) {
+                toggleFormMeter(View.GONE);
+            } else {
+                toggleFormMeter(View.VISIBLE);
+                if (edLwbp.getText().toString().trim().length() == 0) {
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                            "LWBP Wajib diisi",
+                            Snackbar.LENGTH_LONG);
+                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+                    snackbar.show();
+                    return false;
+                }
+            }
         }
 
         int photoNumber = 0;
@@ -490,7 +576,11 @@ public class PemutusanActivity extends AppCompatActivity
             if (photoPath != null) photoNumber++;
         }
         if (photoNumber == 0) {
-            Toast.makeText(this, "Tidak ada bukti foto yang terlampir", Toast.LENGTH_SHORT).show();
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                    "Tidak ada bukti foto yang terlampir",
+                    Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            snackbar.show();
             return false;
         }
         return true;
@@ -511,19 +601,19 @@ public class PemutusanActivity extends AppCompatActivity
             case R.id.hapus_foto_2:
                 if (mPhotoPath[1] == null) return;
                 new File(mPhotoPath[1].getPath()).delete();
-                imgFoto1.setImageResource(R.drawable.camera_b);
+                imgFoto2.setImageResource(R.drawable.camera_b);
                 mPhotoPath[1] = null;
                 break;
             case R.id.hapus_foto_3:
                 if (mPhotoPath[2] == null) return;
                 new File(mPhotoPath[2].getPath()).delete();
-                imgFoto1.setImageResource(R.drawable.camera_b);
+                imgFoto3.setImageResource(R.drawable.camera_b);
                 mPhotoPath[2] = null;
                 break;
             case R.id.hapus_foto_4:
                 if (mPhotoPath[3] == null) return;
                 new File(mPhotoPath[3].getPath()).delete();
-                imgFoto1.setImageResource(R.drawable.camera_b);
+                imgFoto4.setImageResource(R.drawable.camera_b);
                 mPhotoPath[3] = null;
                 break;
         }
@@ -540,6 +630,7 @@ public class PemutusanActivity extends AppCompatActivity
         System.out.println(pingEvent.getDate());
         Date   date       = DateUtils.parseToDate(pingEvent.getDate());
         String dateString = DateUtils.parseToString(date);
+
         ItoApplication.pingDate = dateString;
         updateTanggalDisplay(dateString);
     }
@@ -549,20 +640,23 @@ public class PemutusanActivity extends AppCompatActivity
         Log.d(TAG, "---------------------------------------------");
         Log.d(TAG, progressEvent.toString());
 
-        SmileyLoading.close();
+        // mark mWo has done.
         if (progressEvent.kode == "1") {
-            // mark mWo has done.
-            Realm realm = Realm.getDefaultInstance();
-            realm.beginTransaction();
-            realm.where(WorkOrder.class)
-                    .equalTo("noWo", mWo.getNoWo())
-                    .findFirst()
-                    .setUploaded(true);
-            realm.where(WorkOrder.class)
-                    .equalTo("noWo", mWo.getNoWo())
-                    .findFirst()
-                    .setStatusSinkronisasi(Constants.SINKRONISASI_SUKSES);
-            realm.commitTransaction();
+            LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setUploaded(true);
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setStatusSinkronisasi(Constants.SINKRONISASI_SUKSES);
+                }
+            });
+
+            SmileyLoading.shouldCloseDialog();
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
                     "Tusbung berhasil dikerjakan dan terunggah ke server",
@@ -577,19 +671,21 @@ public class PemutusanActivity extends AppCompatActivity
             });
             snackbar.show();
         } else {
-            Realm realm = Realm.getDefaultInstance();
-            realm.beginTransaction();
-            realm.where(WorkOrder.class)
-                    .equalTo("noWo", mWo.getNoWo())
-                    .findFirst()
-                    .setUploaded(false);
-            realm.where(WorkOrder.class)
-                    .equalTo("noWo", mWo.getNoWo())
-                    .findFirst()
-                    .setStatusSinkronisasi(Constants.SINKRONISASI_GAGAL);
-            tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
-            realm.insert(tusbung);
-            realm.commitTransaction();
+            LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setUploaded(false);
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", mWo.getNoWo())
+                            .findFirst()
+                            .setStatusSinkronisasi(Constants.SINKRONISASI_GAGAL);
+                    tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
+                    LocalDb.getInstance().insert(tusbung);
+                }
+            });
 
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
                     StringUtils.normalize(progressEvent.message),
@@ -606,6 +702,40 @@ public class PemutusanActivity extends AppCompatActivity
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTempUploadEvent(TempUploadEvent tempEvent) {
+        Log.d(TAG, "---------------------------------------------");
+        Log.d(TAG, "Return from tempuploadwo " + tempEvent.toString());
+
+        if (tempEvent.next != null) {
+            int tempEventCounter = Integer.parseInt(tempEvent.next);
+            if (tempEventCounter <= Integer.parseInt(tusbung.getJumlahFoto())) {
+                Log.d(TAG, "doPemutusan: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
+
+                tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[tempEventCounter - 1]));
+                tusbung.setPart(tempEvent.next);
+                AppConfig.TUSBUNG = tusbung;
+
+                new CountDownTimer(4000, 1000) {
+                    @Override
+                    public void onTick(long l) {
+                        System.out.println("Ticking ...");
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        System.out.println("Finish ...");
+                        SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+                    }
+                }.start();
+
+            } else {
+                SmileyLoading.shouldCloseDialog();
+                Log.d(TAG, "onTempUploadEvent: Done " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
+            }
+        }
+    }
+
     private void updateTanggalDisplay(String date) {
         edTanggalPutus.setText(date);
     }
@@ -616,7 +746,7 @@ public class PemutusanActivity extends AppCompatActivity
 
     @Override
     public void onReceived(int strength) {
-        System.out.println(strength);
+        System.out.println("Signal Strength : " + strength);
         mStatusSignal = strength;
         switch (strength) {
             case ConnectivityUtils.DISCONNECT:

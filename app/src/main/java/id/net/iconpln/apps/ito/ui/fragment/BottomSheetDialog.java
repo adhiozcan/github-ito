@@ -44,7 +44,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment implements View
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.yes_confirm) {
-            SocketTransaction.doReInit();
+            SocketTransaction.shouldReinitSocket();
         }
     }
 }

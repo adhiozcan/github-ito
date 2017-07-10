@@ -8,10 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -29,11 +25,9 @@ import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.helper.RMDatePickerDialog;
 import id.net.iconpln.apps.ito.helper.SmileyLoadingView;
 import id.net.iconpln.apps.ito.model.WoMonitoring;
-import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
-import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.Formater;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 
@@ -109,7 +103,7 @@ public class MonitoringFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageReceived(WoMonitoring[] womonitorings) {
-        SmileyLoading.close();
+        SmileyLoading.shouldCloseDialog();
         if (womonitorings.length == 0) {
             noDataView.setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.GONE);
@@ -130,7 +124,7 @@ public class MonitoringFragment extends Fragment {
         mRecyclerView.setVisibility(View.GONE);
         AppConfig.MONITOR_BULAN = parameterMonth;
         AppConfig.MONITOR_TAHUN = parameterYear;
-        SocketTransaction.prepareStatement().sendMessage(ParamDef.GET_WO_MONITOR);
+        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO_MONITOR);
     }
 
     private void refreshData() {

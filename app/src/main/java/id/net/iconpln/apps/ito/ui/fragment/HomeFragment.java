@@ -28,7 +28,9 @@ import id.net.iconpln.apps.ito.adapter.ChartVPAdapter;
 import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
+import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
 
 /**
@@ -82,7 +84,7 @@ public class HomeFragment extends Fragment {
         btnCleanAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cleanAllData();
+                bersihkanSemuaData();
             }
         });
 
@@ -131,7 +133,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void getDataFromNetwork() {
-        SocketTransaction.prepareStatement().sendMessage(ParamDef.GET_WO_CHART);
+        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO_CHART);
     }
 
     private WoSummary getDataFromStorage() {
@@ -215,16 +217,20 @@ public class HomeFragment extends Fragment {
         storageTransaction.save(WoSummary.class, woSummary);
     }
 
-    private void cleanAllData() {
+    private void bersihkanSemuaData() {
         String message = "Apakah anda yakin akan menghapus semua data ?";
+        SynchUtils.writeSynchLog(SynchUtils.LOG_DEL_ALL);
         ItoDialog.Action action = new ItoDialog.Action() {
             @Override
             public void onYesButtonClicked() {
+
                 Hawk.deleteAll();
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
-                realm.deleteAll();
-                realm.commitTransaction();
+                LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        LocalDb.getInstance().deleteAll();
+                    }
+                });
             }
 
             @Override
