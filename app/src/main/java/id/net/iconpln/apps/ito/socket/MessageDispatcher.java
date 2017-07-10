@@ -13,7 +13,8 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.helper.JsonNullConverter;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
-import id.net.iconpln.apps.ito.model.ProgressUpdateEvent;
+import id.net.iconpln.apps.ito.model.eventbus.ProgressUpdateEvent;
+import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoMonitoring;
 import id.net.iconpln.apps.ito.model.WoSummary;
@@ -46,6 +47,13 @@ public class MessageDispatcher {
         return false;
     }
 
+    private void loginTreatment(String runFunction, MessageEvent messageEvent) {
+        //make exception special for login.
+        if (runFunction.equals("login")) {
+            eventBus.post(new ErrorMessageEvent(messageEvent.message));
+        }
+    }
+
     private void woMonitoringTreatment(String runFunction) {
         //make exception special for womonitoring.
         if (runFunction.equals("getwomonitoring")) {
@@ -54,17 +62,19 @@ public class MessageDispatcher {
         }
     }
 
-    private void loginTreatment(String runFunction, MessageEvent messageEvent) {
-        //make exception special for login.
-        if (runFunction.equals("login")) {
-            eventBus.post(new ErrorMessageEvent(messageEvent.message));
+    private void woPelaksanaanTreatment(String runFunction) {
+        //make exception special for wopelaksanaan.
+        if (runFunction.equals("getwosync")) {
+            eventBus.post(produceMessageWorkOrder(new WorkOrder[0]));
         }
     }
 
     public void dispatch(String runFunction, MessageEvent messageEvent) {
 
-        if (isFailureConnection(messageEvent.response_code))
+        if (isFailureConnection(messageEvent.response_code)) {
+            eventBus.post(new ErrorMessageEvent("Failure Connection"));
             return;
+        }
 
         /**
          * Check if message entities is not null, presume as distinguisher between the response of
@@ -75,6 +85,7 @@ public class MessageDispatcher {
             if (messageEvent.response_code.equals("302")) {
                 loginTreatment(runFunction, messageEvent);
                 woMonitoringTreatment(runFunction);
+                woPelaksanaanTreatment(runFunction);
                 return;
             } else if (messageEvent.entities.length == 0) {
                 //eventBus.post(produceErrorMessageEvent("Maaf, ada gangguan pada server, coba beberapa saat lagi"));
@@ -111,12 +122,12 @@ public class MessageDispatcher {
                 eventBus.post(produceProgressUpdate(message));
                 break;
             case "tempuploadwo":
+                eventBus.post(produceTempUploadWo(message));
                 break;
             case "getmasterflagtusbung":
                 eventBus.post(produceMessageFlagTusbung(messages));
                 break;
             case "ping":
-                // ping message
                 eventBus.post(produceMessagePingEvent(message));
                 break;
             default:
@@ -126,7 +137,7 @@ public class MessageDispatcher {
     }
 
     /**
-     * Produce broadcasr for monitoring data
+     * Produce broadcast for monitoring data
      *
      * @param messages
      * @return
@@ -216,6 +227,17 @@ public class MessageDispatcher {
     private ProgressUpdateEvent produceProgressUpdate(String message) {
         ProgressUpdateEvent progressEvent = new Gson().fromJson(message, ProgressUpdateEvent.class);
         return progressEvent;
+    }
+
+    /**
+     * Produce temp upload wo
+     *
+     * @param message
+     * @return
+     */
+    private TempUploadEvent produceTempUploadWo(String message) {
+        TempUploadEvent tempEvent = new Gson().fromJson(message, TempUploadEvent.class);
+        return tempEvent;
     }
 
     /**
