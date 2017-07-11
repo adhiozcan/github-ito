@@ -43,7 +43,7 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         final WorkOrder wo = woList.get(position);
-        holder.txtNoTul.setText("VI-I | " + wo.getNoTul601());
+        holder.txtNoTul.setText("VI-01 | " + wo.getNoTul601());
         holder.txtPelangganId.setText(wo.getPelangganId());
         holder.txtPelangganNama.setText(wo.getNama());
         holder.txtPelangganAlamat.setText(wo.getAlamat());
