@@ -279,4 +279,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
+
+    public void onProfilClicked(View view) {
+        startActivity(new Intent(this, UserActivity.class));
+        drawer.closeDrawers();
+    }
 }

@@ -27,6 +27,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.stetho.common.StringUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -63,6 +64,7 @@ import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
+import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.SignalListener;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
@@ -130,10 +132,6 @@ public class PemutusanActivity extends AppCompatActivity
         setContentView(R.layout.activity_update_progress);
         CommonUtils.installToolbar(this);
         initView();
-        // -- listening signal strength
-        if (ConnectivityUtils.isHaveInternetConnection(this)) {
-            ConnectivityUtils.register(this, this);
-        }
 
         mGoogleClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -145,11 +143,13 @@ public class PemutusanActivity extends AppCompatActivity
         mFlagTusbung = new ArrayList<>();
         mFlagTusbung.add(0, new FlagTusbung("-", "Pilih keterangan pemutusan", "Pilih keterangan pemutusan"));
         mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
+
         for (FlagTusbung flagTusbung : mFlagTusbung) {
             String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
             keteranganList.add(keterangan);
             Log.d(TAG, "Flag Tusbung : \n" + flagTusbung.toString());
         }
+
         ArrayAdapter userAdapter = new ArrayAdapter(this, R.layout.adapter_item_spinner_keterangan, keteranganList);
         spnKeterangan.setAdapter(userAdapter);
         spnKeterangan.setSelection(0);
@@ -357,6 +357,16 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // listening signal strength
+        if (ConnectivityUtils.isHaveInternetConnection(this)) {
+            ConnectivityUtils.register(this, this);
+        }
+    }
+
+    @Override
     protected void onStop() {
         mGoogleClient.disconnect();
         super.onStop();
@@ -486,11 +496,6 @@ public class PemutusanActivity extends AppCompatActivity
         LocalDb.makeSafeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                LocalDb.getInstance()
-                        .where(WorkOrder.class)
-                        .equalTo("noWo", mWo.getNoWo())
-                        .findFirst()
-                        .setStatusSinkronisasi(Constants.SINKRONISASI_SUKSES);
                 LocalDb.getInstance().where(WorkOrder.class)
                         .equalTo("noWo", mWo.getNoWo())
                         .findFirst()
@@ -531,28 +536,19 @@ public class PemutusanActivity extends AppCompatActivity
 
     private boolean cekFieldContent() {
         if (edTanggalPutus.getText().toString().trim().equals("Menghubungi server")) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "Tanggal harus tersedia dari server",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Tanggal harus tersedia dari server");
             snackbar.show();
             return false;
         }
 
         if (!edLokasi.getText().toString().trim().equals("Lokasi telah ditemukan")) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "Sistem belum menemukan lokasi Anda",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Sistem belum menemukan lokasi Anda");
             snackbar.show();
             return false;
         }
 
         if (spnKeterangan.getSelectedItemPosition() == 0) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "Anda belum menentukan keterangan pemutusan",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Anda belum menentukan keterangan pemutusan");
             snackbar.show();
             return false;
         } else {
@@ -561,10 +557,7 @@ public class PemutusanActivity extends AppCompatActivity
             } else {
                 toggleFormMeter(View.VISIBLE);
                 if (edLwbp.getText().toString().trim().length() == 0) {
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                            "LWBP Wajib diisi",
-                            Snackbar.LENGTH_LONG);
-                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+                    Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "LWBP Wajib diisi");
                     snackbar.show();
                     return false;
                 }
@@ -576,10 +569,7 @@ public class PemutusanActivity extends AppCompatActivity
             if (photoPath != null) photoNumber++;
         }
         if (photoNumber == 0) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "Tidak ada bukti foto yang terlampir",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Tidak ada bukti foto yang terlampir");
             snackbar.show();
             return false;
         }
@@ -658,10 +648,8 @@ public class PemutusanActivity extends AppCompatActivity
 
             SmileyLoading.shouldCloseDialog();
 
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "Tusbung berhasil dikerjakan dan terunggah ke server",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_light_green));
+            String   message  = "Tusbung berhasil dikerjakan dan terunggah ke server";
+            Snackbar snackbar = NotifUtils.makeGreenSnackbar(this, message);
             snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
@@ -687,10 +675,7 @@ public class PemutusanActivity extends AppCompatActivity
                 }
             });
 
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    StringUtils.normalize(progressEvent.message),
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(PemutusanActivity.this, R.color.material_pink));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, StringUtils.normalize(progressEvent.message));
             snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {

@@ -5,7 +5,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,6 +37,7 @@ import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.utility.DeviceUtils;
+import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
@@ -111,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         setHardwareIdInfo();
-        checkUserStillLoggedIn();
+        checkIfUserStillLoggedIn();
     }
 
     private void setHardwareIdInfo() {
@@ -121,16 +121,7 @@ public class LoginActivity extends AppCompatActivity {
         hardwareid.setText(hd);
     }
 
-    private void checkUserIsRemember() {
-        boolean isUserRemembered = AppConfig.isRemember;
-        if (isUserRemembered) {
-            Map<String, String> userInfo = AppConfig.getUserRemember();
-            edUser.setText(userInfo.get(Constants.USERNAME));
-            edPassword.setText(userInfo.get(Constants.PASSWORD));
-        }
-    }
-
-    private void checkUserStillLoggedIn() {
+    private void checkIfUserStillLoggedIn() {
         String kodeUser = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
         if (!kodeUser.isEmpty()) {
             AppConfig.KODE_PETUGAS = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
@@ -138,6 +129,15 @@ public class LoginActivity extends AppCompatActivity {
             moveToDashboard();
         } else {
             checkUserIsRemember();
+        }
+    }
+
+    private void checkUserIsRemember() {
+        boolean isUserRemembered = AppConfig.isRemember;
+        if (isUserRemembered) {
+            Map<String, String> userInfo = AppConfig.getUserRemember();
+            edUser.setText(userInfo.get(Constants.USERNAME));
+            edPassword.setText(userInfo.get(Constants.PASSWORD));
         }
     }
 
@@ -289,9 +289,7 @@ public class LoginActivity extends AppCompatActivity {
             LOGIN_COMPLETE = true;
             listenDataToComplete();
         } else {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout), "Username atau Password tidak ditemukan",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Username atau Password tidak ditemukan");
             snackbar.show();
         }
     }
@@ -317,8 +315,7 @@ public class LoginActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onError(ErrorMessageEvent messageEvent) {
         SmileyLoading.shouldCloseDialog();
-        Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout), messageEvent.getMessage(), Snackbar.LENGTH_LONG);
-        snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
+        Snackbar snackbar = NotifUtils.makePinkSnackbar(this, messageEvent.getMessage());
         snackbar.show();
     }
 }
