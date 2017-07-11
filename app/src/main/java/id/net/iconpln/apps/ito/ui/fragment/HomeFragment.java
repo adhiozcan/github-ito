@@ -2,14 +2,12 @@ package id.net.iconpln.apps.ito.ui.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.orhanobut.hawk.Hawk;
@@ -47,18 +45,8 @@ public class HomeFragment extends Fragment {
     private ViewPager      mViewPager;
     private List<Fragment> mChartFragments;
 
-    private TextView txtBelumPutus,
-            txtBelumPutusLunas,
-            txtPutus,
-            txtPutusLunas,
-            txtSambung,
-            txtTotal,
-            txtBelumBongkar,
-            txtBongkar,
-            btnCleanAll;
-
-    private View      statisticPanel;
-    private ImageView btnArrowStatistic;
+    private TextView txtTotal;
+    private TextView btnCleanAll;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -70,13 +58,6 @@ public class HomeFragment extends Fragment {
         mBarChartData = new int[7];
 
         checkAvailableData();
-
-        btnArrowStatistic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toogleStatisticPanel();
-            }
-        });
 
         btnCleanAll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,17 +74,6 @@ public class HomeFragment extends Fragment {
 
         btnCleanAll = (TextView) rootView.findViewById(R.id.btn_clean_all);
         txtTotal = (TextView) rootView.findViewById(R.id.value_total);
-
-        txtBelumPutus = (TextView) rootView.findViewById(R.id.value_belum_putus);
-        txtBelumPutusLunas = (TextView) rootView.findViewById(R.id.value_belum_putus_sudah_lunas);
-        txtPutus = (TextView) rootView.findViewById(R.id.value_sudah_putus);
-        txtPutusLunas = (TextView) rootView.findViewById(R.id.value_sudah_putus_sudah_lunas);
-        txtSambung = (TextView) rootView.findViewById(R.id.value_sambung);
-        txtBelumBongkar = (TextView) rootView.findViewById(R.id.value_belum_bongkar);
-        txtBongkar = (TextView) rootView.findViewById(R.id.value_bongkar);
-
-        statisticPanel = rootView.findViewById(R.id.panel_statistic);
-        btnArrowStatistic = (ImageView) rootView.findViewById(R.id.action_statistic_arrow);
     }
 
     private void initViewPager() {
@@ -117,7 +87,7 @@ public class HomeFragment extends Fragment {
         if (getDataFromStorage() != null) {
             WoSummary woSummary = getDataFromStorage();
             setChartData(woSummary);
-            setLegend(woSummary);
+            setTotalWoInfo(woSummary);
 
             Log.d(TAG, "[Get Offline] : WoSummary" + woSummary.toString());
         } else {
@@ -159,28 +129,8 @@ public class HomeFragment extends Fragment {
         mViewPager.getAdapter().notifyDataSetChanged();
     }
 
-    private void setLegend(WoSummary woSummary) {
-        txtBelumPutus.setText(woSummary.getBelumPutus());
-        txtBelumPutusLunas.setText(woSummary.getBelumPutusSudahLunas());
-        txtPutus.setText(woSummary.getSudahputus());
-        txtPutusLunas.setText(woSummary.getSudahPutusSudahLunas());
-        txtSambung.setText(woSummary.getSambung());
-        txtBelumBongkar.setText(woSummary.getBelumBongkar());
-        txtBongkar.setText(woSummary.getBongkar());
+    private void setTotalWoInfo(WoSummary woSummary) {
         txtTotal.setText(woSummary.countTotal());
-    }
-
-    private void toogleStatisticPanel() {
-        boolean isShown = Integer.parseInt(statisticPanel.getTag().toString()) == 1 ? true : false;
-        if (isShown) {
-            btnArrowStatistic.setImageResource(R.drawable.ic_arrow_down);
-            statisticPanel.setVisibility(View.GONE);
-            statisticPanel.setTag(0);
-        } else {
-            btnArrowStatistic.setImageResource(R.drawable.ic_arrow_up);
-            statisticPanel.setVisibility(View.VISIBLE);
-            statisticPanel.setTag(1);
-        }
     }
 
     @Override
@@ -198,7 +148,7 @@ public class HomeFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEventReceived(WoSummary woSummary) {
         setChartData(woSummary);
-        setLegend(woSummary);
+        setTotalWoInfo(woSummary);
 
         /**
          * Saving to local

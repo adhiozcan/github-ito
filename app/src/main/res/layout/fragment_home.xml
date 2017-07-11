@@ -58,7 +58,7 @@
             android:layout_margin="@dimen/space_4dp"
             android:layout_marginBottom="@dimen/space_4dp"
             android:background="#FFFFFF"
-            android:paddingBottom="@dimen/space_4dp"
+            android:paddingBottom="@dimen/space_16dp"
             android:paddingLeft="@dimen/space_16dp"
             android:paddingRight="@dimen/space_12dp"
             android:paddingTop="@dimen/space_16dp">
@@ -90,22 +90,8 @@
                     android:textSize="@dimen/text_size_24sp"
                     android:textStyle="bold"/>
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <ImageView
-                        android:id="@+id/action_statistic_arrow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:background="@drawable/button_round_white"
-                        android:src="@drawable/ic_arrow_down"/>
-                </RelativeLayout>
             </LinearLayout>
         </LinearLayout>
-
-        <include layout="@layout/layout_panel_statistic"/>
 
         <TextView
             android:layout_width="wrap_content"
