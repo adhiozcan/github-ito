@@ -475,7 +475,7 @@
                 <TableRow
                     android:id="@+id/form_meter_kvarh"
                     android:layout_marginTop="5dp"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                     <TextView
                         android:layout_width="120dp"
@@ -491,6 +491,30 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:hint="Input No. KVARH"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:textColor="#121212"
+                        android:textSize="14sp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_marginTop="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_8dp"
+                        android:text="No. Telp"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <EditText
+                        android:id="@+id/no_telp_pelanggan"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Input telp pelanggan"
                         android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="#121212"
