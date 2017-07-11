@@ -7,6 +7,8 @@ import java.util.Map;
 
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.Tusbung;
+import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.storage.StorageTransaction;
 
 /**
  * Created by Ozcan on 31/03/2017.
@@ -37,12 +39,12 @@ public class AppConfig {
         return Hawk.get(Constants.IS_REMEMBER, false);
     }
 
-    public static void saveUserRemember(String username, String password) {
+    public static void saveUserCredential(String username, String password) {
         Hawk.put(Constants.USERNAME, username);
         Hawk.put(Constants.PASSWORD, password);
     }
 
-    public static Map<String, String> getUserRemember() {
+    public static Map<String, String> getUserCredential() {
         String              user     = Hawk.get(Constants.USERNAME);
         String              password = Hawk.get(Constants.PASSWORD);
         Map<String, String> result   = new HashMap<>();
@@ -51,29 +53,62 @@ public class AppConfig {
         return result;
     }
 
-    public static void saveUserLoggedIn(String kodePetugas, String idunitup) {
-        Hawk.put(Constants.KODE_PETUGAS, kodePetugas);
-        Hawk.put(Constants.ID_UNIT_UP, idunitup);
+    public static UserProfile getUserInformation() {
+        UserProfile user = new UserProfile();
+        user.setNama(String.valueOf(Hawk.get(Constants.NAMA_PETUGAS, "")));
+        user.setKodePetugas(String.valueOf(Hawk.get(Constants.KODE_PETUGAS, "")));
+        user.setUnitupi(String.valueOf(Hawk.get(Constants.ID_UNIT_UPI, "")));
+        user.setUnitup(String.valueOf(Hawk.get(Constants.ID_UNIT_UP, "")));
+        user.setNamaunitup(String.valueOf(Hawk.get(Constants.ID_UNIT_UP_NAMA, "")));
+        user.setUnitap(String.valueOf(Hawk.get(Constants.ID_UNIT_AP, "")));
+        return user;
     }
 
-    public static Map<String, String> getUserLoggedIn() {
-        Map<String, String> userIdentity = new HashMap<>();
-        userIdentity.put(Constants.KODE_PETUGAS, Hawk.get(Constants.KODE_PETUGAS, ""));
-        userIdentity.put(Constants.ID_UNIT_UP, Hawk.get(Constants.ID_UNIT_UP, ""));
-        return userIdentity;
+    public static void saveUserInformation(UserProfile user) {
+        if (user == null) return;
+        Hawk.put(Constants.KODE_PETUGAS, user.getKodePetugas());
+        Hawk.put(Constants.NAMA_PETUGAS, user.getNama());
+        Hawk.put(Constants.ID_UNIT_UP, user.getUnitup());
+        Hawk.put(Constants.ID_UNIT_UP_NAMA, user.getNamaunitup());
+        Hawk.put(Constants.ID_UNIT_UPI, user.getUnitupi());
+        Hawk.put(Constants.ID_UNIT_AP, user.getUnitap());
     }
 
-    public static void cleanDataSafely() {
+    private static void deleteUserRememberConfiguration() {
+        Hawk.delete(Constants.IS_REMEMBER);
+    }
+
+    private static void deleteUserCredential() {
+        Hawk.delete(Constants.USERNAME);
+        Hawk.delete(Constants.PASSWORD);
+    }
+
+    public static void deleteUserInformation() {
+        Hawk.delete(Constants.KODE_PETUGAS);
+        Hawk.delete(Constants.NAMA_PETUGAS);
+        Hawk.delete(Constants.ID_UNIT_UP);
+        Hawk.delete(Constants.ID_UNIT_UP_NAMA);
+        Hawk.delete(Constants.ID_UNIT_UPI);
+        Hawk.delete(Constants.ID_UNIT_AP);
+    }
+
+    public static void cleanupData() {
         USERNAME = "";
         PASSWORD = "";
         KODE_PETUGAS = "";
         ID_UNIT_UP = "";
+        isRemember = false;
+
+        deleteUserRememberConfiguration();
+        deleteUserCredential();
+        deleteUserInformation();
+
         Hawk.delete(Constants.IS_REMEMBER);
-        Hawk.delete(Constants.USERNAME);
-        Hawk.delete(Constants.PASSWORD);
-        Hawk.delete(Constants.KODE_PETUGAS);
-        Hawk.delete(Constants.ID_UNIT_UP);
-        //saveUserRememberConfiguration(false);
-        //saveUserRemember("", "");
+
+        /**
+         * Save user information into local
+         */
+        StorageTransaction<UserProfile> storageTransaction = new StorageTransaction<>();
+        storageTransaction.save(UserProfile.class, new UserProfile());
     }
 }

@@ -65,8 +65,8 @@
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="46dp"
-                android:layout_height="46dp"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
                 android:layout_marginRight="@dimen/space_16dp"
                 android:src="@drawable/ic_file"/>
 
@@ -117,8 +117,8 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="46dp"
-                    android:layout_height="46dp"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_marginRight="@dimen/space_16dp"
                     android:src="@drawable/ic_waste"/>
 
@@ -144,7 +144,7 @@
                         android:padding="@dimen/space_8dp"
                         android:text="Bersihkan"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="@dimen/text_size_12sp"
                         android:textStyle="bold"/>
                 </LinearLayout>
 

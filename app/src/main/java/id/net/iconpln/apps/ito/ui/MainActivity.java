@@ -226,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements
                         return true;
                     default:
                         navItemIndex = 0;
+                        break;
                 }
 
                 //Checking if the item is in checked state or not, if not make it in checked state
@@ -269,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void logout() {
         System.out.println("User will be logout, entering mode cleaning.");
-        AppConfig.cleanDataSafely();
+        AppConfig.cleanupData();
 
         startActivity(new Intent(this, LoginActivity.class));
         Toast.makeText(this, "Anda telah logout dengan aman", Toast.LENGTH_SHORT).show();

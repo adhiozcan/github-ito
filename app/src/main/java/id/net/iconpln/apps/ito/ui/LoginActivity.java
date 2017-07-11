@@ -16,6 +16,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -122,10 +123,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfUserStillLoggedIn() {
-        String kodeUser = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
+        String kodeUser = AppConfig.getUserInformation().getKodePetugas();
         if (!kodeUser.isEmpty()) {
-            AppConfig.KODE_PETUGAS = AppConfig.getUserLoggedIn().get(Constants.KODE_PETUGAS);
-            AppConfig.ID_UNIT_UP = AppConfig.getUserLoggedIn().get(Constants.ID_UNIT_UP);
+            AppConfig.KODE_PETUGAS = AppConfig.getUserInformation().getKodePetugas();
+            AppConfig.ID_UNIT_UP = AppConfig.getUserInformation().getUnitup();
             moveToDashboard();
         } else {
             checkUserIsRemember();
@@ -135,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
     private void checkUserIsRemember() {
         boolean isUserRemembered = AppConfig.isRemember;
         if (isUserRemembered) {
-            Map<String, String> userInfo = AppConfig.getUserRemember();
+            Map<String, String> userInfo = AppConfig.getUserCredential();
             edUser.setText(userInfo.get(Constants.USERNAME));
             edPassword.setText(userInfo.get(Constants.PASSWORD));
         }
@@ -200,10 +201,10 @@ public class LoginActivity extends AppCompatActivity {
     private void onLoginSuccess(UserProfile userProfile) {
         hideLoginFormView();
 
-        AppConfig.saveUserLoggedIn(userProfile.getKodePetugas(), userProfile.getUnitup());
+        AppConfig.saveUserInformation(userProfile);
 
         if (AppConfig.isRemember) {
-            AppConfig.saveUserRemember(AppConfig.USERNAME, AppConfig.PASSWORD);
+            AppConfig.saveUserCredential(AppConfig.USERNAME, AppConfig.PASSWORD);
         }
 
         /**
