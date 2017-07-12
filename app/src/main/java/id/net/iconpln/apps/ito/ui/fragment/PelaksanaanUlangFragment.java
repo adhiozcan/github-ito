@@ -38,8 +38,14 @@ public class PelaksanaanUlangFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
 
-        mWorkOrderList.addAll(getDataLocal());
-        mAdapter.notifyDataSetChanged();
+        List<WorkOrder> localWork = getDataLocal();
+        if (localWork.size() == 0) {
+            view.findViewById(R.id.no_data_view).setVisibility(View.VISIBLE);
+        } else {
+            view.findViewById(R.id.no_data_view).setVisibility(View.GONE);
+            mWorkOrderList.addAll(getDataLocal());
+            mAdapter.notifyDataSetChanged();
+        }
 
         return view;
     }

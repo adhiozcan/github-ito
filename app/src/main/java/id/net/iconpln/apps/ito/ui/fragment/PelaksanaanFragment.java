@@ -78,9 +78,6 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
 
     private List<WorkOrder> testMaxList = new ArrayList<>();
 
-    private Realm realm = LocalDb.getInstance();
-
-
     public PelaksanaanFragment() {
         // Required empty public constructor
     }
