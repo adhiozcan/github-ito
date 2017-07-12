@@ -84,6 +84,12 @@
                 android:value=".ui.MainActivity"/>
         </activity>
 
+        <receiver android:name=".helper.ConnectionListener">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="23a3bc41a56c77048b7bc4053a64226db1800556"/>
