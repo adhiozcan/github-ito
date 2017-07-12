@@ -391,13 +391,6 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
                 }
             });
 
-            /*
-            realm.beginTransaction();
-            for (WorkOrder wo : workOrder) {
-                realm.insert(wo);
-            }
-            realm.commitTransaction();
-            */
 
             testMaxList.addAll(Arrays.asList(workOrder));
             System.out.println("**********************************************************************");

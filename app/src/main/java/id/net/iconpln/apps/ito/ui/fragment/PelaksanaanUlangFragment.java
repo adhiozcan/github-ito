@@ -33,22 +33,25 @@ public class PelaksanaanUlangFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_pelaksanaan_ulang, container, false);
 
         mWorkOrderList = new ArrayList<>();
-        mAdapter = new PelaksanaanUlangAdapter(mWorkOrderList);
+        mAdapter = new PelaksanaanUlangAdapter(getActivity(), mWorkOrderList);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
 
         mWorkOrderList.addAll(getDataLocal());
         mAdapter.notifyDataSetChanged();
-        
+
         return view;
     }
 
     private List<WorkOrder> getDataLocal() {
         ArrayList<WorkOrder> woList = new ArrayList<>();
         woList.addAll(LocalDb.getInstance().copyFromRealm(
-                LocalDb.getInstance().where(WorkOrder.class)
-                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS).findAll()));
+                LocalDb.getInstance()
+                        .where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("isWoUlang", true)
+                        .findAll()));
         return woList;
     }
 }

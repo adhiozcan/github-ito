@@ -40,8 +40,8 @@ public class Tusbung extends RealmObject {
     private String photoPath4;
     private String expired;
 
-    private String statusSinkron;
-    private String keteranganSinkron;
+    private String  statusSinkron;
+    private String  keteranganSinkron;
 
     public Tusbung() {
     }

@@ -76,36 +76,39 @@ public class SocketTransaction {
 
     }
 
-    private void composeParam(String parameter) {
-        socketRequest = new WeakReference<>(parameter);
-    }
-
     @RequiresPermission(Manifest.permission.INTERNET)
     public void sendMessage(@ParamDef.Param int service) {
+        String param = null;
         switch (service) {
             case ParamDef.LOGIN:
-                composeParam(Param.login());
+                param = Param.login();
                 break;
             case ParamDef.GET_MASTER_TUSBUNG:
-                composeParam(Param.getMasterTusbung());
+                param = Param.getMasterTusbung();
                 break;
             case ParamDef.GET_WO:
-                composeParam(Param.getWoSync());
+                param = Param.getWoSync();
+                break;
+            case ParamDef.GET_WO_ULANG:
+                param = Param.getWoUlang();
                 break;
             case ParamDef.GET_WO_CHART:
-                composeParam(Param.getWoChart());
+                param = Param.getWoChart();
                 break;
             case ParamDef.GET_WO_MONITOR:
-                composeParam(Param.monitoring());
+                param = Param.monitoring();
                 break;
             case ParamDef.SET_WO:
-                composeParam(Param.markAsLocal());
+                param = Param.markAsLocal();
                 break;
             case ParamDef.DO_TUSBUNG:
-                composeParam(Param.doTusbung());
+                param = Param.doTusbung();
                 break;
         }
+
+        socketRequest = new WeakReference<>(param);
         ws.send(socketRequest.get());
+
         Log.d(TAG, "[Send]: -----------------------------------------------------------------");
         Log.d(TAG, "[Body]: >>>" + socketRequest.get());
         Log.d(TAG, "[Send]: -----------------------------------------------------------------");

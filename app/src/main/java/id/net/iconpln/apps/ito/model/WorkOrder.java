@@ -84,6 +84,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
     private boolean isSelesai;
     private boolean isUploaded;
     private String  statusSinkronisasi;
+    private boolean isWoUlang;
 
     public WorkOrder() {
     }
@@ -125,6 +126,7 @@ public class WorkOrder extends RealmObject implements Parcelable {
         isSelesai = in.readByte() != 0;
         isUploaded = in.readByte() != 0;
         statusSinkronisasi = in.readString();
+        isWoUlang = in.readByte() != 0;
     }
 
     public static final Creator<WorkOrder> CREATOR = new Creator<WorkOrder>() {
@@ -442,6 +444,14 @@ public class WorkOrder extends RealmObject implements Parcelable {
         return false;
     }
 
+    public boolean isWoUlang() {
+        return isWoUlang;
+    }
+
+    public void setWoUlang(boolean woUlang) {
+        isWoUlang = woUlang;
+    }
+
     public void formatPretty() {
         this.nama = StringUtils.normalize(nama);
         this.tanggalWo = StringUtils.normalize(tanggalWo);
@@ -492,5 +502,6 @@ public class WorkOrder extends RealmObject implements Parcelable {
         parcel.writeByte((byte) (isSelesai ? 1 : 0));
         parcel.writeByte((byte) (isUploaded ? 1 : 0));
         parcel.writeString(statusSinkronisasi);
+        parcel.writeByte((byte) (isWoUlang ? 1 : 0));
     }
 }

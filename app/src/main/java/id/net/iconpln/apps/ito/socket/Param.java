@@ -49,6 +49,20 @@ public class Param {
                 "}";
     }
 
+    public static String getWoUlang() {
+        return "{\n" +
+                "\t\"type\": \"event\",\n" +
+                "\t\"event\": \"do_something\",\n" +
+                "\t\"params\": {\n" +
+                "\t\t\"method\": \"getwoulang\",\n" +
+                "\t\t\"idunitup\": \"" + AppConfig.ID_UNIT_UP + "\",\n" +
+                "\t\t\"kodepetugas\": \"" + AppConfig.KODE_PETUGAS + "\",\n" +
+                "\t\t\"pagestart\": \"" + AppConfig.WO_PAGE_START + "\",\n" +
+                "\t\t\"pageend\": \"" + AppConfig.WO_PAGE_END + "\"\n" +
+                "\t}\n" +
+                "}";
+    }
+
     public static String markAsLocal() {
         return "{\n" +
                 "\t\"type\": \"event\",\n" +
@@ -92,6 +106,36 @@ public class Param {
      * @return
      */
     public static String doTusbung() {
+        Tusbung tusbung = AppConfig.TUSBUNG;
+        return "{\n" +
+                "\"type\": \"event\",\n" +
+                "\"event\": \"do_something\",\n" +
+                "\"params\": {\n" +
+                "\"method\": \"tempuploadwo\",\n" +
+                "\"foto\":\"" + tusbung.getBase64Foto() + "\",\n" +
+                "\"jumlah\":\"" + tusbung.getJumlahFoto() + "\", \"ke\":\"" + tusbung.getPart() + "\",\n" +
+                "\"tglputus\": \"" + tusbung.getTanggalPemutusan() + "\",\n" +
+                "\"standlwbpputus\": \"" + tusbung.getStandLWBP() + "\",\n" +
+                "\"standwbpputus\": \"" + tusbung.getStandWBP() + "\",\n" +
+                "\"standkvarhputus\": \"" + tusbung.getStandKVARH() + "\",\n" +
+                "\"namaputus\": \"" + tusbung.getNamaPetugas() + "\",\n" +
+                "\"gagalputus\": \"" + tusbung.getGagalPutus() + "\",\n" +
+                "\"nomorwo\": \"" + tusbung.getNoWo() + "\",\n" +
+                "\"kodepetugas\": \"" + tusbung.getKodePetugas() + "\",\n" +
+                "\"latitude\": \"" + tusbung.getLatitude() + "\",\n" +
+                "\"longitude\": \"" + tusbung.getLongitude() + "\",\n" +
+                "\"notul\": \"" + tusbung.getNoTul() + "\",\n" +
+                "\"idunitup\": \"" + tusbung.getUnitUpId() + "\",\n" +
+                "\"status\": \"" + tusbung.getStatus() + "\"\n" +
+                "}\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "\n";
+    }
+
+    public static String doTusbungUlang() {
         Tusbung tusbung = AppConfig.TUSBUNG;
         return "{\n" +
                 "\"type\": \"event\",\n" +

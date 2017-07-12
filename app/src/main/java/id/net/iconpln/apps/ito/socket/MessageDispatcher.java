@@ -60,6 +60,12 @@ public class MessageDispatcher {
         }
     }
 
+    private void woPelaksanaanUlangTreatment(String runFunction) {
+        if (runFunction.equals("getwoallulang")) {
+            eventBus.post(produceMessageWorkOrder(new WorkOrder[0]));
+        }
+    }
+
     public void dispatch(String runFunction, MessageEvent messageEvent) {
 
         if (isFailureConnection(messageEvent.response_code)) {
@@ -76,6 +82,7 @@ public class MessageDispatcher {
             if (messageEvent.response_code.equals("302")) {
                 loginTreatment(runFunction, messageEvent);
                 woPelaksanaanTreatment(runFunction);
+                woPelaksanaanUlangTreatment(runFunction);
                 return;
             } else if (messageEvent.entities.length == 0) {
                 //eventBus.post(produceErrorMessageEvent("Maaf, ada gangguan pada server, coba beberapa saat lagi"));

@@ -16,7 +16,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -32,6 +31,7 @@ import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoSummary;
+import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
@@ -54,25 +54,26 @@ public class LoginActivity extends AppCompatActivity {
     private EditText edPassword;
     private CheckBox chkRememberMe;
     private TextView txtAppVersion;
+    private TextView txtLoadingDesc;
     private View     formLogin;
     private View     viewLoading;
 
     private SocketTransaction socketTransaction;
 
-    private boolean LOGIN_COMPLETE          = false;
-    private boolean MASTER_TUSBUNG_COMPLETE = false;
-    private boolean WORK_ORDER_COMPLETE     = false;
-
-    private Realm realm;
+    private boolean LOGIN_COMPLETE            = false;
+    private boolean MASTER_TUSBUNG_COMPLETE   = false;
+    private boolean WORK_ORDER_COMPLETE       = false;
+    private boolean WORK_ORDER_ULANG_COMPLETE = false;
 
     @Override
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        realm = LocalDb.getInstance();
+
         SocketTransaction.start();
 
+        txtLoadingDesc = (TextView) findViewById(R.id.loading_description);
         formLogin = findViewById(R.id.login_form);
         viewLoading = findViewById(R.id.view_loading);
 
@@ -222,8 +223,8 @@ public class LoginActivity extends AppCompatActivity {
         /**
          * Doing many request call. Intended to checking new data on application on beginning.
          */
+        txtLoadingDesc.setText("Memperbarui data master tusbung...");
         socketTransaction.sendMessage(ParamDef.GET_MASTER_TUSBUNG);
-        socketTransaction.sendMessage(ParamDef.GET_WO_CHART);
     }
 
     /**
@@ -235,22 +236,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Show login form and hide loading view. Intended to use when login activity
-     * need to be reset into default.
-     */
-    private void clearViewStuff() {
-        formLogin.setVisibility(View.VISIBLE);
-        viewLoading.setVisibility(View.GONE);
-    }
-
-    /**
      * Listen when all data has complete.
      * There are 3 request : login, master tusbung and work order.
      *
      * @return boolean
      */
     private void listenDataToComplete() {
-        if (LOGIN_COMPLETE && MASTER_TUSBUNG_COMPLETE && WORK_ORDER_COMPLETE) {
+        if (LOGIN_COMPLETE && MASTER_TUSBUNG_COMPLETE && WORK_ORDER_COMPLETE && WORK_ORDER_ULANG_COMPLETE) {
             SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH);
             moveToDashboard();
         }
@@ -258,7 +250,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void moveToDashboard() {
         startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
-        //clearViewStuff();
         finish();
     }
 
@@ -296,20 +287,49 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onFlagTusbungResponse(FlagTusbung[] flagTusbung) {
+    public void onFlagTusbungResponse(final FlagTusbung[] flagTusbung) {
         Log.d(TAG, "[Flag Tusbung] " + flagTusbung.length + "--------------------");
+
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.delete(FlagTusbung.class);
+                realm.copyToRealmOrUpdate(Arrays.asList(flagTusbung));
+            }
+        });
+
         MASTER_TUSBUNG_COMPLETE = true;
         listenDataToComplete();
 
-        realm.beginTransaction();
-        realm.delete(FlagTusbung.class);
-        realm.copyToRealmOrUpdate(Arrays.asList(flagTusbung));
-        realm.commitTransaction();
+        txtLoadingDesc.setText("Memperbarui data chart...");
+        socketTransaction.sendMessage(ParamDef.GET_WO_CHART);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onWoSummaryResponse(WoSummary woSummary) {
+        txtLoadingDesc.setText("Memperbarui data wo pelaksanaan ulang...");
+        socketTransaction.sendMessage(ParamDef.GET_WO_ULANG);
+
         WORK_ORDER_COMPLETE = true;
+        listenDataToComplete();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDataWoUlangResponse(final WorkOrder[] workOrders) {
+        Log.d(TAG, "[Wo Ulang] " + workOrders.length + "--------------------");
+        txtLoadingDesc.setText("Data complete...");
+
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                for (WorkOrder wo : workOrders) {
+                    wo.setWoUlang(true);
+                    realm.insertOrUpdate(wo);
+                }
+            }
+        });
+
+        WORK_ORDER_ULANG_COMPLETE = true;
         listenDataToComplete();
     }
 
