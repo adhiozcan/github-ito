@@ -470,7 +470,7 @@ public class PemutusanActivity extends AppCompatActivity
             } else {
                 SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
             }
-            
+
         } else if (typeWork == DO_OFFLINE) {
             // mark wo to be pending and will be uploaded later
             Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");

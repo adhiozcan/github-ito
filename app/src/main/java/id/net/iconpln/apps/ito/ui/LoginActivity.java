@@ -265,11 +265,6 @@ public class LoginActivity extends AppCompatActivity {
         EventBusProvider.getInstance().unregister(this);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLoginResponse(UserProfile userProfile) {
         Log.d(TAG, "onLoginResponse: ------------------------------------------------------------");
