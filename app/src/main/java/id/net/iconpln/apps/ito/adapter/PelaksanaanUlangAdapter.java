@@ -2,7 +2,6 @@ package id.net.iconpln.apps.ito.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,46 +17,33 @@ import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.ui.StatusPiutangActivity;
 
 /**
- * Created by Ozcan on 27/03/2017.
+ * Created by Ozcan on 10/07/2017.
  */
 
-public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.ViewHolder> {
+public class PelaksanaanUlangAdapter extends RecyclerView.Adapter<PelaksanaanUlangAdapter.ViewHolder> {
     private Context         context;
-    private String          tagTab;
-    private List<WorkOrder> woList;
+    private List<WorkOrder> workOrderList;
 
-    public PelaksanaanAdapter(Context context, String tagTab, List<WorkOrder> woList) {
+    public PelaksanaanUlangAdapter(Context context, List<WorkOrder> workOrderList) {
         this.context = context;
-        this.tagTab = tagTab;
-        this.woList = woList;
+        this.workOrderList = workOrderList;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context mContext   = parent.getContext();
-        int     itemLayout = R.layout.adapter_item_workorder;
+        int     itemLayout = R.layout.adapter_item_pelaksanaan_ulang;
         View    view       = LayoutInflater.from(mContext).inflate(itemLayout, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
-        final WorkOrder wo = woList.get(position);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        final WorkOrder wo = workOrderList.get(position);
         holder.txtNoTul.setText("VI-01 | " + wo.getNoTul601());
         holder.txtPelangganId.setText(wo.getPelangganId());
         holder.txtPelangganNama.setText(wo.getNama());
         holder.txtPelangganAlamat.setText(wo.getAlamat());
-
-        if (tagTab.equals("selesai")) {
-            holder.txtStatusUpload.setText(wo.getStatusSinkronisasi());
-            if (wo.isUploaded()) {
-                holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.material_green));
-                holder.txtStatusUpload.setVisibility(View.VISIBLE);
-            } else {
-                holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.colorOrange));
-                holder.txtStatusUpload.setVisibility(View.VISIBLE);
-            }
-        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,8 +51,8 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
                 Log.d("Pelaksanaan Adapter", "onClick: --------------------------------------------");
                 EventBusProvider.getInstance().postSticky(wo);
                 Intent statusPiutang = new Intent(context, StatusPiutangActivity.class);
-                statusPiutang.putExtra("tag_tab", tagTab);
-                statusPiutang.putExtra("tusbung_ulang", false);
+                statusPiutang.putExtra("tag_tab", "pelaksanaan");
+                statusPiutang.putExtra("tusbung_ulang", true);
                 context.startActivity(statusPiutang);
             }
         });
@@ -74,13 +60,12 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
 
     @Override
     public int getItemCount() {
-        return woList.size();
+        return workOrderList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView txtNoTul;
         private TextView txtPelangganId;
-        private TextView txtStatusUpload;
         private TextView txtPelangganNama;
         private TextView txtPelangganAlamat;
 
@@ -88,20 +73,8 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
             super(itemView);
             txtNoTul = (TextView) itemView.findViewById(R.id.nomor_tul);
             txtPelangganId = (TextView) itemView.findViewById(R.id.pelanggan_id);
-            txtStatusUpload = (TextView) itemView.findViewById(R.id.status_upload);
             txtPelangganNama = (TextView) itemView.findViewById(R.id.pelanggan_nama);
             txtPelangganAlamat = (TextView) itemView.findViewById(R.id.pelanggan_alamat);
         }
-    }
-
-    /**
-     * Produce broadcast for work order data
-     *
-     * @param woPosition
-     * @return
-     */
-    private WorkOrder produceMessageWorkOrder(int woPosition) {
-        Log.d("Pelaksanaan Adapter", "onClick: " + woList.get(woPosition));
-        return woList.get(woPosition);
     }
 }

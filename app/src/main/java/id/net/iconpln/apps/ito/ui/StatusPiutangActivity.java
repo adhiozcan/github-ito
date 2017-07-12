@@ -42,7 +42,8 @@ import id.net.iconpln.apps.ito.utility.StringUtils;
 public class StatusPiutangActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = StatusPiutangActivity.class.getSimpleName();
 
-    private String tabName;
+    private String  tabName;
+    private boolean isTusbungUlang;
 
     private TextView txtPelangganId;
     private TextView txtName;
@@ -77,6 +78,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
     private void getDataFromIntent() {
         if (getIntent().getExtras() != null) {
             tabName = getIntent().getExtras().getString("tag_tab");
+            isTusbungUlang = getIntent().getExtras().getBoolean("tusbung_ulang");
         }
     }
 
@@ -223,7 +225,10 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
      */
     public void onTusbungButtonClicked(View btnId) {
         if (isAllowToCut) {
-            startActivity(new Intent(this, PemutusanActivity.class));
+            Intent intent = new Intent(this, PemutusanActivity.class);
+            intent.putExtra("tusbung_ulang", isTusbungUlang);
+            startActivity(intent);
+
             EventBusProvider.getInstance().postSticky(woInfo);
             finish();
         }

@@ -116,6 +116,8 @@ public class PemutusanActivity extends AppCompatActivity
     private Uri[] mPhotoPath     = new Uri[4];
     private Uri[] fotoTobePosted = new Uri[4];
 
+    private boolean isTusbungUlang;
+
     private List<FlagTusbung> mFlagTusbung;
     private WorkOrder         mWo;
 
@@ -126,11 +128,19 @@ public class PemutusanActivity extends AppCompatActivity
     private String[] kodeMeterException = {"A", "B", "C", "D", "E", "F", "G"};
     private boolean  wajibIsiLwbp       = false;
 
+    private void getDataFromIntent() {
+        if (getIntent().getExtras() != null) {
+            Toast.makeText(this, "Tusbung Ulang > " + isTusbungUlang, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_progress);
         CommonUtils.installToolbar(this);
+        getDataFromIntent();
+
         initView();
 
         mGoogleClient = new GoogleApiClient.Builder(this)
