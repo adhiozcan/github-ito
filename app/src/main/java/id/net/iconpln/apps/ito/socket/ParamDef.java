@@ -18,13 +18,16 @@ public class ParamDef {
     public static final int GET_MASTER_TUSBUNG = 5;
     public static final int SET_WO             = 6;
     public static final int DO_TUSBUNG         = 7;
+    public static final int DO_TUSBUNG_ULANG   = 8;
 
     public ParamDef(@Param int service) {
         System.out.println(">>Param : " + service);
     }
 
     @IntDef({
-            LOGIN, GET_WO, GET_WO_CHART, GET_WO_MONITOR, GET_WO_ULANG, GET_MASTER_TUSBUNG, SET_WO, DO_TUSBUNG
+            LOGIN, GET_WO, GET_WO_CHART, GET_WO_MONITOR,
+            GET_WO_ULANG, GET_MASTER_TUSBUNG, SET_WO,
+            DO_TUSBUNG, DO_TUSBUNG_ULANG
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Param {

@@ -104,6 +104,9 @@ public class SocketTransaction {
             case ParamDef.DO_TUSBUNG:
                 param = Param.doTusbung();
                 break;
+            case ParamDef.DO_TUSBUNG_ULANG:
+                param = Param.doTusbungUlang();
+                break;
         }
 
         socketRequest = new WeakReference<>(param);
