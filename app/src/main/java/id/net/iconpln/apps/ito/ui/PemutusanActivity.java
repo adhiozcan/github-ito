@@ -465,8 +465,12 @@ public class PemutusanActivity extends AppCompatActivity
 
             Log.d(TAG, "doPemutusan: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
             AppConfig.TUSBUNG = tusbung;
-            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
-
+            if (isTusbungUlang) {
+                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+            } else {
+                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+            }
+            
         } else if (typeWork == DO_OFFLINE) {
             // mark wo to be pending and will be uploaded later
             Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
@@ -720,7 +724,11 @@ public class PemutusanActivity extends AppCompatActivity
                     @Override
                     public void onFinish() {
                         System.out.println("Finish ...");
-                        SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+                        if (isTusbungUlang) {
+                            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+                        } else {
+                            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+                        }
                     }
                 }.start();
 
