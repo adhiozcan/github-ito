@@ -19,6 +19,7 @@ public class StorageTransaction<T> implements CrudTransaction<T> {
     @Override
     public T save(Class className, T entity) {
         String tobeSaved = new Gson().toJson(entity);
+        System.out.println(tobeSaved);
         Hawk.put(className.getSimpleName(), tobeSaved);
         return entity;
     }
@@ -55,7 +56,7 @@ public class StorageTransaction<T> implements CrudTransaction<T> {
     }
 
     public T find(Class className) {
-        String raw    = Hawk.get(className.getSimpleName(), "");
+        String raw    = Hawk.get(className.getSimpleName(), "{}");
         T      object = (T) new Gson().fromJson(raw, className);
         return object;
     }
