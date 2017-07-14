@@ -35,6 +35,18 @@ public class Param {
                 "}";
     }
 
+    public static String getWoAll() {
+        return "{\n" +
+                "    \"type\": \"event\",\n" +
+                "    \"event\": \"do_something\",\n" +
+                "    \"params\": {\n" +
+                "        \"method\": \"getwoall\",\n" +
+                "        \"kodepetugas\": \"" + AppConfig.KODE_PETUGAS + "\",\n" +
+                "        \"idunitup\": \"" + AppConfig.ID_UNIT_UP + "\"\n" +
+                "    }\n" +
+                "}";
+    }
+
     public static String getWoSync() {
         return "{\n" +
                 "\t\"type\": \"event\",\n" +
