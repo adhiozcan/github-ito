@@ -7,8 +7,6 @@ import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 
-import id.net.iconpln.apps.ito.ItoApplication;
-
 /**
  * Created by Ozcan on 12/06/2017.
  */
@@ -18,6 +16,9 @@ public class ConnectivityUtils {
     public static final int SEARCHING     = 0;
     public static final int SIGNAL_WEAK   = 1;
     public static final int SIGNAL_STRONG = 2;
+
+    public static final boolean INTERNET_OK     = true;
+    public static final boolean INTERNET_NOT_OK = false;
 
     private static int            signalStrength;
     private static SignalListener signalListener;

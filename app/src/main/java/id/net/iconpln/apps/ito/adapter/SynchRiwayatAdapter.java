@@ -1,6 +1,8 @@
 package id.net.iconpln.apps.ito.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,16 +41,20 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
         holder.txtWaktu.setText(riwayat.getWaktu());
         switch (riwayat.getActivity()) {
             case SynchUtils.LOG_UNDUH:
-                holder.txtActivity.setText("Unduh Work Order");
+                holder.txtKeterangan.setText("Unduh\nWork Order");
+                holder.txtKeterangan.setTextColor(Color.parseColor("#4CAF50"));
+                holder.txtActivity.setText(riwayat.getJumlahData() + " data");
                 break;
             case SynchUtils.LOG_UPLOAD:
-                holder.txtActivity.setText("Unggah Work Order Local");
+                holder.txtKeterangan.setText("Unggah\nWork Order");
+                holder.txtKeterangan.setTextColor(Color.parseColor("#FF9800"));
+                holder.txtActivity.setText(riwayat.getJumlahData() + " data");
                 break;
             case SynchUtils.LOG_DEL_GAGAL:
-                holder.txtActivity.setText("Hapus Work Order Gagal Sinkronisasi");
+                holder.txtActivity.setText("Hapus Wo Gagal Sinkronisasi");
                 break;
             case SynchUtils.LOG_DEL_PENDING:
-                holder.txtActivity.setText("Hapus Work Order Pending");
+                holder.txtActivity.setText("Hapus Wo Pending");
                 break;
             case SynchUtils.LOG_DEL_ALL:
                 holder.txtActivity.setText("Hapus Semua Data");
@@ -62,12 +68,14 @@ public class SynchRiwayatAdapter extends RecyclerView.Adapter<SynchRiwayatAdapte
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView txtKeterangan;
         private TextView txtTanggal;
         private TextView txtWaktu;
         private TextView txtActivity;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            txtKeterangan = (TextView) itemView.findViewById(R.id.keterangan);
             txtTanggal = (TextView) itemView.findViewById(R.id.tanggal_riwayat);
             txtWaktu = (TextView) itemView.findViewById(R.id.jam_riwayat);
             txtActivity = (TextView) itemView.findViewById(R.id.log_activity);

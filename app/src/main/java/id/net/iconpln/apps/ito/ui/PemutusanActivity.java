@@ -1,9 +1,19 @@
 package id.net.iconpln.apps.ito.ui;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +27,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,19 +38,25 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.stetho.common.StringUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
+import org.apache.commons.lang3.CharSet;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -47,15 +64,19 @@ import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.helper.ConnectionListener;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
+import id.net.iconpln.apps.ito.model.Tusbung;
+import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.NetworkAvailabilityEvent;
 import id.net.iconpln.apps.ito.model.eventbus.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.eventbus.RefreshEvent;
 import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
-import id.net.iconpln.apps.ito.model.Tusbung;
-import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.WoUploadServiceEvent;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
+import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
@@ -63,6 +84,7 @@ import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
+import id.net.iconpln.apps.ito.utility.ImageUtil;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
 import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.SignalListener;
@@ -74,22 +96,25 @@ import io.realm.Realm;
  * Created by Ozcan on 30/03/2017.
  */
 
-public class PemutusanActivity extends AppCompatActivity
-        implements SignalListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class PemutusanActivity extends AppCompatActivity implements
+        com.google.android.gms.location.LocationListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        AdapterView.OnItemSelectedListener {
 
     private static final String TAG = PemutusanActivity.class.getSimpleName();
 
-    private static final int DO_OFFLINE            = 0;
-    private static final int DO_ONLINE             = 1;
-    public static final  int CAMERA_REQUEST_CODE_1 = 101;
-    public static final  int CAMERA_REQUEST_CODE_2 = 102;
-    public static final  int CAMERA_REQUEST_CODE_3 = 103;
-    public static final  int CAMERA_REQUEST_CODE_4 = 104;
+    private static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    private static final int DO_OFFLINE                            = 0;
+    private static final int DO_ONLINE                             = 1;
+    public static final  int CAMERA_REQUEST_CODE_1                 = 101;
+    public static final  int CAMERA_REQUEST_CODE_2                 = 102;
+    public static final  int CAMERA_REQUEST_CODE_3                 = 103;
+    public static final  int CAMERA_REQUEST_CODE_4                 = 104;
 
     private static int REQUEST_TAKE_PHOTO = 0;
 
-    private Spinner spnStatus;
+    private Spinner spnPutus;
     private Spinner spnKeterangan;
 
     private TextView txtNoTul;
@@ -103,6 +128,8 @@ public class PemutusanActivity extends AppCompatActivity
     private EditText edLwbp;
     private EditText edWbp;
     private EditText edKvarh;
+    private EditText edEmail;
+    private EditText edHp;
 
     private ImageView imgFoto1;
     private ImageView imgFoto2;
@@ -112,25 +139,28 @@ public class PemutusanActivity extends AppCompatActivity
     private GoogleApiClient mGoogleClient;
     private LocationRequest mLocationRequest;
 
-    private String mCurrentPhotoPath;
+    private ArrayAdapter keteranganAdapter;
+
+    private List<FlagTusbung> mFlagTusbung;
+    private List<String>      keteranganList;
+    private List<String>      putusList;
+    private List<String>      gagalPutusList;
+
+    private WorkOrder mWo;
+    private boolean   isTusbungUlang;
+    private String    mCurrentPhotoPath;
     private Uri[] mPhotoPath     = new Uri[4];
     private Uri[] fotoTobePosted = new Uri[4];
 
-    private boolean isTusbungUlang;
-
-    private List<FlagTusbung> mFlagTusbung;
-    private WorkOrder         mWo;
-
-    private int mStatusSignal = ConnectivityUtils.SEARCHING;
-
+    private FusedLocationProviderApi mFusedLocationClient;
     private Tusbung tusbung = new Tusbung();
 
-    private String[] kodeMeterException = {"A", "B", "C", "D", "E", "F", "G"};
-    private boolean  wajibIsiLwbp       = false;
+    private boolean wajibIsiLwbp = true;
 
     private void getDataFromIntent() {
         if (getIntent().getExtras() != null) {
-            Toast.makeText(this, "Tusbung Ulang > " + isTusbungUlang, Toast.LENGTH_SHORT).show();
+            isTusbungUlang = getIntent().getExtras().getBoolean("tusbung_ulang");
+            Log.d(TAG, "getDataFromIntent: " + isTusbungUlang);
         }
     }
 
@@ -142,53 +172,39 @@ public class PemutusanActivity extends AppCompatActivity
         getDataFromIntent();
 
         initView();
+        populateSpinnerListItem();
 
+        mFusedLocationClient = LocationServices.FusedLocationApi;
         mGoogleClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        List<String> keteranganList = new ArrayList<>();
-        mFlagTusbung = new ArrayList<>();
-        mFlagTusbung.add(0, new FlagTusbung("-", "Pilih keterangan pemutusan", "Pilih keterangan pemutusan"));
-        mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
-
-        for (FlagTusbung flagTusbung : mFlagTusbung) {
-            String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
-            keteranganList.add(keterangan);
-            Log.d(TAG, "Flag Tusbung : \n" + flagTusbung.toString());
+        if (ConnectivityUtils.isHaveInternetConnection(this)) {
+            updateSignalColorBar(R.color.material_light_green);
+        } else {
+            updateSignalColorBar(R.color.material_pink);
         }
 
-        ArrayAdapter userAdapter = new ArrayAdapter(this, R.layout.adapter_item_spinner_keterangan, keteranganList);
-        spnKeterangan.setAdapter(userAdapter);
-        spnKeterangan.setSelection(0);
-        spnKeterangan.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                List<FlagTusbung> valueKeterangan = getDataMasterTusbungFromLocal();
-                if (valueKeterangan != null && valueKeterangan.get(position) != null) {
-                    for (String kodeMeter : kodeMeterException) {
-                        if (kodeMeter.toLowerCase().trim().equals(valueKeterangan.get(position).getKode().toString().toLowerCase().trim())) {
-                            toggleFormMeter(View.GONE);
-                            wajibIsiLwbp = false;
-                            break;
-                        } else {
-                            toggleFormMeter(View.VISIBLE);
-                            wajibIsiLwbp = true;
-                        }
-                    }
-                }
-            }
+        ArrayAdapter statusAdapter = ArrayAdapter.createFromResource(this, R.array.status_putus,
+                R.layout.adapter_item_spinner_status);
+        statusAdapter.setDropDownViewResource(R.layout.adapter_item_spinner_keterangan);
+        spnPutus.setAdapter(statusAdapter);
+        spnPutus.setSelection(0);
+        spnPutus.setOnItemSelectedListener(this);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
-        });
+        keteranganAdapter = new ArrayAdapter(this,
+                R.layout.adapter_item_spinner_keterangan, keteranganList);
+        keteranganAdapter.setDropDownViewResource(R.layout.adapter_item_spinner_keterangan);
+        spnKeterangan.setAdapter(keteranganAdapter);
+        spnKeterangan.setOnItemSelectedListener(this);
+
+        updateTanggalDisplay(DateUtils.getDateFromLogin());
     }
 
     private void initView() {
-        spnStatus = (Spinner) findViewById(R.id.status_pekerjaan);
+        spnPutus = (Spinner) findViewById(R.id.status_putus);
         spnKeterangan = (Spinner) findViewById(R.id.keterangan);
         txtNoTul = (TextView) findViewById(R.id.nomor_tul);
         txtIdPelanggan = (TextView) findViewById(R.id.pelanggan_id);
@@ -200,32 +216,52 @@ public class PemutusanActivity extends AppCompatActivity
         edLwbp = (EditText) findViewById(R.id.lwbp);
         edWbp = (EditText) findViewById(R.id.wbp);
         edKvarh = (EditText) findViewById(R.id.kvarh);
+        edEmail = (EditText) findViewById(R.id.email_pelanggan);
+        edHp = (EditText) findViewById(R.id.no_telp_pelanggan);
         imgFoto1 = (ImageView) findViewById(R.id.foto_1);
         imgFoto2 = (ImageView) findViewById(R.id.foto_2);
         imgFoto3 = (ImageView) findViewById(R.id.foto_3);
         imgFoto4 = (ImageView) findViewById(R.id.foto_4);
     }
 
+    private void populateSpinnerListItem() {
+        mFlagTusbung = new ArrayList<>();
+        mFlagTusbung.add(new FlagTusbung("-", "Pilih keterangan pemutusan", "Pilih keterangan pemutusan"));
+        mFlagTusbung.addAll(getDataMasterTusbungFromLocal());
+
+        keteranganList = new ArrayList<>();
+        putusList = new ArrayList<>();
+        gagalPutusList = new ArrayList<>();
+
+        for (FlagTusbung flagTusbung : mFlagTusbung) {
+            String keterangan = StringUtils.normalize(flagTusbung.getKeterangan());
+            String deskripsi  = StringUtils.normalize(flagTusbung.getDeskripsi());
+
+            if (deskripsi.equals("Gagal Putus")) {
+                gagalPutusList.add(keterangan);
+                Log.d(TAG, "onCreate: [Gagal Putus]\t" + flagTusbung.toString());
+            } else if (deskripsi.equals("Putus")) {
+                putusList.add(keterangan);
+                Log.d(TAG, "onCreate: [Putus]\t" + flagTusbung.toString());
+            }
+        }
+    }
+
     protected void startLocationUpdates() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(15000);
-        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10 * 1000)
+                .setFastestInterval(1 * 1000);
+
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), "Enable Permissions", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Cannot access location, check your permission", Toast.LENGTH_LONG).show();
         }
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleClient, mLocationRequest, new com.google.android.gms.location.LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        edLokasi.setText("Lokasi telah ditemukan");
-                        tusbung.setLatitude(String.valueOf(location.getLatitude()));
-                        tusbung.setLongitude(String.valueOf(location.getLongitude()));
-                    }
-                });
+        mFusedLocationClient.requestLocationUpdates(mGoogleClient, mLocationRequest, this);
+    }
 
-
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mGoogleClient, this);
     }
 
     /**
@@ -289,6 +325,7 @@ public class PemutusanActivity extends AppCompatActivity
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = Uri.fromFile(photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
@@ -300,6 +337,7 @@ public class PemutusanActivity extends AppCompatActivity
         String timeStamp     = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
         String imageFileName = "ITO_" + timeStamp + "_";
         File   storageDir    = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        //File storageDir = Environment.getExternalStorageDirectory();
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
@@ -329,9 +367,36 @@ public class PemutusanActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
+
+        // Special treatment for Samsung Galaxy Tablet Device
+        if (data == null) {
             Bitmap imageBitmap = CameraUtils.uriToBitmap(this, Uri.parse("file://" + mCurrentPhotoPath));
             imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap, 150, 150);
+
+            // Getting LocationManager object from System Service LOCATION_SERVICE
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            Criteria        criteria        = new Criteria();
+            String          provider        = locationManager.getBestProvider(criteria, true);
+            Location        location        = locationManager.getLastKnownLocation(provider);
+
+            String kodePetugas = "";
+            String tanggal     = "";
+            String latitude    = "";
+            String longitude   = "";
+            if (tusbung.getLatitude() != null && tusbung.getLongitude() != null) {
+                kodePetugas = AppConfig.getUserInformation().getKodePetugas();
+                tanggal = DateUtils.parseToString(new Date());
+                latitude = tusbung.getLatitude();
+                longitude = tusbung.getLongitude();
+            } else if (location != null) {
+                kodePetugas = AppConfig.getUserInformation().getKodePetugas();
+                tanggal = DateUtils.parseToString(new Date());
+                latitude = tusbung.getLatitude();
+                longitude = tusbung.getLongitude();
+            }
+            imageBitmap = ImageUtils.addWatermark(imageBitmap, kodePetugas, tanggal, latitude, longitude);
+            ImageUtils.saveImage(mCurrentPhotoPath, imageBitmap);
+
             switch (requestCode) {
                 case CAMERA_REQUEST_CODE_1:
                     hapusFoto(R.id.foto_1);
@@ -356,6 +421,79 @@ public class PemutusanActivity extends AppCompatActivity
                 default:
                     break;
             }
+        } else if (resultCode == REQUEST_TAKE_PHOTO) {
+            if (resultCode == RESULT_OK) {
+                Bitmap imageBitmap = CameraUtils.uriToBitmap(this, Uri.parse("file://" + mCurrentPhotoPath));
+                imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap, 150, 150);
+
+                // Getting LocationManager object from System Service LOCATION_SERVICE
+                LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+                Criteria        criteria        = new Criteria();
+                String          provider        = locationManager.getBestProvider(criteria, true);
+                Location        location        = locationManager.getLastKnownLocation(provider);
+
+                String kodePetugas = "";
+                String tanggal     = "";
+                String latitude    = "";
+                String longitude   = "";
+
+                if (tusbung.getLatitude() != null && tusbung.getLongitude() != null) {
+                    kodePetugas = AppConfig.getUserInformation().getKodePetugas();
+                    tanggal = DateUtils.parseToString(new Date());
+                    latitude = tusbung.getLatitude();
+                    longitude = tusbung.getLongitude();
+                } else if (location != null) {
+                    kodePetugas = AppConfig.getUserInformation().getKodePetugas();
+                    tanggal = DateUtils.parseToString(new Date());
+                    latitude = tusbung.getLatitude();
+                    longitude = tusbung.getLongitude();
+                }
+                imageBitmap = ImageUtils.addWatermark(imageBitmap, kodePetugas, tanggal, latitude, longitude);
+                ImageUtils.saveImage(mCurrentPhotoPath, imageBitmap);
+
+                switch (requestCode) {
+                    case CAMERA_REQUEST_CODE_1:
+                        hapusFoto(R.id.foto_1);
+                        imgFoto1.setImageBitmap(imageBitmap);
+                        imgFoto1.setTag("Flag to be post!");
+                        break;
+                    case CAMERA_REQUEST_CODE_2:
+                        hapusFoto(R.id.foto_2);
+                        imgFoto2.setImageBitmap(imageBitmap);
+                        imgFoto2.setTag("Flag to be post!");
+                        break;
+                    case CAMERA_REQUEST_CODE_3:
+                        hapusFoto(R.id.foto_3);
+                        imgFoto3.setImageBitmap(imageBitmap);
+                        imgFoto3.setTag("Flag to be post!");
+                        break;
+                    case CAMERA_REQUEST_CODE_4:
+                        hapusFoto(R.id.foto_4);
+                        imgFoto4.setImageBitmap(imageBitmap);
+                        imgFoto4.setTag("Flag to be post!");
+                        break;
+                    default:
+                        break;
+                }
+            } else if (resultCode == RESULT_CANCELED) {
+                System.out.println("Result Cancel : " + RESULT_CANCELED);
+                switch (requestCode) {
+                    case CAMERA_REQUEST_CODE_1:
+                        hapusFoto(R.id.hapus_foto_1);
+                        break;
+                    case CAMERA_REQUEST_CODE_2:
+                        hapusFoto(R.id.hapus_foto_2);
+                        break;
+                    case CAMERA_REQUEST_CODE_3:
+                        hapusFoto(R.id.hapus_foto_3);
+                        break;
+                    case CAMERA_REQUEST_CODE_4:
+                        hapusFoto(R.id.hapus_foto_4);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 
@@ -367,158 +505,32 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        // listening signal strength
-        if (ConnectivityUtils.isHaveInternetConnection(this)) {
-            ConnectivityUtils.register(this, this);
+    protected void onStop() {
+        super.onStop();
+        EventBusProvider.getInstance().unregister(this);
+        if (mGoogleClient.isConnected()) {
+            stopLocationUpdates();
+            mGoogleClient.disconnect();
         }
     }
 
-    @Override
-    protected void onStop() {
-        mGoogleClient.disconnect();
-        super.onStop();
-        EventBusProvider.getInstance().unregister(this);
-        ConnectivityUtils.unregister(this);
+    private void toggleFormKeterangan(int visibility) {
+        View formKeterangan = findViewById(R.id.form_keterangan);
+        formKeterangan.setVisibility(visibility);
     }
 
-    public void toggleFormMeter(int isShow) {
+    private void toggleFormMeter(int visibility) {
         View formLwbp  = findViewById(R.id.form_meter_lwbp);
         View formWbp   = findViewById(R.id.form_meter_wbp);
         View formKvarh = findViewById(R.id.form_meter_kvarh);
 
-        formLwbp.setVisibility(isShow);
-        formWbp.setVisibility(isShow);
-        formKvarh.setVisibility(isShow);
+        formLwbp.setVisibility(visibility);
+        formWbp.setVisibility(visibility);
+        formKvarh.setVisibility(visibility);
 
         if (formLwbp.getVisibility() == View.VISIBLE) {
             edLwbp.requestFocus();
         }
-    }
-
-
-    private void doPemutusan(int typeWork) {
-        SmileyLoading.show(this, "Sedang memproses tusbung", 15000);
-
-        String noTul          = txtNoTul.getText().toString();
-        String noTul601       = mWo.getNoTul601();
-        String noWo           = mWo.getNoWo();
-        String idpel          = mWo.getPelangganId();
-        String nama           = mWo.getNama();
-        String alamat         = mWo.getAlamat();
-        String unitUpId       = mWo.getUnitUp();
-        String kodePetugas    = mWo.getKodePetugas();
-        String selectedVal    = getResources().getStringArray(R.array.jenis_pekerjaan_val)[spnStatus.getSelectedItemPosition()];
-        String lwbp           = edLwbp.getText().toString();
-        String wbp            = edWbp.getText().toString();
-        String kvarh          = edKvarh.getText().toString();
-        String isGagalPutus   = "0";
-        String status         = mFlagTusbung.get(spnKeterangan.getSelectedItemPosition()).getKode();
-        String namaPetugas    = mWo.getNama();
-        String tanggalExpired = mWo.getExpired();
-
-        String tanggalPutus =
-                ItoApplication.pingDate.isEmpty() ?
-                        edTanggalPutus.getText().toString() : ItoApplication.pingDate;
-
-        int jumlahFoto = 0;
-        for (Uri uri : mPhotoPath) {
-            if (uri != null) {
-                fotoTobePosted[jumlahFoto] = uri;
-                jumlahFoto++;
-            }
-        }
-
-        tusbung.setKodePetugas(kodePetugas);
-        tusbung.setNamaPetugas(namaPetugas);
-        tusbung.setPelangganId(idpel);
-        tusbung.setAlamat(alamat);
-        tusbung.setNamaPelanggan(nama);
-        tusbung.setUnitUpId(unitUpId);
-        tusbung.setNoTul(noTul601);
-        tusbung.setNoWo(noWo);
-        tusbung.setTanggalPemutusan(tanggalPutus);
-        tusbung.setStandLWBP(lwbp);
-        tusbung.setStandWBP(wbp);
-        tusbung.setStandKVARH(kvarh);
-
-        tusbung.setGagalPutus(isGagalPutus);
-        tusbung.setStatus(status);
-        tusbung.setJumlahFoto(String.valueOf(jumlahFoto));
-        tusbung.setExpired(tanggalExpired);
-
-        if (fotoTobePosted[0] != null) tusbung.setPhotoPath1(fotoTobePosted[0].toString());
-        if (fotoTobePosted[1] != null) tusbung.setPhotoPath2(fotoTobePosted[1].toString());
-        if (fotoTobePosted[2] != null) tusbung.setPhotoPath3(fotoTobePosted[2].toString());
-        if (fotoTobePosted[3] != null) tusbung.setPhotoPath4(fotoTobePosted[3].toString());
-
-        Log.d(TAG, tusbung.toString());
-
-        if (typeWork == DO_ONLINE) {
-            Log.d(TAG, "[DO ONLINE : Simpan di penyimpanan server]");
-
-            tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
-            tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[0]));
-            tusbung.setPart("1");
-
-            Log.d(TAG, "doPemutusan: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
-            AppConfig.TUSBUNG = tusbung;
-            if (isTusbungUlang) {
-                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
-            } else {
-                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
-            }
-
-        } else if (typeWork == DO_OFFLINE) {
-            // mark wo to be pending and will be uploaded later
-            Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
-            tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
-            LocalDb.makeSafeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    LocalDb.getInstance().where(WorkOrder.class)
-                            .equalTo("noWo", mWo.getNoWo())
-                            .findFirst()
-                            .setUploaded(false);
-                    LocalDb.getInstance().where(WorkOrder.class)
-                            .equalTo("noWo", mWo.getNoWo())
-                            .findFirst()
-                            .setStatusSinkronisasi(Constants.SINKRONISASI_PENDING);
-                    LocalDb.getInstance().insert(tusbung);
-                }
-            });
-
-            SmileyLoading.shouldCloseDialog();
-
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
-                    "[Offline Mode] Tusbung tersimpan di local.",
-                    Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
-            snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                @Override
-                public void onDismissed(Snackbar transientBottomBar, int event) {
-                    EventBusProvider.getInstance().post(new RefreshEvent());
-                    finish();
-                }
-            });
-            snackbar.show();
-        }
-
-        // mark mWo has done.
-        LocalDb.makeSafeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                LocalDb.getInstance().where(WorkOrder.class)
-                        .equalTo("noWo", mWo.getNoWo())
-                        .findFirst()
-                        .setSelesai(true);
-            }
-        });
-
-        Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
-        Log.d(TAG, "doPemutusan: " + tusbung.toString());
     }
 
     public void onProsesButtonClicked(View btnId) {
@@ -532,8 +544,8 @@ public class PemutusanActivity extends AppCompatActivity
                     snackbar.getView().setBackgroundColor(ContextCompat.getColor(PemutusanActivity.this, R.color.material_pink));
                     snackbar.show();
                 } else if (cekFieldContent()) {
-                    if (mStatusSignal == ConnectivityUtils.SIGNAL_WEAK ||
-                            mStatusSignal == ConnectivityUtils.SIGNAL_STRONG) {
+                    if (ConnectivityUtils.isHaveInternetConnection(PemutusanActivity.this)) {
+                        System.out.println("Have Internet Access : " + ConnectivityUtils.isHaveInternetConnection(PemutusanActivity.this));
                         doPemutusan(DO_ONLINE);
                     } else {
                         doPemutusan(DO_OFFLINE);
@@ -545,36 +557,29 @@ public class PemutusanActivity extends AppCompatActivity
             public void onNoButtonClicked() {
             }
         });
-
     }
 
     private boolean cekFieldContent() {
-        if (edTanggalPutus.getText().toString().trim().equals("Menghubungi server")) {
+        System.out.println("Tanggal Putus : " + edTanggalPutus.getText().toString().trim());
+        if (edTanggalPutus.getText().toString().length() == 0) {
             Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Tanggal harus tersedia dari server");
             snackbar.show();
             return false;
-        }
-
-        if (!edLokasi.getText().toString().trim().equals("Lokasi telah ditemukan")) {
+        } else if (edLokasi.getText().toString().length() == 0) {
             Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Sistem belum menemukan lokasi Anda");
             snackbar.show();
             return false;
-        }
-
-        if (spnKeterangan.getSelectedItemPosition() == 0) {
-            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Anda belum menentukan keterangan pemutusan");
-            snackbar.show();
-            return false;
-        } else {
-            if (!wajibIsiLwbp) {
-                toggleFormMeter(View.GONE);
-            } else {
-                toggleFormMeter(View.VISIBLE);
-                if (edLwbp.getText().toString().trim().length() == 0) {
-                    Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "LWBP Wajib diisi");
-                    snackbar.show();
-                    return false;
-                }
+        } else if (spnPutus.getSelectedItemPosition() == 1) {
+            if (spnKeterangan.getSelectedItemPosition() == 0) {
+                Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Anda belum menentukan keterangan pemutusan");
+                snackbar.show();
+                return false;
+            }
+        } else if (wajibIsiLwbp) {
+            if (edLwbp.getText().toString().trim().length() == 0) {
+                Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "LWBP Wajib diisi");
+                snackbar.show();
+                return false;
             }
         }
 
@@ -587,6 +592,7 @@ public class PemutusanActivity extends AppCompatActivity
             snackbar.show();
             return false;
         }
+
         return true;
     }
 
@@ -595,6 +601,7 @@ public class PemutusanActivity extends AppCompatActivity
     }
 
     private void hapusFoto(int id) {
+        System.out.println("Menghapus foto " + REQUEST_TAKE_PHOTO + ", Id : " + id);
         switch (id) {
             case R.id.hapus_foto_1:
                 if (mPhotoPath[0] == null) return;
@@ -623,20 +630,198 @@ public class PemutusanActivity extends AppCompatActivity
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onMessageEventReceived(WorkOrder workOrder) {
-        updateInfoPelangganDisplay(workOrder);
+    private void updateTanggalDisplay(String date) {
+        edTanggalPutus.setText(date);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEventReceived(PingEvent pingEvent) {
-        System.out.println("[PING] -----------------------");
-        System.out.println(pingEvent.getDate());
-        Date   date       = DateUtils.parseToDate(pingEvent.getDate());
-        String dateString = DateUtils.parseToString(date);
+    private void updateSignalColorBar(int color) {
+        findViewById(R.id.signal_condition).setBackgroundResource(color);
+    }
 
-        ItoApplication.pingDate = dateString;
-        updateTanggalDisplay(dateString);
+    private String getStatusKodeFlag() {
+        String kode = "";
+        if (spnPutus.getSelectedItemPosition() == 0) {
+            for (FlagTusbung flag : mFlagTusbung) {
+                if (StringUtils.normalize(flag.getKeterangan()).toLowerCase().equals("putus")) {
+                    return flag.getKode();
+                }
+            }
+        } else {
+            String keterangan = StringUtils.normalize((String) spnKeterangan.getSelectedItem()).toLowerCase();
+            for (FlagTusbung flag : mFlagTusbung) {
+                if (StringUtils.normalize(flag.getKeterangan()).toLowerCase().equals(keterangan)) {
+                    return flag.getKode();
+                }
+            }
+        }
+        return kode;
+    }
+
+    private void doPemutusan(int mode) {
+        SmileyLoading.show(this, "Sedang memproses tusbung", 15000, new SmileyLoading.LoadingTimer() {
+            @Override
+            public void onTimeout() {
+                NotifUtils.makePinkSnackbar(PemutusanActivity.this, "Timeout! Coba beberapa saat lagi");
+            }
+        });
+
+        String noTul601     = mWo.getNoTul601();
+        String noWo         = mWo.getNoWo();
+        String idpel        = mWo.getPelangganId();
+        String nama         = mWo.getNama();
+        String alamat       = mWo.getAlamat();
+        String unitUpId     = mWo.getUnitUp();
+        String kodePetugas  = AppConfig.KODE_PETUGAS;
+        String lwbp         = edLwbp.getText().toString();
+        String wbp          = edWbp.getText().toString();
+        String kvarh        = edKvarh.getText().toString();
+        String status       = getStatusKodeFlag();
+        String isGagalPutus = String.valueOf(spnPutus.getSelectedItemPosition());
+        String namaPetugas  = mWo.getNama();
+        String email        = null;
+        try {
+            email = URLEncoder.encode(edEmail.getText().toString(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String hp             = edHp.getText().toString();
+        String tanggalExpired = mWo.getExpired();
+        String tanggalPutus   = DateUtils.getDateFromLogin();
+
+        if (tanggalPutus.isEmpty())
+            edTanggalPutus.getText().toString();
+
+        int jumlahFoto = 0;
+        for (Uri uri : mPhotoPath) {
+            if (uri != null) {
+                fotoTobePosted[jumlahFoto] = uri;
+                jumlahFoto++;
+            }
+        }
+
+        tusbung.setKodePetugas(kodePetugas);
+        tusbung.setNamaPetugas(namaPetugas);
+        tusbung.setPelangganId(idpel);
+        tusbung.setAlamat(alamat);
+        tusbung.setNamaPelanggan(nama);
+        tusbung.setUnitUpId(unitUpId);
+        tusbung.setNoTul(noTul601);
+        tusbung.setNoWo(noWo);
+        tusbung.setTanggalPemutusan(tanggalPutus);
+        tusbung.setStandLWBP(lwbp);
+        tusbung.setStandWBP(wbp);
+        tusbung.setStandKVARH(kvarh);
+        tusbung.setGagalPutus(isGagalPutus);
+        tusbung.setTanggalPemutusan(tanggalPutus);
+        tusbung.setStatus(status);
+        tusbung.setJumlahFoto(String.valueOf(jumlahFoto));
+        tusbung.setExpired(tanggalExpired);
+        tusbung.setUlang(isTusbungUlang);
+        tusbung.setEmail(email);
+        tusbung.setHp(hp);
+
+        if (fotoTobePosted[0] != null) tusbung.setPhotoPath1(fotoTobePosted[0].toString());
+        if (fotoTobePosted[1] != null) tusbung.setPhotoPath2(fotoTobePosted[1].toString());
+        if (fotoTobePosted[2] != null) tusbung.setPhotoPath3(fotoTobePosted[2].toString());
+        if (fotoTobePosted[3] != null) tusbung.setPhotoPath4(fotoTobePosted[3].toString());
+
+        AppConfig.TUSBUNG = tusbung;
+
+        if (mode == DO_ONLINE) {
+            doTusbungOnline();
+        } else if (mode == DO_OFFLINE) {
+            doTusbungOffline();
+        }
+
+        // mark mWo has done.
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setSelesai(true);
+            }
+        });
+
+        Log.d(TAG, "doPemutusan: [Param]--------------------------------------------------------");
+        Log.d(TAG, "doPemutusan: " + tusbung.toString());
+    }
+
+    private void doTusbungOnline() {
+        Log.d(TAG, "[DO ONLINE : Simpan di penyimpanan server]");
+
+        tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
+        tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(this, fotoTobePosted[0]));
+        tusbung.setPart("1");
+
+        if (ConnectivityUtils.isHaveInternetConnection(this)) {
+            Log.d(TAG, "doTusbungOnline: doing tusbung ulang is " + isTusbungUlang);
+            Log.d(TAG, "doPemutusan: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
+            if (isTusbungUlang) {
+                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+            } else {
+                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+            }
+        }
+    }
+
+    private void doTusbungOffline() {
+        // mark wo to be pending and will be uploaded later
+        Log.d(TAG, "[DO OFFLINE : Simpan di penyimpanan local]");
+        tusbung.setStatusSinkron(Constants.SINKRONISASI_PENDING);
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setUploaded(false);
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setStatusSinkronisasi(Constants.SINKRONISASI_PENDING);
+                LocalDb.getInstance().insert(tusbung);
+            }
+        });
+
+        // Starting service to upload this wo.
+        //startBackgroundUploader();
+
+        SmileyLoading.shouldCloseDialog();
+
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.container_layout),
+                "Pengerjaan tusbung akan disimpan di lokal",
+                Snackbar.LENGTH_LONG);
+        snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.material_pink));
+        snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+            @Override
+            public void onDismissed(Snackbar transientBottomBar, int event) {
+                EventBusProvider.getInstance().post(new RefreshEvent());
+                finish();
+            }
+        });
+        snackbar.show();
+    }
+
+    private void startBackgroundUploader() {
+        AlarmManager am  = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Calendar     cal = Calendar.getInstance();
+
+        cal.set(Calendar.DAY_OF_WEEK, cal.get(Calendar.DAY_OF_WEEK));
+        cal.set(Calendar.HOUR, cal.get(Calendar.HOUR));
+        cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
+        cal.set(Calendar.SECOND, cal.get(Calendar.SECOND));
+
+        Intent intent = new Intent(this, ConnectionListener.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, intent, 0);
+
+        Long alarmTime = cal.getTimeInMillis();
+        am.setRepeating(AlarmManager.RTC_WAKEUP, alarmTime, 6000, pendingIntent);
+
+        System.out.println("Starting alarm background uploader service");
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -644,8 +829,14 @@ public class PemutusanActivity extends AppCompatActivity
         Log.d(TAG, "---------------------------------------------");
         Log.d(TAG, progressEvent.toString());
 
+        SmileyLoading.shouldCloseDialog();
+
+        System.out.println(progressEvent.kode);
+        System.out.println(progressEvent.isSuccess());
+
         // mark mWo has done.
-        if (progressEvent.kode == "1") {
+        if (progressEvent.isSuccess()) {
+            System.out.println("reality is success : true");
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
@@ -660,9 +851,7 @@ public class PemutusanActivity extends AppCompatActivity
                 }
             });
 
-            SmileyLoading.shouldCloseDialog();
-
-            String   message  = "Tusbung berhasil dikerjakan dan terunggah ke server";
+            String   message  = StringUtils.normalize(progressEvent.message);
             Snackbar snackbar = NotifUtils.makeGreenSnackbar(this, message);
             snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
@@ -673,6 +862,7 @@ public class PemutusanActivity extends AppCompatActivity
             });
             snackbar.show();
         } else {
+            System.out.println("reality is success : false");
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
@@ -689,12 +879,13 @@ public class PemutusanActivity extends AppCompatActivity
                 }
             });
 
-            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, StringUtils.normalize(progressEvent.message));
+            String   message  = StringUtils.normalize(progressEvent.message);
+            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, message);
             snackbar.addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     EventBusProvider.getInstance().post(new RefreshEvent());
-                    finish();
+                    //finish();
                 }
             });
             snackbar.show();
@@ -724,10 +915,14 @@ public class PemutusanActivity extends AppCompatActivity
                     @Override
                     public void onFinish() {
                         System.out.println("Finish ...");
-                        if (isTusbungUlang) {
-                            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+                        if (ConnectivityUtils.isHaveInternetConnection(PemutusanActivity.this)) {
+                            if (isTusbungUlang) {
+                                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+                            } else {
+                                SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+                            }
                         } else {
-                            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+                            NotifUtils.makePinkSnackbar(PemutusanActivity.this, "Tidak ada jaringan Internet");
                         }
                     }
                 }.start();
@@ -739,40 +934,45 @@ public class PemutusanActivity extends AppCompatActivity
         }
     }
 
-    private void updateTanggalDisplay(String date) {
-        edTanggalPutus.setText(date);
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onMessageEventReceived(WorkOrder workOrder) {
+        updateInfoPelangganDisplay(workOrder);
     }
 
-    private void updateSignalColorBar(int color) {
-        findViewById(R.id.signal_condition).setBackgroundResource(color);
-    }
-
-    @Override
-    public void onReceived(int strength) {
-        System.out.println("Signal Strength : " + strength);
-        mStatusSignal = strength;
-        switch (strength) {
-            case ConnectivityUtils.DISCONNECT:
-                updateSignalColorBar(R.color.material_pink);
-                break;
-            case ConnectivityUtils.SIGNAL_WEAK:
-                updateSignalColorBar(R.color.material_orange);
-                break;
-            case ConnectivityUtils.SIGNAL_STRONG:
-                updateSignalColorBar(R.color.material_light_green);
-                break;
-            default:
-                updateSignalColorBar(R.color.colorGrey);
-                break;
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkChangeReceived(NetworkAvailabilityEvent networkEvent) {
+        System.out.println("Network Availability : " + networkEvent);
+        if (networkEvent.isAvailable) {
+            updateSignalColorBar(R.color.material_light_green);
+        } else {
+            updateSignalColorBar(R.color.material_pink);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSocketFailure(ErrorMessageEvent errorMessage) {
+        NotifUtils.makePinkSnackbar(this, errorMessage.getMessage()).show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEventReceived(PingEvent pingEvent) {
+        System.out.println("[PING] -----------------------");
+        System.out.println(pingEvent.getDate());
+        Date   date       = DateUtils.parseToDate(pingEvent.getDate());
+        String dateString = DateUtils.parseToString(date);
+
+        ItoApplication.pingDate = dateString;
+        updateTanggalDisplay(dateString);
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(10);
         Log.d(TAG, "onConnected: GoogleApiClient connection has connected");
+
+        // nothing left to do with permission becase it has been added in login
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
 
         startLocationUpdates();
     }
@@ -784,6 +984,56 @@ public class PemutusanActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed: GoogleApiClient connection has failed");
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        edLokasi.setText("X : " + location.getLatitude() + "\nY : " + location.getLongitude());
+        tusbung.setLatitude(String.valueOf(location.getLatitude()));
+        tusbung.setLongitude(String.valueOf(location.getLongitude()));
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> spinner, View view, int position, long l) {
+        System.out.println("Spinner Selected\t: " + spinner.getId());
+        System.out.println("Spinner Putus\t: " + spnPutus.getId());
+        System.out.println("Spinner Keterangan\t: " + spnKeterangan.getId());
+
+        if (spinner == spnPutus) {
+            keteranganList.clear();
+            keteranganList.add("Pilih Keterangan");
+            if (position == 0) {
+                keteranganList.addAll(putusList);
+                toggleFormKeterangan(View.GONE);
+                toggleFormMeter(View.VISIBLE);
+                wajibIsiLwbp = true;
+            } else {
+                keteranganList.addAll(gagalPutusList);
+                toggleFormKeterangan(View.VISIBLE);
+                toggleFormMeter(View.GONE);
+                wajibIsiLwbp = false;
+            }
+            keteranganAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onUploadBackgroundFinished(WoUploadServiceEvent wusEvent) {
+        System.out.println("[Service] Stop uploading in the background");
     }
 }

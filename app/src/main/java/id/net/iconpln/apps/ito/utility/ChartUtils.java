@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import id.net.iconpln.apps.ito.R;
+import id.net.iconpln.apps.ito.helper.ValueFormatter;
 
 /**
  * Created by Ozcan on 03/04/2017.
@@ -32,12 +33,12 @@ public class ChartUtils {
 
     protected static List<Integer> getStandardColor(Context context) {
         List<Integer> colors = new ArrayList<>();
+        colors.add(ContextCompat.getColor(context, R.color.material_blue));
+        colors.add(ContextCompat.getColor(context, R.color.material_amber));
         colors.add(ContextCompat.getColor(context, R.color.material_yellow));
         colors.add(ContextCompat.getColor(context, R.color.material_pink));
         colors.add(ContextCompat.getColor(context, R.color.material_green));
-        colors.add(ContextCompat.getColor(context, R.color.material_blue));
         colors.add(ContextCompat.getColor(context, R.color.material_light_green));
-        colors.add(ContextCompat.getColor(context, R.color.material_amber));
         colors.add(ContextCompat.getColor(context, R.color.material_purple));
         return colors;
     }
@@ -45,9 +46,7 @@ public class ChartUtils {
     public static class Pie {
 
         protected static String[] mParties = new String[]{
-                "BPBL", "BPSL",
-                "SPSL", "SPBL",
-                "S", "BB", "SB"
+                "Wo Pelaksanaan", "Wo Selesai"
         };
 
         public static void setChartConfiguration(PieChart mChart) {
@@ -57,17 +56,14 @@ public class ChartUtils {
 
             mChart.setDragDecelerationFrictionCoef(0.95f);
 
-         /*   mChart.setCenterTextTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));
-            mChart.setCenterText(ChartUtils.Pie.generateCenterSpannableText());*/
-
             mChart.setDrawHoleEnabled(false);
             //   mChart.setHoleColor(R.color.colorPrimary);
 
             //  mChart.setTransparentCircleColor(Color.WHITE);
             //  mChart.setTransparentCircleAlpha(110);
 
-            mChart.setHoleRadius(58f);
-            mChart.setTransparentCircleRadius(61f);
+            //mChart.setHoleRadius(58f);
+            //mChart.setTransparentCircleRadius(61f);
 
 
             //  mChart.setDrawCenterText(true);
@@ -78,7 +74,7 @@ public class ChartUtils {
             mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
 
             // entry label styling
-          /*  mChart.setEntryLabelColor(Color.WHITE);
+            /*mChart.setEntryLabelColor(Color.WHITE);
             mChart.setEntryLabelTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_REGULAR));
             mChart.setEntryLabelTextSize(12f);*/
 
@@ -95,14 +91,15 @@ public class ChartUtils {
                 entries.add(new PieEntry(chartData[i], mParties[i]));
             }
 
-            PieDataSet dataSet = new PieDataSet(entries, "Rekapitulasi Work Order");
+            PieDataSet dataSet = new PieDataSet(entries, "");
             dataSet.setSliceSpace(3f);
             dataSet.setSelectionShift(5f);
 
             dataSet.setColors(getStandardColor(context));
 
             PieData data = new PieData(dataSet);
-            data.setValueFormatter(new PercentFormatter());
+            data.setValueFormatter(new ValueFormatter());
+            //data.setValueFormatter(new PercentFormatter());
             //   data.setValueTextSize(11f);
             //   data.setValueTextColor(Color.BLACK);
             //   data.setValueTypeface(FontUtils.makeUpWith(context, FontUtils.SANS_SERIF_LIGHT));

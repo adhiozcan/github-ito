@@ -49,12 +49,13 @@ public class PelaksanaanAdapter extends RecyclerView.Adapter<PelaksanaanAdapter.
         holder.txtPelangganAlamat.setText(wo.getAlamat());
 
         if (tagTab.equals("selesai")) {
-            holder.txtStatusUpload.setText(wo.getStatusSinkronisasi());
             if (wo.isUploaded()) {
                 holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.material_green));
+                holder.txtStatusUpload.setText("Sukses");
                 holder.txtStatusUpload.setVisibility(View.VISIBLE);
             } else {
                 holder.txtStatusUpload.setTextColor(ContextCompat.getColor(context, R.color.colorOrange));
+                holder.txtStatusUpload.setText("Pending");
                 holder.txtStatusUpload.setVisibility(View.VISIBLE);
             }
         }

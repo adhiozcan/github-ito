@@ -7,20 +7,32 @@
               android:gravity="center"
               android:padding="@dimen/space_16dp">
 
-    <id.net.iconpln.apps.ito.helper.SmileyLoadingView
-        xmlns:slv="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/loading_view"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_gravity="center_horizontal"
-        slv:duration="2000"
-        slv:strokeWidth="4dp"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorSnow"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/space_16dp"
+        android:paddingLeft="@dimen/space_24dp"
+        android:paddingRight="@dimen/space_24dp"
+        android:paddingTop="@dimen/space_16dp">
 
-    <TextView
-        android:id="@+id/loading_title"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/space_12dp"
-        android:gravity="center"
-        android:text="Content goes here"/>
+        <id.net.iconpln.apps.ito.helper.SmileyLoadingView
+            xmlns:slv="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/loading_view"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center_horizontal"
+            slv:duration="2000"
+            slv:strokeWidth="4dp"/>
+
+        <TextView
+            android:id="@+id/loading_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/space_12dp"
+            android:gravity="center"
+            android:text="Content goes here"
+            android:textColor="#f5080808"/>
+    </LinearLayout>
 </LinearLayout>

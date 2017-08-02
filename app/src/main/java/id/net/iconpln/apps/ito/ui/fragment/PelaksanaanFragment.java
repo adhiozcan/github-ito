@@ -1,11 +1,11 @@
 package id.net.iconpln.apps.ito.ui.fragment;
 
+import android.Manifest;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -22,8 +22,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -37,11 +37,14 @@ import java.util.List;
 import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.R;
-import id.net.iconpln.apps.ito.adapter.TabMapAdapter;
+import id.net.iconpln.apps.ito.adapter.PelaksanaanTabAdapter;
 import id.net.iconpln.apps.ito.config.AppConfig;
-import id.net.iconpln.apps.ito.model.UserProfile;
-import id.net.iconpln.apps.ito.model.eventbus.RefreshEvent;
+import id.net.iconpln.apps.ito.helper.LocationFinder;
+import id.net.iconpln.apps.ito.helper.WorkOrderComparator;
+import id.net.iconpln.apps.ito.job.WoUploadService;
 import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.RefreshEvent;
+import id.net.iconpln.apps.ito.model.eventbus.WorkOrderEvent;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
@@ -49,7 +52,9 @@ import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.ui.PencarianActivity;
 import id.net.iconpln.apps.ito.utility.DateUtils;
+import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Realm;
+import io.realm.Sort;
 
 public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback {
 
@@ -66,22 +71,21 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
 
     private int     heightContainer = 0;
     private boolean isPanelExpand   = true;
-    private boolean isBack          = false;
     private GoogleMap googleMap;
 
-    private ArrayList<WorkOrder> workOrdersLunasList     = new ArrayList<>();
-    private ArrayList<WorkOrder> workOrderBelumLunasList = new ArrayList<>();
-    private ArrayList<WorkOrder> workOrderSelesaiList    = new ArrayList<>();
-    private List<WorkOrder>      woList                  = new ArrayList<>();
-
-    private int WO_NETWORK_ITERATION = 100;
+    private ArrayList<WorkOrder> woLunasList      = new ArrayList<>();
+    private ArrayList<WorkOrder> woBelumLunasList = new ArrayList<>();
+    private ArrayList<WorkOrder> woSelesaiList    = new ArrayList<>();
+    private List<WorkOrder>      woList           = new ArrayList<>();
+    private List<WorkOrder>      mWoBackupList    = new ArrayList<>();
 
     private List<WorkOrder> testMaxList = new ArrayList<>();
+
+    private LocationFinder mLocationFinder;
 
     public PelaksanaanFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,10 +101,45 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         initMap();
         //provideDummyData();
 
+        mLocationFinder = new LocationFinder(getActivity());
+
         AppConfig.NO_WO_LOCAL = "";
         checkAvailableData();
 
+        mLocationFinder.find(new LocationFinder.LocationFinderListener() {
+            @Override
+            public void onLocationFound(LatLng location) {
+                System.out.println("Found your location at " + location.latitude + " " + location.longitude);
+                //shouldUpdateDeviceMarkerLocation(new LatLng(location.latitude, location.longitude));
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mLocationFinder.stopUsingGPS();
+    }
+
+    private void initMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().
+                findFragmentById(R.id.google_map);
+        mapFragment.getMapAsync(this);
+    }
+
+    private void initView() {
+        mLayoutContent = (LinearLayout) view.findViewById(R.id.layout_content);
+        mLayoutContainer = (LinearLayout) view.findViewById(R.id.layout_main_container);
+        mTabLayout = (TabLayout) view.findViewById(R.id.tabs);
+        mViewPager = (ViewPager) view.findViewById(R.id.viewPager);
+        loadingView = view.findViewById(R.id.loading_view);
+        noDataFound = view.findViewById(R.id.no_data_view);
+
+        loadingView.setVisibility(View.VISIBLE);
+        mViewPager.setVisibility(View.GONE);
+        noDataFound.setVisibility(View.GONE);
     }
 
     private void checkAvailableData() {
@@ -123,87 +162,101 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         }
     }
 
-    private void getWoDataServer() {
-        AppConfig.WO_PAGE_START = 0;
-        AppConfig.WO_PAGE_END = 100;
-        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO);
+    private void backupWoSelesai() {
+        mWoBackupList = new ArrayList<>();
+        List<WorkOrder> localWoSelesai = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .equalTo("isSelesai", true)
+                        .findAll());
+        mWoBackupList.addAll(localWoSelesai);
 
-        AppConfig.WO_PAGE_START = 101;
-        AppConfig.WO_PAGE_END = 200;
-        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO);
+        System.out.println("[Starting] Backup!");
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println(AppConfig.getUserInformation().getKodePetugas() + " " + AppConfig.KODE_PETUGAS + "mWoBackupList : " + localWoSelesai.size());
+        List<WorkOrder> localWoAll = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .findAll());
 
-        AppConfig.WO_PAGE_START = 201;
-        AppConfig.WO_PAGE_END = 300;
-        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO);
+        for (WorkOrder wo : localWoAll) {
+            System.out.println(wo.getNoWo() + "\t" + wo.isSelesai() + "\t" + wo.getStatusSinkronisasi());
+        }
+
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .equalTo("isSelesai", false)
+                        .findAll()
+                        .deleteAllFromRealm();
+            }
+        });
     }
 
+    private void getWoDataServer() {
+        backupWoSelesai();
+        SocketTransaction.getInstance().sendMessage(ParamDef.GET_WO);
+    }
 
     private List<WorkOrder> getWoDataLocal() {
         ArrayList<WorkOrder> woList = new ArrayList<>();
         woList.addAll(LocalDb.getInstance().copyFromRealm(
                 LocalDb.getInstance().where(WorkOrder.class)
-                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS).findAll()));
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("isWoUlang", false)
+                        .findAllSorted("kddk", Sort.ASCENDING)));
         return woList;
     }
 
+    private void categorizeWoList() {
+        woLunasList = new ArrayList<>();
+        woBelumLunasList = new ArrayList<>();
+        woSelesaiList = new ArrayList<>();
 
-    private void initMap() {
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().
-                findFragmentById(R.id.google_map);
-        mapFragment.getMapAsync(this);
-    }
-
-    private void initView() {
-        mLayoutContent = (LinearLayout) view.findViewById(R.id.layout_content);
-        mLayoutContainer = (LinearLayout) view.findViewById(R.id.layout_main_container);
-        mTabLayout = (TabLayout) view.findViewById(R.id.tabs);
-        mViewPager = (ViewPager) view.findViewById(R.id.viewPager);
-        loadingView = view.findViewById(R.id.loading_view);
-        noDataFound = view.findViewById(R.id.no_data_view);
-
-        loadingView.setVisibility(View.VISIBLE);
-        mViewPager.setVisibility(View.GONE);
-        noDataFound.setVisibility(View.GONE);
+        for (WorkOrder wo : woList) {
+            System.out.println(wo.getNoWo() + "\tUploaded : " + wo.isUploaded() + "\tKeterangan : " + wo.getStatusSinkronisasi());
+            if (wo.getStatusPiutang().equals("Belum Lunas")) {
+                if (wo.isSelesai()) {
+                    woSelesaiList.add(wo);
+                } else {
+                    woBelumLunasList.add(wo);
+                }
+            } else {
+                woLunasList.add(wo);
+            }
+        }
     }
 
     private void initViewPager() {
-        workOrdersLunasList = new ArrayList<>();
-        workOrderBelumLunasList = new ArrayList<>();
-        workOrderSelesaiList = new ArrayList<>();
-
-        for (WorkOrder wo : woList) {
-            if (wo.getStatusPiutang().equals("Belum Lunas")) {
-                if (wo.isSelesai()) {
-                    workOrderSelesaiList.add(wo);
-                } else {
-                    workOrderBelumLunasList.add(wo);
-                }
-            } else {
-                workOrdersLunasList.add(wo);
-            }
-        }
+        categorizeWoList();
 
         mLayoutContent.setVisibility(View.VISIBLE);
-        mTabLayout.removeAllTabs();
-        mViewPager.setAdapter(new TabMapAdapter(getActivity().getSupportFragmentManager(), workOrderBelumLunasList, workOrderSelesaiList, workOrdersLunasList));
+        mViewPager.setVisibility(View.VISIBLE);
         mTabLayout.setVisibility(View.VISIBLE);
+        loadingView.setVisibility(View.GONE);
+
+        mTabLayout.removeAllTabs();
+        mViewPager.setAdapter(new PelaksanaanTabAdapter(getActivity().getSupportFragmentManager(), woBelumLunasList, woSelesaiList, woLunasList));
+
         mTabLayout.setupWithViewPager(mViewPager);
-        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + workOrderBelumLunasList.size() + ")");
-        mTabLayout.getTabAt(1).setText("WO Selesai (" + workOrderSelesaiList.size() + ")");
-        mTabLayout.getTabAt(2).setText("WO Lunas (" + workOrdersLunasList.size() + ")");
+        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + woBelumLunasList.size() + ")");
+        mTabLayout.getTabAt(1).setText("WO Selesai (" + woSelesaiList.size() + ")");
+        mTabLayout.getTabAt(2).setText("WO Lunas (" + woLunasList.size() + ")");
 
         mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 0:
-                        shouldUpdateMarker(workOrderBelumLunasList);
+                        shouldUpdateAllWoMarker(woBelumLunasList);
                         break;
                     case 1:
-                        shouldUpdateMarker(workOrderSelesaiList);
+                        shouldUpdateAllWoMarker(woSelesaiList);
                         break;
                     case 2:
-                        shouldUpdateMarker(workOrdersLunasList);
+                        shouldUpdateAllWoMarker(woLunasList);
                         break;
                 }
                 if (!isPanelExpand)
@@ -225,6 +278,14 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
 
         loadingView.setVisibility(View.GONE);
         mViewPager.setVisibility(View.VISIBLE);
+
+        if (googleMap != null) {
+            double latitude  = -7.783248;
+            double longitude = 106.5338977;
+            LatLng latLng    = new LatLng(latitude, longitude);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(12f));
+        }
     }
 
     private void hidePanel() {
@@ -242,7 +303,14 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        try {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        googleMap.setMyLocationEnabled(true);
+        googleMap.getUiSettings().setRotateGesturesEnabled(false);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+        /*try {
             // customise the styling of the base map using a JSON object defined
             // in a raw resource file.
             boolean success = this.googleMap.setMapStyle(
@@ -254,12 +322,12 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
             }
         } catch (Resources.NotFoundException e) {
             Log.e(TAG, "Can't find style. Error: ", e);
-        }
+        }*/
 
-        googleMap.getUiSettings().setRotateGesturesEnabled(false);
 
         // Position the map's camera near Bandung, Indonesia.
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-6.915846, 107.604789)));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-17.115403, 119.041815)));
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(3.3f));
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -269,13 +337,25 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
                     hidePanel();
             }
         });
-        shouldUpdateMarker(workOrderBelumLunasList);
+
+        /*
+            // Getting LocationManager object from System Service LOCATION_SERVICE
+            LocationManager locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+            Criteria        criteria        = new Criteria();
+            String          provider        = locationManager.getBestProvider(criteria, true);
+            Location        location        = locationManager.getLastKnownLocation(provider);
+
+            if (location != null) {
+                shouldUpdateDeviceMarkerLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+            }
+        */
+        shouldUpdateAllWoMarker(woBelumLunasList);
     }
 
-    private void shouldUpdateMarker(List<WorkOrder> woList) {
-        googleMap.clear();
+    private void shouldUpdateAllWoMarker(List<WorkOrder> woList) {
         if ((googleMap != null) && ((woList != null) && (!woList.isEmpty()))) {
             for (WorkOrder wo : woList) {
+
                 // if can't parse lat lng for any specific reason like null variable, then continue
                 // to the next iteration.
                 boolean isSafeToContinue = isValidLatLng(wo.getKoordinatX(), wo.getKoordinatY());
@@ -291,8 +371,44 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
                                 .title(wo.getPelangganId())
                                 .snippet(wo.getAlamat()));
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                googleMap.animateCamera(CameraUpdateFactory.zoomTo(11f));
             }
         }
+    }
+
+    private void shouldUpdateDeviceMarkerLocation(LatLng latLng) {
+
+        if (googleMap != null) googleMap.clear();
+
+        // add marker and additional info on top of it.
+        googleMap.addMarker(
+                new MarkerOptions()
+                        .position(latLng)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_blue_dot_marker)));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(11f));
+
+        /*
+        final Circle circle = googleMap.addCircle(new CircleOptions().center(latLng)
+                .strokeColor(Color.BLUE).radius(8000));
+
+        ValueAnimator vAnimator = new ValueAnimator();
+        vAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        vAnimator.setRepeatMode(ValueAnimator.RESTART);  *//* PULSE *//*
+        vAnimator.setIntValues(0, 100);
+        vAnimator.setDuration(1000);
+        vAnimator.setEvaluator(new IntEvaluator());
+        vAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        vAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float animatedFraction = valueAnimator.getAnimatedFraction();
+                // Log.e("", "" + animatedFraction);
+                circle.setRadius(animatedFraction * 800);
+            }
+        });
+        vAnimator.start();
+        */
     }
 
     private boolean isValidLatLng(String lat, String lng) {
@@ -319,14 +435,10 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         return super.onOptionsItemSelected(item);
     }
 
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-
     @Override
     public void onDestroy() {
-        EventBusProvider.getInstance().unregister(this);
         super.onDestroy();
+        EventBusProvider.getInstance().unregister(this);
     }
 
     private void showNotFoundData() {
@@ -336,19 +448,12 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         loadingView.setVisibility(View.GONE);
     }
 
-    private void woValidate() {
-        Log.d(TAG, "[Mark Wo Local] ---------------------------------------------------------");
-        Log.d(TAG, "woValidate: " + AppConfig.NO_WO_LOCAL);
-        SocketTransaction.getInstance().sendMessage(ParamDef.SET_WO);
-        Log.d(TAG, "\t|>[" + WO_NETWORK_ITERATION + "/" + 300 + "]------ WO by kode petugas : " + AppConfig.KODE_PETUGAS + " has downloaded");
-        AppConfig.NO_WO_LOCAL = "";
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEventReceived(final WorkOrder[] workOrder) {
+    public void onMessageEventReceived(final WorkOrderEvent woEvent) {
         Log.d(TAG, "[onWoAllReceived] ------------------------------------------------------------");
-        if (workOrder.length == 0) {
-            Log.d(TAG, "onMessageEventReceived: " + workOrder.length + " | " + getWoDataLocal().size());
+        if (woEvent.workOrders.length == 0) {
+            Log.d(TAG, "onMessageEventReceived: " + woEvent.workOrders.length + " | " + getWoDataLocal().size());
+
             //continue using local data
             if (getWoDataLocal().size() > 0) {
                 initViewPager();
@@ -356,70 +461,79 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
                 showNotFoundData();
             }
         } else {
-            for (WorkOrder _wo : workOrder) {
-                Log.d(TAG, _wo.toString());
-            }
-
             // update marker on map
-            //shouldUpdateMarker();
 
-            //if (woList.size() == Integer.parseInt(workOrder.getJumlahData()))
-            for (WorkOrder _wo : workOrder) {
+            for (WorkOrder _wo : woEvent.workOrders) {
+                Log.d(TAG, _wo.toString());
                 woList.add(_wo);
-                if (AppConfig.NO_WO_LOCAL.length() == 0)
-                    AppConfig.NO_WO_LOCAL = _wo.getNoWo();
-                else
-                    AppConfig.NO_WO_LOCAL = AppConfig.NO_WO_LOCAL.concat("," + _wo.getNoWo());
             }
 
-            // mark as local and tell server that this data has been download
-            woValidate();
+            shouldUpdateAllWoMarker(woList);
 
             // save work order list into local.
             //StorageTransaction<WorkOrder> storageTransaction = new StorageTransaction<>();
             //storageTransaction.saveList(WorkOrder.class, woList);
 
+            final List<WorkOrder> woFromServer = Arrays.asList(woEvent.workOrders);
+            final List<WorkOrder> woClean      = new ArrayList<>();
+            woClean.addAll(mWoBackupList);
+
+            System.out.println("[Starting] Proses pembandingan");
+            WorkOrderComparator comparator = new WorkOrderComparator();
+            for (WorkOrder serverWo : woFromServer) {
+                boolean found = false;
+                for (WorkOrder localWo : mWoBackupList) {
+                    if (comparator.compare(localWo, serverWo) == 1) {
+                        System.out.println("Data sama " + serverWo.getNoWo());
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    System.out.println("Menambahkan wo baru : " + serverWo.getNoWo());
+                    woClean.add(serverWo);
+                }
+            }
+
+            System.out.println("Data terbackup : " + mWoBackupList.size());
+            System.out.println("Data wo yang akan ditambahkan " + woClean.size());
+            System.out.println("-----------------------------------------");
+
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
-                    for (WorkOrder wo : workOrder) {
-                        realm.insert(wo);
+                    for (WorkOrder wo : woEvent.workOrders) {
+                        realm.insertOrUpdate(wo);
                     }
                 }
             });
 
 
-            testMaxList.addAll(Arrays.asList(workOrder));
+            testMaxList.addAll(Arrays.asList(woEvent.workOrders));
             System.out.println("**********************************************************************");
             System.out.println("--> Current Size : " + woList.size() + "data");
             initViewPager();
+            SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH, String.valueOf(woEvent.workOrders.length));
             Log.d(TAG, "[Wo Complete] Wo has been saved. :)");
         }
     }
 
-
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onRefreshTrigger(RefreshEvent event) {
-        Realm realm = Realm.getDefaultInstance();
+        Toast.makeText(getActivity(), "Refresh", Toast.LENGTH_SHORT).show();
         woList.clear();
-        woList.addAll(realm.copyFromRealm(realm.where(WorkOrder.class).findAll()));
+        woList.addAll(getWoDataLocal());
         initViewPager();
+        /*woList.clear();
+        woList.addAll(getWoDataLocal());
+        mViewPager.getAdapter().notifyDataSetChanged();
+        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + woBelumLunasList.size() + ")");
+        mTabLayout.getTabAt(1).setText("WO Selesai (" + woSelesaiList.size() + ")");
+        mTabLayout.getTabAt(2).setText("WO Lunas (" + woLunasList.size() + ")");*/
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketFailure(ErrorMessageEvent errorMessage) {
         System.out.println(errorMessage.getErrorCode() + " | " + errorMessage.getMessage());
-        new CountDownTimer(3_000, 1_000) {
-            @Override
-            public void onTick(long l) {
-            }
-
-            @Override
-            public void onFinish() {
-                Toast.makeText(getActivity(), "Tidak ada jaringan internet", Toast.LENGTH_SHORT).show();
-
-            }
-        }.start();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -430,4 +544,8 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         ItoApplication.pingDate = dateString;
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onUploadBackgroundFinished() {
+        System.out.println("[Service] Stop uploading in the background");
+    }
 }

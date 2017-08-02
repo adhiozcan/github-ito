@@ -1,7 +1,5 @@
 package id.net.iconpln.apps.ito.ui.fragment;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -17,21 +15,20 @@ import id.net.iconpln.apps.ito.model.WorkOrder;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 
 
-public class PelaksanaanItemFragment extends Fragment {
+public class PelaksanaanTabFragment extends Fragment {
 
-    private String                        tagTab;
-    private OnFragmentInteractionListener mListener;
+    private String tagTab;
     private ArrayList<WorkOrder> workOrders = new ArrayList<>();
     private View view;
 
-    public PelaksanaanItemFragment() {
+    public PelaksanaanTabFragment() {
         // Required empty public constructor
     }
 
 
-    public static PelaksanaanItemFragment newInstance(ArrayList<WorkOrder> workOrders, String tagTab) {
-        PelaksanaanItemFragment fragment = new PelaksanaanItemFragment();
-        Bundle                  args     = new Bundle();
+    public static PelaksanaanTabFragment newInstance(ArrayList<WorkOrder> workOrders, String tagTab) {
+        PelaksanaanTabFragment fragment = new PelaksanaanTabFragment();
+        Bundle                 args     = new Bundle();
         args.putParcelableArrayList("woList", workOrders);
         args.putString("tag", tagTab);
         fragment.setArguments(args);
@@ -51,33 +48,10 @@ public class PelaksanaanItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_pelaksanaan_item, container, false);
+        view = inflater.inflate(R.layout.fragment_pelaksanaan_tab, container, false);
         RecyclerView mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(new PelaksanaanAdapter(getActivity(), tagTab, workOrders));
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
         return view;
-    }
-
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
     }
 }

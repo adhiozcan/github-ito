@@ -44,7 +44,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Rp 25.000.0000,-"
+                    android:text="Rp 25.000.0000"
                     android:textColor="@color/belumlunas"
                     android:textSize="24sp"
                     android:textStyle="bold"/>
@@ -68,7 +68,7 @@
                     android:paddingLeft="@dimen/space_16dp"
                     android:paddingRight="@dimen/space_16dp"
                     android:paddingTop="@dimen/space_8dp"
-                    android:text="Tusbung"
+                    android:text="Proses"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
                     android:textStyle="bold"/>
@@ -256,7 +256,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Tarif Daya"
+                            android:text="Tarif/Daya"
                             android:textColor="@color/colorZumthor"
                             android:textSize="@dimen/text_size_14sp"
                             android:textStyle="bold"/>
@@ -266,7 +266,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:fontFamily="sans-serif-condensed"
-                            android:text="Gardu Tiang"
+                            android:text="Gardu/Tiang"
                             android:textColor="@color/colorZumthor"
                             android:textSize="@dimen/text_size_14sp"
                             android:textStyle="bold"/>

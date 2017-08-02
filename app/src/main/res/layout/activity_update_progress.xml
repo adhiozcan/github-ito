@@ -8,6 +8,7 @@
               android:fillViewport="true"
               android:orientation="vertical">
 
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,13 +16,13 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:title="Proses Tusbung"/>
+        app:title="Proses Pemutusan"/>
 
     <View
         android:id="@+id/signal_condition"
         android:layout_width="match_parent"
         android:layout_height="@dimen/space_4dp"
-        android:background="@color/material_pink"
+        android:background="@color/material_light_green"
         android:elevation="@dimen/space_2dp"/>
 
     <ScrollView
@@ -177,6 +178,55 @@
 
                 </TableLayout>
             </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginRight="@dimen/space_16dp">
+
+                <TextView
+                    android:layout_width="140dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/space_8dp"
+                    android:text="Status Putus"
+                    android:textSize="13sp"
+                    android:textStyle="bold"/>
+
+                <Spinner
+                    android:id="@+id/status_putus"
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:spinnerMode="dialog"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/form_keterangan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginRight="@dimen/space_16dp">
+
+                <TextView
+                    android:layout_width="140dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/space_8dp"
+                    android:text="Keterangan"
+                    android:textSize="13sp"
+                    android:textStyle="bold"/>
+
+                <Spinner
+                    android:id="@+id/keterangan"
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:spinnerMode="dialog"
+                    android:textSize="14sp"/>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -379,49 +429,6 @@
                 </TableRow>
 
                 <TableRow
-                    android:layout_marginTop="5dp">
-
-                    <TextView
-                        android:layout_width="140dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginRight="@dimen/space_8dp"
-                        android:text="Status Pekerjaan"
-                        android:textSize="13sp"
-                        android:textStyle="bold"/>
-
-                    <Spinner
-                        android:id="@+id/status_pekerjaan"
-                        android:layout_width="100dp"
-                        android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:clickable="false"
-                        android:entries="@array/jenis_pekerjaan"
-                        android:spinnerMode="dropdown"
-                        android:textSize="14sp"/>
-                </TableRow>
-
-                <TableRow android:layout_marginTop="5dp">
-
-                    <TextView
-                        android:layout_width="140dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginRight="@dimen/space_8dp"
-                        android:text="Keterangan"
-                        android:textSize="13sp"
-                        android:textStyle="bold"/>
-
-                    <Spinner
-                        android:id="@+id/keterangan"
-                        android:layout_width="100dp"
-                        android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:spinnerMode="dialog"
-                        android:textSize="14sp"/>
-                </TableRow>
-
-                <TableRow
                     android:id="@+id/form_meter_lwbp"
                     android:layout_marginTop="10dp"
                     android:visibility="gone">
@@ -430,7 +437,7 @@
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
                         android:layout_marginRight="@dimen/space_8dp"
-                        android:text="Status Meter"
+                        android:text="Stand Meter"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
 
@@ -440,7 +447,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Input No. LWBP"
+                        android:hint="LWBP"
                         android:imeOptions="actionNext"
                         android:inputType="number"
                         android:textColor="#121212"
@@ -465,7 +472,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Input No. WBP"
+                        android:hint="WBP"
                         android:imeOptions="actionNext"
                         android:inputType="number"
                         android:textColor="#121212"
@@ -490,7 +497,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Input No. KVARH"
+                        android:hint="KVARH"
                         android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="#121212"
@@ -514,12 +521,37 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Input telp pelanggan"
+                        android:hint="Telp pelanggan"
                         android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="#121212"
                         android:textSize="14sp"/>
                 </TableRow>
+
+                <TableRow
+                    android:layout_marginTop="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/space_8dp"
+                        android:text="Email Pelanggan"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <EditText
+                        android:id="@+id/email_pelanggan"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Email pelanggan"
+                        android:imeOptions="actionDone"
+                        android:inputType="textEmailAddress"
+                        android:textColor="#121212"
+                        android:textSize="14sp"/>
+                </TableRow>
+
             </TableLayout>
         </LinearLayout>
     </ScrollView>

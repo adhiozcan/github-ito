@@ -68,9 +68,7 @@ public class Param {
                 "\t\"params\": {\n" +
                 "\t\t\"method\": \"getwoulang\",\n" +
                 "\t\t\"idunitup\": \"" + AppConfig.ID_UNIT_UP + "\",\n" +
-                "\t\t\"kodepetugas\": \"" + AppConfig.KODE_PETUGAS + "\",\n" +
-                "\t\t\"pagestart\": \"" + AppConfig.WO_PAGE_START + "\",\n" +
-                "\t\t\"pageend\": \"" + AppConfig.WO_PAGE_END + "\"\n" +
+                "\t\t\"kodepetugas\": \"" + AppConfig.KODE_PETUGAS + "\"\n" +
                 "\t}\n" +
                 "}";
     }
@@ -138,6 +136,8 @@ public class Param {
                 "\"longitude\": \"" + tusbung.getLongitude() + "\",\n" +
                 "\"notul\": \"" + tusbung.getNoTul() + "\",\n" +
                 "\"idunitup\": \"" + tusbung.getUnitUpId() + "\",\n" +
+                "\"email\": \"" + tusbung.getEmail() + "\",\n" +
+                "\"hp\": \"" + tusbung.getHp() + "\",\n" +
                 "\"status\": \"" + tusbung.getStatus() + "\"\n" +
                 "}\n" +
                 "}\n" +
@@ -153,7 +153,7 @@ public class Param {
                 "\"type\": \"event\",\n" +
                 "\"event\": \"do_something\",\n" +
                 "\"params\": {\n" +
-                "\"method\": \"tempuploadwo\",\n" +
+                "\"method\": \"tempuploadwoulang\",\n" +
                 "\"foto\":\"" + tusbung.getBase64Foto() + "\",\n" +
                 "\"jumlah\":\"" + tusbung.getJumlahFoto() + "\", \"ke\":\"" + tusbung.getPart() + "\",\n" +
                 "\"tglputus\": \"" + tusbung.getTanggalPemutusan() + "\",\n" +
@@ -168,6 +168,8 @@ public class Param {
                 "\"longitude\": \"" + tusbung.getLongitude() + "\",\n" +
                 "\"notul\": \"" + tusbung.getNoTul() + "\",\n" +
                 "\"idunitup\": \"" + tusbung.getUnitUpId() + "\",\n" +
+                "\"email\": \"" + tusbung.getEmail() + "\",\n" +
+                "\"hp\": \"" + tusbung.getHp() + "\",\n" +
                 "\"status\": \"" + tusbung.getStatus() + "\"\n" +
                 "}\n" +
                 "}\n" +

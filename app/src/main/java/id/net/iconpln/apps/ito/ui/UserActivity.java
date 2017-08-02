@@ -50,7 +50,6 @@ public class UserActivity extends AppCompatActivity {
         textUnitUpi.setText(user.getUnitupi());
         textUnitUp.setText(user.getUnitup());
         textUnitAp.setText(user.getUnitap());
-
     }
 
     @Override

@@ -72,7 +72,8 @@
                     android:paddingRight="@dimen/space_16dp"
                     android:paddingTop="@dimen/space_8dp"
                     android:text="Sync Data"
-                    android:textColor="@color/colorWhite"/>
+                    android:textColor="@color/colorWhite"
+                    android:visibility="invisible"/>
 
             </LinearLayout>
 

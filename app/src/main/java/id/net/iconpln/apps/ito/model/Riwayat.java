@@ -24,6 +24,14 @@ public class Riwayat extends RealmObject {
         this.activity = activity;
     }
 
+    public Riwayat(long unixTimeStamp, String tanggal, String waktu, String jumlahData, String activity) {
+        this.unixTimeStamp = unixTimeStamp;
+        this.tanggal = tanggal;
+        this.waktu = waktu;
+        this.jumlahData = jumlahData;
+        this.activity = activity;
+    }
+
     public long getUnixTimeStamp() {
         return unixTimeStamp;
     }

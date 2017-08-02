@@ -4,10 +4,13 @@ import android.Manifest;
 import android.support.annotation.RequiresPermission;
 import android.util.Log;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.logging.HttpLoggingInterceptor;
 
@@ -33,10 +36,10 @@ public class SocketTransaction {
             }
         }
 
-        if (ws == null)
-            throw new NullPointerException("Tidak dapat menggunakan websocket, instance belum terinisialisasi");
-        if (client == null)
-            throw new NullPointerException("Tidak dapat menggunakan socket tanpa Http Client");
+        if (ws == null || client == null) {
+            start();
+        }
+
         return socketTransaction;
     }
 
@@ -87,7 +90,8 @@ public class SocketTransaction {
                 param = Param.getMasterTusbung();
                 break;
             case ParamDef.GET_WO:
-                param = Param.getWoSync();
+                //param = Param.getWoSync();
+                param = Param.getWoAll();
                 break;
             case ParamDef.GET_WO_ULANG:
                 param = Param.getWoUlang();
@@ -113,8 +117,7 @@ public class SocketTransaction {
         ws.send(socketRequest.get());
 
         Log.d(TAG, "[Send]: -----------------------------------------------------------------");
-        Log.d(TAG, "[Body]: >>>" + socketRequest.get());
-        Log.d(TAG, "[Send]: -----------------------------------------------------------------");
+        Log.d(TAG, "[Send;]: >>>" + socketRequest.get());
     }
 
     /**

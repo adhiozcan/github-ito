@@ -25,7 +25,7 @@ import io.realm.Sort;
  * Created by Ozcan on 23/03/2017.
  */
 
-public class SinkronisasiFragment extends Fragment {
+public class SynchFragment extends Fragment {
     private ViewPager    viewPager;
     private TabLayout    tabLayout;
     private SynchAdapter adapter;

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,7 +19,9 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
@@ -28,15 +29,21 @@ import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.config.NetworkConfig;
 import id.net.iconpln.apps.ito.helper.Constants;
+import id.net.iconpln.apps.ito.helper.WorkOrderComparator;
+import id.net.iconpln.apps.ito.job.WoUploadService;
 import id.net.iconpln.apps.ito.model.FlagTusbung;
+import id.net.iconpln.apps.ito.model.Statistic;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.WoUploadServiceEvent;
+import id.net.iconpln.apps.ito.model.eventbus.WorkOrderEvent;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
+import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.DeviceUtils;
 import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
@@ -48,7 +55,14 @@ import io.realm.Realm;
  */
 
 public class LoginActivity extends AppCompatActivity {
-    private static final String TAG = "Login";
+    private final String TAG = LoginActivity.class.getSimpleName();
+
+    private boolean LOGIN_COMPLETE            = false;
+    private boolean MASTER_TUSBUNG_COMPLETE   = false;
+    private boolean WORK_ORDER_COMPLETE       = false;
+    private boolean WORK_ORDER_ULANG_COMPLETE = false;
+
+    private SocketTransaction socketTransaction;
 
     private EditText edUser;
     private EditText edPassword;
@@ -58,15 +72,9 @@ public class LoginActivity extends AppCompatActivity {
     private View     formLogin;
     private View     viewLoading;
 
-    private SocketTransaction socketTransaction;
-
-    private boolean LOGIN_COMPLETE            = false;
-    private boolean MASTER_TUSBUNG_COMPLETE   = false;
-    private boolean WORK_ORDER_COMPLETE       = false;
-    private boolean WORK_ORDER_ULANG_COMPLETE = false;
+    private List<WorkOrder> mWoBackupList;
 
     @Override
-
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
@@ -107,14 +115,18 @@ public class LoginActivity extends AppCompatActivity {
         chkRememberMe.setChecked(AppConfig.isRemember);
         chkRememberMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                AppConfig.saveUserRememberConfiguration(b);
+            public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
+                AppConfig.saveUserRememberConfiguration(value);
             }
         });
 
         setHardwareIdInfo();
         checkIfUserStillLoggedIn();
+
+        edUser.setText("22100.KURNIA");
+        edPassword.setText("icon+123");
     }
+
 
     private void setHardwareIdInfo() {
         NetworkConfig.MYDEBUG = DeviceUtils.getPhoneNumber(this);
@@ -144,6 +156,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onRevealPassword(View viewId) {
+        System.out.println("Posisi Tag : " + viewId.getTag());
         if (viewId.getTag() == "true") {
             edPassword.setTransformationMethod(new HideReturnsTransformationMethod());
             edPassword.setSelection(edPassword.getText().length());
@@ -185,7 +198,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void doLogin(String username, String password) {
-        SmileyLoading.show(this, "Mohon tunggu sebentar.");
+        SmileyLoading.show(this, "Mohon tunggu sebentar", 10_000, new SmileyLoading.LoadingTimer() {
+            @Override
+            public void onTimeout() {
+                NotifUtils.makePinkSnackbar(LoginActivity.this, "Timeout! Coba beberapa saat lagi").show();
+            }
+        });
+
         Log.d(TAG, "Im trying to send new message using formal format, please wait :)");
         AppConfig.USERNAME = username;
         AppConfig.PASSWORD = password;
@@ -207,6 +226,8 @@ public class LoginActivity extends AppCompatActivity {
         if (AppConfig.isRemember) {
             AppConfig.saveUserCredential(AppConfig.USERNAME, AppConfig.PASSWORD);
         }
+
+        backupWoSelesai();
 
         /**
          * Save user information into local
@@ -243,7 +264,6 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void listenDataToComplete() {
         if (LOGIN_COMPLETE && MASTER_TUSBUNG_COMPLETE && WORK_ORDER_COMPLETE && WORK_ORDER_ULANG_COMPLETE) {
-            SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH);
             moveToDashboard();
         }
     }
@@ -251,6 +271,39 @@ public class LoginActivity extends AppCompatActivity {
     private void moveToDashboard() {
         startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         finish();
+    }
+
+    private void backupWoSelesai() {
+        mWoBackupList = new ArrayList<>();
+        List<WorkOrder> localWoSelesai = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .equalTo("isSelesai", true)
+                        .findAll());
+        mWoBackupList.addAll(localWoSelesai);
+
+        System.out.println("[Starting] Backup!");
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println(AppConfig.getUserInformation().getKodePetugas() + " " + AppConfig.KODE_PETUGAS + "mWoBackupList : " + localWoSelesai.size());
+        List<WorkOrder> localWoAll = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .findAll());
+
+        for (WorkOrder wo : localWoAll) {
+            System.out.println(wo.getNoWo() + "\t" + wo.isSelesai() + "\t" + wo.getStatusSinkronisasi());
+        }
+
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.getUserInformation().getKodePetugas())
+                        .equalTo("isSelesai", false)
+                        .findAll()
+                        .deleteAllFromRealm();
+            }
+        });
     }
 
     @Override
@@ -271,13 +324,23 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, userProfile.toString());
         SmileyLoading.shouldCloseDialog();
 
+        AppConfig.TANGGAL = userProfile.getTanggalServer();
+        DateUtils.saveDateFromLogin(userProfile.getTanggalServer());
+        System.out.println(DateUtils.getDateFromLogin());
+        System.out.println("Tanggal tercatat");
+
         if (isLoginSuccess(userProfile)) {
+            String namaUnitUpi = userProfile.getNamaunitup();
+            if (userProfile.getUnitupi().trim().toLowerCase().equals("54")) {
+                userProfile.setNamaunitup("Ar. " + namaUnitUpi);
+            } else {
+                userProfile.setNamaunitup("Ry. " + namaUnitUpi);
+            }
             onLoginSuccess(userProfile);
             LOGIN_COMPLETE = true;
             listenDataToComplete();
         } else {
-            Snackbar snackbar = NotifUtils.makePinkSnackbar(this, "Username atau Password tidak ditemukan");
-            snackbar.show();
+            NotifUtils.makePinkSnackbar(this, "Username atau Password tidak ditemukan").show();
         }
     }
 
@@ -296,42 +359,169 @@ public class LoginActivity extends AppCompatActivity {
         MASTER_TUSBUNG_COMPLETE = true;
         listenDataToComplete();
 
-        txtLoadingDesc.setText("Memperbarui data chart...");
-        socketTransaction.sendMessage(ParamDef.GET_WO_CHART);
+        /*txtLoadingDesc.setText("Memperbarui data chart...");
+        socketTransaction.sendMessage(ParamDef.GET_WO_CHART);*/
+
+        txtLoadingDesc.setText("Memperbarui data wo pelaksanaan...");
+        socketTransaction.sendMessage(ParamDef.GET_WO);
+        socketTransaction.sendMessage(ParamDef.GET_WO_ULANG);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onWoSummaryResponse(WoSummary woSummary) {
-        txtLoadingDesc.setText("Memperbarui data wo pelaksanaan ulang...");
+        txtLoadingDesc.setText("Memperbarui data wo pelaksanaan...");
+        socketTransaction.sendMessage(ParamDef.GET_WO);
         socketTransaction.sendMessage(ParamDef.GET_WO_ULANG);
-
-        WORK_ORDER_COMPLETE = true;
-        listenDataToComplete();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDataWoUlangResponse(final WorkOrder[] workOrders) {
-        Log.d(TAG, "[Wo Ulang] " + workOrders.length + "--------------------");
-        txtLoadingDesc.setText("Data complete...");
+    public void onDataWoReceived(final WorkOrderEvent woEvent) {
+        Log.d(TAG, "onDataWoReceived : " + AppConfig.KODE_PETUGAS);
+        Log.d(TAG, "------------------------------------------");
+        if (woEvent.workOrders.length > 0)
+            System.out.println("Wo Kode Petugas : " + woEvent.workOrders[0].getKodePetugas());
+        Log.d(TAG, "Wo ulang : " + woEvent.isUlang + ", Total Data : " + woEvent.workOrders.length);
+        Log.d(TAG, "Total Backup data : " + mWoBackupList.size());
+
+        txtLoadingDesc.setText("Finishing...");
+
+        /*List<WorkOrder> localWoData = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("isWoUlang", false)
+                        .findAll());
+
+        List<WorkOrder> localWoUlangData = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("isWoUlang", true)
+                        .findAll());
+
+        final List<WorkOrder> woFromServer = Arrays.asList(woEvent.workOrders);
+        final List<WorkOrder> woClean      = new ArrayList<>();
+
+        System.out.println("[Starting] Proses pembandingan");
+        WorkOrderComparator comparator = new WorkOrderComparator();
+        if (woEvent.isUlang) {
+            for (WorkOrder serverWo : woFromServer) {
+                boolean found = false;
+                for (WorkOrder localWo : localWoUlangData) {
+                    if (comparator.compare(localWo, serverWo) == 1) {
+                        System.out.println("Data sama " + serverWo.getNoWo());
+                        found = true;
+                    }
+                }
+                System.out.println("Status found : " + found);
+                if (!found) {
+                    System.out.println("Menambahkan wo baru : " + serverWo.getNoWo());
+                    woClean.add(serverWo);
+                }
+            }
+
+            System.out.println("Data wo yang akan ditambahkan " + woClean.size());
+            System.out.println("-----------------------------------------");
+
+        } else {
+
+            for (WorkOrder serverWo : woFromServer) {
+                boolean found = false;
+                for (WorkOrder localWo : localWoData) {
+                    if (comparator.compare(localWo, serverWo) == 1) {
+                        System.out.println("Data sama " + serverWo.getNoWo());
+                        found = true;
+                    }
+                }
+                System.out.println("Status found : " + found);
+                if (!found) {
+                    System.out.println("Menambahkan wo baru : " + serverWo.getNoWo());
+                    woClean.add(serverWo);
+                }
+            }
+
+            System.out.println("Data wo yang akan ditambahkan " + woClean.size());
+            System.out.println("-----------------------------------------");
+        }*/
+
+        final List<WorkOrder> woFromServer = Arrays.asList(woEvent.workOrders);
+        final List<WorkOrder> woClean      = new ArrayList<>();
+        woClean.addAll(mWoBackupList);
+
+        System.out.println("[Starting] Proses pembandingan");
+        WorkOrderComparator comparator = new WorkOrderComparator();
+        if (woEvent.isUlang) {
+            for (WorkOrder serverWo : woFromServer) {
+                boolean found = false;
+                for (WorkOrder localWo : mWoBackupList) {
+                    if (comparator.compare(localWo, serverWo) == 1) {
+                        System.out.println("Data sama " + serverWo.getNoWo());
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    System.out.println("Menambahkan wo baru : " + serverWo.getNoWo());
+                    woClean.add(serverWo);
+                }
+            }
+            System.out.println("Data terbackup : " + mWoBackupList.size());
+            System.out.println("Data wo yang akan ditambahkan " + woClean.size());
+            System.out.println("-----------------------------------------");
+
+        } else {
+            for (WorkOrder serverWo : woFromServer) {
+                boolean found = false;
+                for (WorkOrder localWo : mWoBackupList) {
+                    if (comparator.compare(localWo, serverWo) == 1) {
+                        System.out.println("Data sama " + serverWo.getNoWo());
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    System.out.println("Menambahkan wo baru : " + serverWo.getNoWo());
+                    woClean.add(serverWo);
+                }
+            }
+
+            System.out.println("Data terbackup : " + mWoBackupList.size());
+            System.out.println("Data wo yang akan ditambahkan " + woClean.size());
+            System.out.println("-----------------------------------------");
+        }
 
         LocalDb.makeSafeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for (WorkOrder wo : workOrders) {
-                    wo.setWoUlang(true);
-                    realm.insertOrUpdate(wo);
+                for (int i = 0; i < woClean.size(); i++) {
+                    realm.insertOrUpdate(woClean);
                 }
             }
         });
 
-        WORK_ORDER_ULANG_COMPLETE = true;
-        listenDataToComplete();
+        StorageTransaction<Statistic> transaction = new StorageTransaction<>();
+        Statistic                     statistic   = transaction.find(Statistic.class);
+        if (woEvent.isUlang) {
+            statistic.setSumWoUlang(woEvent.workOrders.length);
+
+            WORK_ORDER_ULANG_COMPLETE = true;
+            listenDataToComplete();
+        } else {
+            statistic.setSumWo(woEvent.workOrders.length);
+
+            WORK_ORDER_COMPLETE = true;
+            listenDataToComplete();
+        }
+
+        transaction.save(Statistic.class, statistic);
+        SynchUtils.writeSynchLog(SynchUtils.LOG_UNDUH, String.valueOf(woEvent.workOrders.length));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onError(ErrorMessageEvent messageEvent) {
         SmileyLoading.shouldCloseDialog();
-        Snackbar snackbar = NotifUtils.makePinkSnackbar(this, messageEvent.getMessage());
-        snackbar.show();
+        NotifUtils.makePinkSnackbar(this, messageEvent.getMessage()).show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onUploadBackgroundFinished(WoUploadServiceEvent wusEvent) {
+        this.stopService(new Intent(this, WoUploadService.class));
+        System.out.println("[Service] Stop uploading in the background");
     }
 }

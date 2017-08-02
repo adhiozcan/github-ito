@@ -8,14 +8,15 @@ import com.google.gson.annotations.SerializedName;
 
 public class ProgressUpdateEvent {
     @SerializedName("kode")
-    public String kode;
+    public String  kode;
     @SerializedName("pesan")
-    public String message;
+    public String  message;
     @SerializedName("nowo")
-    public String noWo;
+    public String  noWo;
+    public boolean isUlang;
 
     public boolean isSuccess() {
-        return kode == "1" ? true : false;
+        return kode.equals("1") ? true : false;
     }
 
     @Override
@@ -24,6 +25,7 @@ public class ProgressUpdateEvent {
                 "kode='" + kode + '\'' +
                 ", message='" + message + '\'' +
                 ", noWo='" + noWo + '\'' +
+                ", isUlang=" + isUlang +
                 '}';
     }
 }

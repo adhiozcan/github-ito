@@ -1,10 +1,13 @@
 package id.net.iconpln.apps.ito.ui.fragment;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,15 +30,22 @@ import id.net.iconpln.apps.ito.adapter.SyncPendingAdapter;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.helper.Constants;
 import id.net.iconpln.apps.ito.helper.JunkTrashDialog;
+import id.net.iconpln.apps.ito.helper.NotifyAdapterChangeListener;
+import id.net.iconpln.apps.ito.job.WoUploadService;
+import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.NetworkAvailabilityEvent;
 import id.net.iconpln.apps.ito.model.eventbus.ProgressUpdateEvent;
 import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
 import id.net.iconpln.apps.ito.model.Tusbung;
+import id.net.iconpln.apps.ito.model.eventbus.WoUploadServiceEvent;
 import id.net.iconpln.apps.ito.socket.ParamDef;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
+import id.net.iconpln.apps.ito.socket.SocketWatcher;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
+import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
-import id.net.iconpln.apps.ito.utility.SmileyLoading;
+import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import id.net.iconpln.apps.ito.utility.SynchUtils;
 import io.realm.Case;
@@ -52,9 +62,14 @@ public class SynchPendingFragment extends Fragment {
     private RecyclerView       mRecyclerView;
     private List<Tusbung>      mTusbungList;
 
-    private Tusbung tusbung = new Tusbung();
+    private int tusbungPosition = 0;
+    private int tusbungTotal    = 0;
 
-    private View btnSyncStart;
+    private Tusbung tusbung = new Tusbung();
+    private SocketWatcher mSocketWatcher;
+
+    private ViewGroup noDataView;
+    private View      btnSyncStart;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,10 +83,14 @@ public class SynchPendingFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_synch_pending, container, false);
 
         // prepare local data
-        mTusbungList = new ArrayList<>();
-        mTusbungList.addAll(getDataLocal());
+        makeTusbungQueue();
 
-        mAdapter = new SyncPendingAdapter(mTusbungList);
+        mAdapter = new SyncPendingAdapter(getActivity(), mTusbungList, new NotifyAdapterChangeListener() {
+            @Override
+            public void onNotifyDataSetChanged() {
+                checkDataIsEmpty();
+            }
+        });
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(CommonUtils.getVerticalLayoutManager(getActivity()));
@@ -83,20 +102,52 @@ public class SynchPendingFragment extends Fragment {
                 onButtonStartClicked();
             }
         });
+
+        noDataView = (ViewGroup) view.findViewById(R.id.no_data_view);
+        checkDataIsEmpty();
         return view;
+    }
+
+    private void checkDataIsEmpty() {
+        if (mTusbungList.size() == 0) {
+            noDataView.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+        } else {
+            noDataView.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void makeTusbungQueue() {
+        mTusbungList = new ArrayList<>();
+        mTusbungList.addAll(getDataLocal());
+        tusbungTotal = mTusbungList.size();
+    }
+
+    private List<Tusbung> getDataLocal() {
+        return LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance()
+                        .where(Tusbung.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("statusSinkron", Constants.SINKRONISASI_PENDING)
+                        .findAll()
+        );
     }
 
     private void onButtonStartClicked() {
         ItoDialog.simpleAlert(getActivity(), "Apakah Anda yakin akan memproses tusbung sinkronisasi ini?", new ItoDialog.Action() {
             @Override
             public void onYesButtonClicked() {
-                if (mTusbungList.size() > 0) {
-                    for (int i = 0; i < mTusbungList.size(); i++) {
-                        if (mTusbungList.get(i).getStatusSinkron().equals(Constants.SINKRONISASI_PENDING)) {
-                            tusbung = mTusbungList.get(i);
-                            tusbung.setPart("1");
-                            upload();
-                        }
+                if (!ConnectivityUtils.isHaveInternetConnection(getActivity())) {
+                    NotifUtils.makePinkSnackbar((AppCompatActivity) getActivity(), "Tidak ada jaringan").show();
+                    return;
+                }
+
+                if (tusbungTotal > 0) {
+                    if (mTusbungList.get(tusbungPosition).getStatusSinkron().equals(Constants.SINKRONISASI_PENDING)) {
+                        tusbung = mTusbungList.get(tusbungPosition);
+                        tusbung.setPart("1");
+                        upload();
                     }
                 } else {
                     Toast.makeText(getActivity(), "Tidak ada data yang dapat diunggah", Toast.LENGTH_LONG).show();
@@ -110,14 +161,42 @@ public class SynchPendingFragment extends Fragment {
     }
 
     private void upload() {
-        tusbung.setStatusSinkron(Constants.SINKRONISASI_PROSES);
-        mAdapter.notifyDataSetChanged();
+        updateTusbungStatus(Constants.SINKRONISASI_PROSES);
+
+        AppConfig.TUSBUNG = tusbung;
+        if (tusbung.isUlang()) {
+            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG_ULANG);
+        } else {
+            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
+        }
+        mSocketWatcher = new SocketWatcher(new SocketWatcher.WatcherListener() {
+            @Override
+            public void onWatcherTimeOut() {
+                SocketTransaction.shouldReinitSocket();
+                tusbung.setKeteranganSinkron("Timeout!");
+                updateTusbungStatus(Constants.SINKRONISASI_PENDING);
+            }
+        });
+        mSocketWatcher.monitor();
     }
 
-    private List<Tusbung> getDataLocal() {
-        return LocalDb.getInstance().copyFromRealm(
-                LocalDb.getInstance().where(Tusbung.class).findAll()
-        );
+    private Uri choosePhotoToUpload(int tempEventCounter) {
+        Uri photo = null;
+        switch (tempEventCounter) {
+            case 1:
+                photo = Uri.parse(tusbung.getPhotoPath1());
+                break;
+            case 2:
+                photo = Uri.parse(tusbung.getPhotoPath2());
+                break;
+            case 3:
+                photo = Uri.parse(tusbung.getPhotoPath3());
+                break;
+            case 4:
+                photo = Uri.parse(tusbung.getPhotoPath4());
+                break;
+        }
+        return photo;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -127,48 +206,20 @@ public class SynchPendingFragment extends Fragment {
 
         if (tempEvent.next != null) {
             int tempEventCounter = Integer.parseInt(tempEvent.next);
+
             if (tempEventCounter <= Integer.parseInt(tusbung.getJumlahFoto())) {
                 Log.d(TAG, "doSinkronisasi: [Part Foto] " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
 
-                Uri photo = null;
-                switch (tempEventCounter) {
-                    case 1:
-                        photo = Uri.parse(tusbung.getPhotoPath1());
-                        break;
-                    case 2:
-                        photo = Uri.parse(tusbung.getPhotoPath2());
-                        break;
-                    case 3:
-                        photo = Uri.parse(tusbung.getPhotoPath3());
-                        break;
-                    case 4:
-                        photo = Uri.parse(tusbung.getPhotoPath4());
-                        break;
-                }
-
+                Uri photo = choosePhotoToUpload(tempEventCounter);
                 if (photo != null) {
                     tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(getActivity(), photo));
                     tusbung.setPart(tempEvent.next);
-                    AppConfig.TUSBUNG = tusbung;
-
-                    new CountDownTimer(3000, 1000) {
-                        @Override
-                        public void onTick(long l) {
-                            System.out.println("Ticking ...");
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            System.out.println("Finish ...");
-                            SocketTransaction.getInstance().sendMessage(ParamDef.DO_TUSBUNG);
-                        }
-                    }.start();
+                    upload();
                 } else {
                     Log.d(TAG, "onTempUploadEvent: tidak ada foto");
                 }
 
             } else {
-                SmileyLoading.shouldCloseDialog();
                 Log.d(TAG, "onTempUploadEvent: Done " + tusbung.getPart() + " dari " + tusbung.getJumlahFoto());
             }
         }
@@ -177,76 +228,94 @@ public class SynchPendingFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTusbungRespond(final ProgressUpdateEvent progressEvent) {
-        Log.d(TAG, "---------------------------------------------");
+        Log.d(TAG, "---------------------------------------------" + progressEvent.isSuccess());
         Log.d(TAG, progressEvent.toString());
+        System.out.println("Is Success : " + progressEvent.isSuccess());
 
-        final String statusSinkron = progressEvent.isSuccess() ? Constants.SINKRONISASI_SUKSES : Constants.SINKRONISASI_GAGAL;
+        // stop socket watcher to prevent wrong alarm
+        if (mSocketWatcher != null)
+            mSocketWatcher.stop();
 
-        if (statusSinkron.equals(Constants.SINKRONISASI_GAGAL)) {
-            //todo I dont know what will going in here
+        if (progressEvent.isSuccess()) {
+            // remove the already successfull tusbung
+            LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    LocalDb.getInstance().where(Tusbung.class)
+                            .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                            .findFirst()
+                            .deleteFromRealm();
+
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                            .findFirst()
+                            .setUploaded(true);
+                }
+            });
+
+            tusbungPosition++;
+            if (tusbungPosition < tusbungTotal) {
+                // continue to upload the next data with first photo
+                Uri photo = choosePhotoToUpload(1);
+                if (photo != null) {
+                    tusbung = mTusbungList.get(tusbungPosition);
+                    tusbung.setBase64Foto(ImageUtils.getURLEncodeBase64(getActivity(), photo));
+                    tusbung.setPart("1");
+                    upload();
+                } else {
+                    Log.d(TAG, "onTempUploadEvent: tidak ada foto");
+                }
+
+            } else {
+                Log.d(TAG, "--- Sinkronisasi successfully ---");
+                Log.d(TAG, "--- Stopping job uploading data in background ---");
+                tusbungPosition = 0;
+                tusbungTotal = 0;
+                getActivity().stopService(new Intent(getActivity(), WoUploadServiceEvent.class));
+            }
+        } else {
+            LocalDb.makeSafeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    LocalDb.getInstance().where(Tusbung.class)
+                            .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                            .findFirst()
+                            .setStatusSinkron(Constants.SINKRONISASI_PENDING);
+
+                    LocalDb.getInstance().where(Tusbung.class)
+                            .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                            .findFirst()
+                            .setKeteranganSinkron(StringUtils.normalize(progressEvent.message));
+
+                    LocalDb.getInstance().where(WorkOrder.class)
+                            .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
+                            .findFirst()
+                            .setUploaded(false);
+                }
+            });
+
+            System.out.println("Failed update WO");
         }
 
-        LocalDb.makeSafeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                LocalDb.getInstance().where(Tusbung.class)
-                        .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
-                        .findFirst()
-                        .setStatusSinkron(statusSinkron);
-                LocalDb.getInstance().where(Tusbung.class)
-                        .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
-                        .findFirst()
-                        .setKeteranganSinkron(StringUtils.normalize(progressEvent.message));
-            }
-        });
+        refreshTusbungFromLocal();
+        SynchUtils.writeSynchLog(SynchUtils.LOG_UPLOAD, String.valueOf(getDataLocal().size()));
+    }
 
+    private void updateTusbungStatus(String status) {
+        tusbung.setStatusSinkron(status);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void refreshTusbungFromLocal() {
         mTusbungList.clear();
         mTusbungList.addAll(getDataLocal());
         mAdapter.notifyDataSetChanged();
 
-        SynchUtils.writeSynchLog(SynchUtils.LOG_UPLOAD);
-        SmileyLoading.shouldCloseDialog();
-    }
-
-    @Override
-    public void onStart() {
-        EventBusProvider.getInstance().register(this);
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        EventBusProvider.getInstance().unregister(this);
-        setHasOptionsMenu(false);
-        super.onStop();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().getMenuInflater().inflate(R.menu.menu_synch, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_trash) {
-            ItoDialog.simpleAlert(getActivity(), "Peringatan",
-                    "Data yang dihapus tidak dapat dikembalikan lagi.",
-                    "Mengerti, Lanjutkan",
-                    "Batalkan",
-                    new ItoDialog.Action() {
-                        @Override
-                        public void onYesButtonClicked() {
-                            doHapusDataSinkronisasi();
-                        }
-
-                        @Override
-                        public void onNoButtonClicked() {
-                        }
-                    });
-            return true;
+        for (Tusbung tus : mTusbungList) {
+            Log.d(TAG, "refreshTusbungFromLocal:");
+            Log.d(TAG, tus.toString());
         }
-        return super.onOptionsItemSelected(item);
+        checkDataIsEmpty();
     }
 
     private void doHapusDataSinkronisasi() {
@@ -298,5 +367,60 @@ public class SynchPendingFragment extends Fragment {
                 mAdapter.notifyDataSetChanged();
             }
         }).show(getFragmentManager(), "trash");
+    }
+
+
+    @Override
+    public void onStart() {
+        EventBusProvider.getInstance().register(this);
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        EventBusProvider.getInstance().unregister(this);
+        setHasOptionsMenu(false);
+        super.onStop();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().getMenuInflater().inflate(R.menu.menu_synch, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_trash) {
+            ItoDialog.simpleAlert(getActivity(), "Peringatan",
+                    "Data yang dihapus tidak dapat dikembalikan lagi.",
+                    "Mengerti, Lanjutkan",
+                    "Batalkan",
+                    new ItoDialog.Action() {
+                        @Override
+                        public void onYesButtonClicked() {
+                            doHapusDataSinkronisasi();
+                        }
+
+                        @Override
+                        public void onNoButtonClicked() {
+                        }
+                    });
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onUploadBackgroundFinished(WoUploadServiceEvent wusEvent) {
+        //getActivity().stopService(new Intent(getActivity(), WoUploadService.class));
+        System.out.println("[Service] Stop uploading in the background");
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkBroadcastReceived(NetworkAvailabilityEvent networkEvent) {
+        /*if (networkEvent.isAvailable) {
+            SocketTransaction.shouldReinitSocket();
+        }*/
     }
 }

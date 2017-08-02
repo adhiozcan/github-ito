@@ -2,12 +2,13 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/container_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -57,13 +58,47 @@
                     android:text="Mulai Pengunggahan"
                     android:textColor="@color/colorWhite"/>
             </LinearLayout>
-
-
         </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/no_data_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/space_16dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_32dp"
+            android:paddingLeft="@dimen/space_24dp"
+            android:paddingRight="@dimen/space_24dp"
+            android:paddingTop="@dimen/space_32dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:id="@+id/no_data_image"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:src="@drawable/no_data_image"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12dp"
+                android:text="Tidak ada data"
+                android:textSize="@dimen/text_size_18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tidak ada data baik di lokal maupun di server"
+                android:textAlignment="center"/>
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
     </LinearLayout>
 </ScrollView>

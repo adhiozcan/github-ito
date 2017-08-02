@@ -1,7 +1,6 @@
 package id.net.iconpln.apps.ito.ui;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
@@ -14,23 +13,27 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import id.net.iconpln.apps.ito.EventBusProvider;
 import id.net.iconpln.apps.ito.R;
 import id.net.iconpln.apps.ito.config.AppConfig;
+import id.net.iconpln.apps.ito.job.WoUploadService;
 import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.model.eventbus.WoUploadServiceEvent;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 import id.net.iconpln.apps.ito.ui.fragment.HomeFragment;
+import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
-import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanItemFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanUlangFragment;
-import id.net.iconpln.apps.ito.ui.fragment.SinkronisasiFragment;
+import id.net.iconpln.apps.ito.ui.fragment.SynchFragment;
+import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 
-public class MainActivity extends AppCompatActivity implements
-        PelaksanaanFragment.OnFragmentInteractionListener,
-        PelaksanaanItemFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private DrawerLayout   drawer;
     private View           navHeader;
@@ -42,12 +45,11 @@ public class MainActivity extends AppCompatActivity implements
     public static int navItemIndex = 0;
 
     // tags used to attach the fragments
-    private static final String TAG_HOME              = "nav.home";
-    private static final String TAG_PELAKSANAAN       = "nav.pelaksanaan";
-    private static final String TAG_PELAKSANAAN_ULANG = "nav.pelaksanaan_ulang";
-    private static final String TAG_SINKRONISASI      = "nav.sinkronisasi";
-
-    public static String CURRENT_TAG = TAG_HOME;
+    public static final String TAG_HOME              = "nav.home";
+    public static final String TAG_PELAKSANAAN       = "nav.pelaksanaan";
+    public static final String TAG_PELAKSANAAN_ULANG = "nav.pelaksanaan_ulang";
+    public static final String TAG_SINKRONISASI      = "nav.sinkronisasi";
+    public static       String CURRENT_TAG           = TAG_HOME;
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        System.out.println("Sout : " + DateUtils.getDateFromLogin());
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements
      * selected from navigation menu
      */
     private void loadLastFragment() {
+        System.out.println("Current TAG is : " + CURRENT_TAG);
         // selecting appropriate nav menu item
         selectNavMenu();
 
@@ -165,8 +169,8 @@ public class MainActivity extends AppCompatActivity implements
 
             // Sinkronisasi
             case 3:
-                SinkronisasiFragment sinkronisasiFragment = new SinkronisasiFragment();
-                return sinkronisasiFragment;
+                SynchFragment synchFragment = new SynchFragment();
+                return synchFragment;
             default:
                 return new HomeFragment();
         }
@@ -269,20 +273,31 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void logout() {
-        System.out.println("User will be logout, entering mode cleaning.");
-        AppConfig.cleanupData();
+        ItoDialog.simpleAlert(this, "Apakah Anda yakin akan logout?", new ItoDialog.Action() {
+            @Override
+            public void onYesButtonClicked() {
+                System.out.println("User will be logout, entering mode cleaning.");
+                AppConfig.cleanupData();
 
-        startActivity(new Intent(this, LoginActivity.class));
-        Toast.makeText(this, "Anda telah logout dengan aman", Toast.LENGTH_SHORT).show();
-        finish();
-    }
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                finish();
+            }
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
+            @Override
+            public void onNoButtonClicked() {
+            }
+        });
+
     }
 
     public void onProfilClicked(View view) {
         startActivity(new Intent(this, UserActivity.class));
         drawer.closeDrawers();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onUploadBackgroundFinished(WoUploadServiceEvent wusEvent) {
+        stopService(new Intent(this, WoUploadService.class));
+        System.out.println("[Service] Stop uploading in the background");
     }
 }

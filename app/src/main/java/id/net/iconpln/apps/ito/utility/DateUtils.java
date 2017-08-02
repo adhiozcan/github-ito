@@ -1,15 +1,27 @@
 package id.net.iconpln.apps.ito.utility;
 
+import com.orhanobut.hawk.Hawk;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import id.net.iconpln.apps.ito.helper.Constants;
 
 /**
  * Created by Ozcan on 05/04/2017.
  */
 
 public class DateUtils {
+    public static void saveDateFromLogin(String date) {
+        Hawk.put(Constants.SAVE_DATE, date);
+    }
+
+    public static String getDateFromLogin() {
+        return Hawk.get(Constants.SAVE_DATE, "");
+    }
+
     public static Date parseToDate(String dateString) {
         Date date = null;
         try {

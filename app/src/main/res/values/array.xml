@@ -8,6 +8,10 @@
         <item>0</item>
         <item>1</item>
     </integer-array>
+    <string-array name="status_putus">
+        <item>Putus</item>
+        <item>Gagal Putus</item>
+    </string-array>
     <string-array name="tipe_penghapusan">
         <item>Pending</item>
         <item>Gagal</item>

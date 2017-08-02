@@ -18,6 +18,7 @@ import id.net.iconpln.apps.ito.model.eventbus.TempUploadEvent;
 import id.net.iconpln.apps.ito.model.UserProfile;
 import id.net.iconpln.apps.ito.model.WoSummary;
 import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.model.eventbus.WorkOrderEvent;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
 import id.net.iconpln.apps.ito.socket.envelope.MessageEvent;
 import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
@@ -56,20 +57,22 @@ public class MessageDispatcher {
     private void woPelaksanaanTreatment(String runFunction) {
         //make exception special for wopelaksanaan.
         if (runFunction.equals("getwosync")) {
-            eventBus.post(produceMessageWorkOrder(new WorkOrder[0]));
+            eventBus.post(produceMessageWorkOrder(new WorkOrder[0], false));
+        } else if (runFunction.equals("getwoall")) {
+            eventBus.post(produceMessageWorkOrder(new WorkOrder[0], false));
         }
     }
 
     private void woPelaksanaanUlangTreatment(String runFunction) {
         if (runFunction.equals("getwoallulang")) {
-            eventBus.post(produceMessageWorkOrder(new WorkOrder[0]));
+            eventBus.post(produceMessageWorkOrder(new WorkOrder[0], true));
         }
     }
 
     public void dispatch(String runFunction, MessageEvent messageEvent) {
 
         if (isFailureConnection(messageEvent.response_code)) {
-            eventBus.post(new ErrorMessageEvent("Failure Connection"));
+            eventBus.post(new ErrorMessageEvent("Jaringan terputus"));
             return;
         }
 
@@ -93,6 +96,16 @@ public class MessageDispatcher {
             if (messageEvent.entities.length == 1) {
                 // grab general form, can be use in almost manner.
                 message = messageEvent.entities[0].toString();
+
+                // make exception for getwoall
+                switch (runFunction) {
+                    case "getwoall":
+                        messages = messageEvent.entities;
+                        break;
+                    case "getwoallulang":
+                        messages = messageEvent.entities;
+                        break;
+                }
             } else {
                 // special for work order list entitites.
                 messages = messageEvent.entities;
@@ -109,11 +122,17 @@ public class MessageDispatcher {
             case "getwototal":
                 eventBus.post(produceMessageWoSummary(message));
                 break;
-            case "getwosync":
-                eventBus.post(produceMessageWorkOrder(messages));
+            case "getwoall":
+                eventBus.post(produceMessageWorkOrder(messages, false));
+                break;
+            case "getwoallulang":
+                eventBus.post(produceMessageWorkOrder(messages, true));
                 break;
             case "updateprogressworkorder":
-                eventBus.post(produceProgressUpdate(message));
+                eventBus.post(produceProgressUpdate(message, false));
+                break;
+            case "updateulangprogressworkorder":
+                eventBus.post(produceProgressUpdate(message, true));
                 break;
             case "tempuploadwo":
                 eventBus.post(produceTempUploadWo(message));
@@ -155,7 +174,7 @@ public class MessageDispatcher {
      * @param messages
      * @return
      */
-    private WorkOrder[] produceMessageWorkOrder(Object[] messages) {
+    private WorkOrderEvent produceMessageWorkOrder(Object[] messages, boolean isUlang) {
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .serializeNulls()
@@ -163,10 +182,18 @@ public class MessageDispatcher {
                 .create();
 
         WorkOrder[] woList = gson.fromJson(Arrays.toString(messages), WorkOrder[].class);
+
         for (WorkOrder _wo : woList) {
             _wo.formatPretty();
+            _wo.setWoUlang(isUlang);
+            Log.d(TAG, _wo.getNoWo() + "\tUlang : [" + isUlang + "]");
         }
-        return woList;
+
+        WorkOrderEvent woEvent = new WorkOrderEvent();
+        woEvent.isUlang = isUlang;
+        woEvent.workOrders = woList;
+        System.out.println(woEvent.workOrders);
+        return woEvent;
     }
 
     /**
@@ -197,8 +224,9 @@ public class MessageDispatcher {
      * @param message
      * @return
      */
-    private ProgressUpdateEvent produceProgressUpdate(String message) {
+    private ProgressUpdateEvent produceProgressUpdate(String message, boolean isUlang) {
         ProgressUpdateEvent progressEvent = new Gson().fromJson(message, ProgressUpdateEvent.class);
+        progressEvent.isUlang = isUlang;
         return progressEvent;
     }
 

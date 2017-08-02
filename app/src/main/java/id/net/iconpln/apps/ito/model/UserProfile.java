@@ -2,6 +2,8 @@ package id.net.iconpln.apps.ito.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import id.net.iconpln.apps.ito.utility.StringUtils;
+
 /**
  * Created by Ozcan on 23/03/2017.
  */
@@ -25,6 +27,8 @@ public class UserProfile extends Model {
     private String keyFcm;
     @SerializedName("keymap")
     private String keyMap;
+    @SerializedName("tglserver")
+    private String tanggalServer;
 
     public String getKodePetugas() {
         return kodePetugas;
@@ -99,7 +103,14 @@ public class UserProfile extends Model {
     }
 
     public void formatPretty() {
+    }
 
+    public String getTanggalServer() {
+        return StringUtils.normalize(tanggalServer);
+    }
+
+    public void setTanggalServer(String tanggalServer) {
+        this.tanggalServer = tanggalServer;
     }
 
     @Override
@@ -114,6 +125,7 @@ public class UserProfile extends Model {
                 ", jabatan='" + jabatan + '\'' +
                 ", keyFcm='" + keyFcm + '\'' +
                 ", keyMap='" + keyMap + '\'' +
+                ", tanggalServer='" + tanggalServer + '\'' +
                 '}';
     }
 }

@@ -13,8 +13,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:background="@color/colorPrimary"
-        app:tabGravity="fill"
-        app:tabMode="scrollable"
+        app:tabGravity="center"
+        app:tabMode="fixed"
         app:tabSelectedTextColor="@color/colorOrange"
         app:tabTextColor="@color/colorWhite"/>
 

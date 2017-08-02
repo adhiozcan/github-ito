@@ -15,31 +15,33 @@ import io.realm.RealmObject;
  */
 
 public class Tusbung extends RealmObject {
-    private String noTul;
-    private String noWo;
-    private String pelangganId;
-    private String namaPelanggan;
-    private String alamat;
-    private String unitUpId;
-    private String base64Foto;
-    private String jumlahFoto;
-    private String part;
-    private String tanggalPemutusan;
-    private String standLWBP;
-    private String standWBP;
-    private String standKVARH;
-    private String kodePetugas;
-    private String namaPetugas;
-    private String gagalPutus;
-    private String status;
-    private String latitude;
-    private String longitude;
-    private String photoPath1;
-    private String photoPath2;
-    private String photoPath3;
-    private String photoPath4;
-    private String expired;
-
+    private String  noTul;
+    private String  noWo;
+    private String  pelangganId;
+    private String  namaPelanggan;
+    private String  alamat;
+    private String  unitUpId;
+    private String  base64Foto;
+    private String  jumlahFoto;
+    private String  part;
+    private String  tanggalPemutusan;
+    private String  standLWBP;
+    private String  standWBP;
+    private String  standKVARH;
+    private String  kodePetugas;
+    private String  namaPetugas;
+    private String  gagalPutus;
+    private String  status;
+    private String  latitude;
+    private String  longitude;
+    private String  photoPath1;
+    private String  photoPath2;
+    private String  photoPath3;
+    private String  photoPath4;
+    private String  email;
+    private String  hp;
+    private String  expired;
+    private boolean isUlang;
     private String  statusSinkron;
     private String  keteranganSinkron;
 
@@ -230,6 +232,22 @@ public class Tusbung extends RealmObject {
         this.photoPath4 = photoPath4;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getHp() {
+        return hp;
+    }
+
+    public void setHp(String hp) {
+        this.hp = hp;
+    }
+
     public String getExpired() {
         return expired;
     }
@@ -254,6 +272,14 @@ public class Tusbung extends RealmObject {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean isUlang() {
+        return isUlang;
+    }
+
+    public void setUlang(boolean ulang) {
+        isUlang = ulang;
     }
 
     public String getStatusSinkron() {
@@ -298,8 +324,10 @@ public class Tusbung extends RealmObject {
                 ", photoPath2='" + photoPath2 + '\'' +
                 ", photoPath3='" + photoPath3 + '\'' +
                 ", photoPath4='" + photoPath4 + '\'' +
+                ", email='" + email + '\'' +
+                ", hp='" + hp + '\'' +
                 ", expired='" + expired + '\'' +
-                ", isExpired='" + isExpired() + '\'' +
+                ", isUlang=" + isUlang +
                 ", statusSinkron='" + statusSinkron + '\'' +
                 ", keteranganSinkron='" + keteranganSinkron + '\'' +
                 '}';

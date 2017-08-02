@@ -11,6 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/space_16dp"
         android:text="VI | Sinkronisasi Data"
         android:textColor="@color/material_pink"
         android:textSize="@dimen/text_size_12sp"/>
@@ -25,7 +26,8 @@
                 android:id="@+id/tanggal_riwayat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="132dp"
+                android:layout_gravity="center_vertical"
+                android:minWidth="92dp"
                 android:text="17 April 2017"
                 android:textStyle="bold"/>
 
@@ -33,16 +35,28 @@
                 android:id="@+id/jam_riwayat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="@dimen/space_16dp"
-                android:layout_marginRight="@dimen/space_24dp"
                 android:text="20:13"/>
+
+            <TextView
+                android:id="@+id/keterangan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="@dimen/space_16dp"
+                android:layout_marginRight="@dimen/space_16dp"
+                android:text="Unduh Wo"
+                android:textAlignment="center"
+                android:textColor="@color/material_green"
+                android:textSize="@dimen/text_size_12sp"/>
 
             <TextView
                 android:id="@+id/log_activity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/space_16dp"
-                android:text="Unduh data"/>
+                android:layout_gravity="center_vertical"
+                android:text="Jumlah Data"/>
         </TableRow>
     </TableLayout>
 

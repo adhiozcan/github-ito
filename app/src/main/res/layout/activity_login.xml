@@ -130,7 +130,7 @@
                 android:clickable="true"
                 android:onClick="onRevealPassword"
                 android:src="@drawable/ic_visible_password"
-                android:tag="true"/>
+                android:tag="false"/>
         </TableRow>
 
         <CheckBox

@@ -13,12 +13,14 @@ import java.util.Date;
 
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Ozcan on 23/03/2017.
  */
 
 public class WorkOrder extends RealmObject implements Parcelable {
+    @PrimaryKey
     @SerializedName("no_wo")
     private String noWo;
     @SerializedName("idpelanggan")
@@ -426,7 +428,8 @@ public class WorkOrder extends RealmObject implements Parcelable {
     }
 
     public boolean isExpired() {
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        //DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
         try {
             Date expired = df.parse(getExpired());
             Date today   = new Date();
@@ -436,7 +439,8 @@ public class WorkOrder extends RealmObject implements Parcelable {
             Log.d("WorkOrder", "isExpired: " + today.after(expired));
             Log.d("WorkOrder", "isExpired: -------------------------------------------------------");
 
-            if (today.after(expired)) return true;
+            if (today.equals(expired)) return false;
+            else if (today.after(expired)) return true;
             else return false;
         } catch (ParseException e) {
             e.printStackTrace();

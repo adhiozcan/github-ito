@@ -3,11 +3,15 @@ package id.net.iconpln.apps.ito.config;
 import com.orhanobut.hawk.Hawk;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import id.net.iconpln.apps.ito.helper.Constants;
+import id.net.iconpln.apps.ito.model.Statistic;
 import id.net.iconpln.apps.ito.model.Tusbung;
 import id.net.iconpln.apps.ito.model.UserProfile;
+import id.net.iconpln.apps.ito.model.WorkOrder;
+import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.storage.StorageTransaction;
 
 /**
@@ -16,6 +20,9 @@ import id.net.iconpln.apps.ito.storage.StorageTransaction;
 
 public class AppConfig {
 
+    /**
+     * Variables act as global and can be shared across activity fragment.
+     */
     public static String  KODE_PETUGAS  = "";
     public static String  ID_UNIT_UP    = "";
     public static String  USERNAME      = "";
@@ -24,6 +31,9 @@ public class AppConfig {
     public static String  MONITOR_BULAN = "";
     public static String  MONITOR_TAHUN = "";
     public static Tusbung TUSBUNG       = null;
+    public static String  TANGGAL       = "";
+
+    public static Statistic statistic = new Statistic();
 
     public static int WO_PAGE_START = 0;
     public static int WO_PAGE_END   = 100;
@@ -93,6 +103,16 @@ public class AppConfig {
     }
 
     public static void cleanupData() {
+        List<WorkOrder> localWoSelesai = LocalDb.getInstance().copyFromRealm(
+                LocalDb.getInstance().where(WorkOrder.class)
+                        .equalTo("kodePetugas", AppConfig.KODE_PETUGAS)
+                        .equalTo("isSelesai", true)
+                        .findAll());
+
+        System.out.println("Logout : ---------------------------------------------");
+        System.out.println("Kode petugas : " + AppConfig.KODE_PETUGAS);
+        System.out.println("Size local wo backup : " + localWoSelesai.size());
+
         USERNAME = "";
         PASSWORD = "";
         KODE_PETUGAS = "";

@@ -20,7 +20,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="260dp"
+                android:layout_height="240dp"
                 android:background="@drawable/background_home"/>
 
             <TextView
@@ -38,7 +38,7 @@
             <android.support.v4.view.ViewPager
                 android:id="@+id/vp_chart"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="200dp"
                 android:layout_below="@id/lbl_grafik_statistik"/>
 
         </RelativeLayout>
@@ -53,6 +53,7 @@
             android:textColor="#564F4F"/>
 
         <LinearLayout
+            android:id="@+id/data_work_order"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/space_4dp"
@@ -79,7 +80,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Total work order terunduh saat ini"/>
+                    android:text="Total work order terunduh"/>
 
                 <TextView
                     android:id="@+id/value_total"
@@ -131,7 +132,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hapus data sampah yang tertinggal"/>
+                        android:text="Hapus seluruh data"/>
 
                     <TextView
                         android:id="@+id/btn_clean_all"
@@ -147,10 +148,16 @@
                         android:textSize="@dimen/text_size_12sp"
                         android:textStyle="bold"/>
                 </LinearLayout>
-
             </LinearLayout>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/txt_posisi_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/space_16dp"
+            android:text="Posisi data terakhir adalah pada tanggal "
+            android:textSize="@dimen/text_size_12sp"/>
 
     </LinearLayout>
 </ScrollView>

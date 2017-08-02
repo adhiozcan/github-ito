@@ -22,11 +22,13 @@ import id.net.iconpln.apps.ito.ui.StatusPiutangActivity;
 
 public class PelaksanaanUlangAdapter extends RecyclerView.Adapter<PelaksanaanUlangAdapter.ViewHolder> {
     private Context         context;
-    private List<WorkOrder> workOrderList;
+    private String          tagTab;
+    private List<WorkOrder> woList;
 
-    public PelaksanaanUlangAdapter(Context context, List<WorkOrder> workOrderList) {
+    public PelaksanaanUlangAdapter(Context context, String tagTab, List<WorkOrder> woList) {
         this.context = context;
-        this.workOrderList = workOrderList;
+        this.tagTab = tagTab;
+        this.woList = woList;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class PelaksanaanUlangAdapter extends RecyclerView.Adapter<PelaksanaanUla
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final WorkOrder wo = workOrderList.get(position);
+        final WorkOrder wo = woList.get(position);
         holder.txtNoTul.setText("VI-01 | " + wo.getNoTul601());
         holder.txtPelangganId.setText(wo.getPelangganId());
         holder.txtPelangganNama.setText(wo.getNama());
@@ -51,7 +53,8 @@ public class PelaksanaanUlangAdapter extends RecyclerView.Adapter<PelaksanaanUla
                 Log.d("Pelaksanaan Adapter", "onClick: --------------------------------------------");
                 EventBusProvider.getInstance().postSticky(wo);
                 Intent statusPiutang = new Intent(context, StatusPiutangActivity.class);
-                statusPiutang.putExtra("tag_tab", "pelaksanaan");
+                //statusPiutang.putExtra("tag_tab", "pelaksanaan");
+                statusPiutang.putExtra("tag_tab", tagTab);
                 statusPiutang.putExtra("tusbung_ulang", true);
                 context.startActivity(statusPiutang);
             }
@@ -60,7 +63,7 @@ public class PelaksanaanUlangAdapter extends RecyclerView.Adapter<PelaksanaanUla
 
     @Override
     public int getItemCount() {
-        return workOrderList.size();
+        return woList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

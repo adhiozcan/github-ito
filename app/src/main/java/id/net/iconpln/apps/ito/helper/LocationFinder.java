@@ -12,6 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import static android.content.Context.LOCATION_SERVICE;
 
 /**
@@ -35,6 +37,8 @@ public class LocationFinder implements LocationListener {
     double   latitude; // latitude
     double   longitude; // longitude
 
+    private LocationFinderListener mLocationFinderListener;
+
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 
@@ -48,7 +52,9 @@ public class LocationFinder implements LocationListener {
         this.mContext = mContext;
     }
 
-    public Location find() {
+    public Location find(LocationFinderListener locationFinderListener) {
+        this.mLocationFinderListener = locationFinderListener;
+
         try {
             locationManager = (LocationManager) mContext
                     .getSystemService(LOCATION_SERVICE);
@@ -159,7 +165,11 @@ public class LocationFinder implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-
+        if (mLocationFinderListener == null) {
+            System.out.println("stub!");
+            return;
+        }
+        mLocationFinderListener.onLocationFound(new LatLng(getLatitude(), getLongitude()));
     }
 
     @Override
@@ -169,11 +179,15 @@ public class LocationFinder implements LocationListener {
 
     @Override
     public void onProviderEnabled(String s) {
-
     }
 
     @Override
     public void onProviderDisabled(String s) {
-
+        Toast.makeText(mContext, "Warning, provider is disabled", Toast.LENGTH_SHORT).show();
     }
+
+    public interface LocationFinderListener {
+        void onLocationFound(LatLng location);
+    }
+
 }

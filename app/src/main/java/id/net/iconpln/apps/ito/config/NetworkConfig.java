@@ -5,7 +5,7 @@ package id.net.iconpln.apps.ito.config;
  */
 
 public class NetworkConfig {
-    public static String USER_AGENT = "Version 1.2.0";
+    public static String USER_AGENT = "Version 0.0.1";
     public static String SPRING_MC  = "MkP1uTanG@2016!";
     public static String COOKIE     = "";
 

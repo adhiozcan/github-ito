@@ -8,6 +8,7 @@ public class Constants {
     // for login configuration
     public static final String IS_REMEMBER     = "app.ito.is_remember";
     public static final String SAVE_USER       = "app.ito.user_save";
+    public static final String SAVE_DATE       = "app.ito.date";
     public static final String USERNAME        = "app.ito.username";
     public static final String PASSWORD        = "app.ito.password";
     public static final String NAMA_PETUGAS    = "app.ito.nama_petugas";

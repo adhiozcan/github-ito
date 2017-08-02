@@ -135,8 +135,8 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         txtNoTul.setText(workOrder.getNoTul());
         txtKodeKddk.setText(workOrder.getKddk());
         txtAlamat.setText(workOrder.getAlamat());
-        txtTarifDaya.setText(workOrder.getTarif());
-        txtGarduTiang.setText(workOrder.getNoGardu());
+        txtTarifDaya.setText(workOrder.getTarif() + "/" + workOrder.getDaya());
+        txtGarduTiang.setText(workOrder.getNoGardu() + "/" + workOrder.getNoTiang());
         adjustingFieldWithTabType(workOrder);
 
         String jumlahLembar = "Jumlah Lembar (" + workOrder.getJumlahLembar() + ")";
@@ -147,7 +147,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
 
         NumberFormat nf                = NumberFormat.getCurrencyInstance(new Locale("in", "ID"));
         int          tagihan_raw       = Integer.parseInt(workOrder.getTagihan601());
-        String       tagihan_terformat = nf.format(tagihan_raw) + ",00";
+        String       tagihan_terformat = nf.format(tagihan_raw);
         txtTagihanTul601.setText(tagihan_terformat);
     }
 
@@ -163,7 +163,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
                 btnTusbung.setBackgroundResource(R.color.material_pink);
                 btnTusbung.setEnabled(false);
             } else {
-                btnTusbung.setText("Tusbung");
+                btnTusbung.setText("Proses");
                 btnTusbung.setEnabled(true);
             }
 
@@ -249,12 +249,10 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         try {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
-            boolean success = this.googleMap.setMapStyle(
+            /*boolean success = this.googleMap.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
-                            this, R.raw.shades_of_gray));
+                            this, R.raw.shades_of_gray));*/
 
-            if (!success) {
-            }
         } catch (Resources.NotFoundException e) {
             Log.e(TAG, "Can't find style. Error: ", e);
         }
