@@ -20,11 +20,12 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 public class SocketTransaction {
     private static final String TAG = SocketTransaction.class.getSimpleName();
-    private static volatile SocketTransaction     socketTransaction;
-    private static          OkHttpClient          client;
-    private static          Request               request;
-    private static          WebSocket             ws;
-    private static          WeakReference<String> socketRequest;
+    private static volatile SocketTransaction          socketTransaction;
+    private static          OkHttpClient               client;
+    private static          Request                    request;
+    private static          WebSocket                  ws;
+    private static          WeakReference<String>      socketRequest;
+    private static          SocketListener.SocketState socketState;
 
     public static SocketTransaction getInstance() {
         // its called double check locking pattern
@@ -41,6 +42,15 @@ public class SocketTransaction {
         }
 
         return socketTransaction;
+    }
+
+    public static void start(SocketListener.SocketState socketState) {
+        client = new OkHttpClient.Builder()
+                .addInterceptor(provideLoggingAbility())
+                .build();
+        request = new Request.Builder().url(SocketAddress.SOCKET_ITO).build();
+        ws = client.newWebSocket(request, new SocketListener(socketState));
+        Log.d(TAG, "[Socket][OK] Socket Transaction has been start");
     }
 
     public static void start() {
@@ -71,6 +81,15 @@ public class SocketTransaction {
 
         socketTransaction = null;
         socketTransaction.start();
+    }
+
+    public static void shouldReinitSocket(SocketListener.SocketState socketState) {
+        SocketTransaction.socketState = socketState;
+        Log.d(TAG, "[Socket] Re init our socket");
+        getInstance().stop();
+
+        socketTransaction = null;
+        socketTransaction.start(socketState);
     }
 
     public static void stop() {

@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.facebook.stetho.common.StringUtil;
 import com.google.gson.annotations.SerializedName;
 
 import java.text.DateFormat;
@@ -457,11 +458,27 @@ public class WorkOrder extends RealmObject implements Parcelable {
     }
 
     public void formatPretty() {
-        this.nama = StringUtils.normalize(nama);
-        this.tanggalWo = StringUtils.normalize(tanggalWo);
-        this.alamat = StringUtils.normalize(alamat);
-        this.noTul = StringUtils.normalize(noTul);
-        this.noTiang = StringUtils.normalize(noTiang);
+        if (this.nama != null) this.nama = StringUtils.normalize(nama);
+        else {
+            System.out.println(this.noWo + " nama kosong");
+        }
+        if (this.tanggalWo != null) this.tanggalWo = StringUtils.normalize(tanggalWo);
+        else {
+            System.out.println(this.noWo + " tanggal kosong");
+        }
+        if (this.alamat != null) this.alamat = StringUtils.normalize(alamat);
+        else {
+            System.out.println(this.noWo + " alamat kosong");
+        }
+        if (this.noTul != null) this.noTul = StringUtils.normalize(noTul);
+        else {
+            System.out.println(this.noTul + " no tul kosong");
+        }
+        if (this.noTiang != null) this.noTiang = StringUtils.normalize(noTiang);
+        else {
+            System.out.println(this.noTiang + " no tiang kosong");
+        }
+
     }
 
     @Override

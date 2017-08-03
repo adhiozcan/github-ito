@@ -15,6 +15,7 @@ public class StringUtils {
     private static final String TAG = StringUtils.class.getSimpleName();
 
     public static String normalize(String string) {
+        if (string == null) return string;
         String result;
         try {
             result = URLDecoder.decode(string, "UTF-8");

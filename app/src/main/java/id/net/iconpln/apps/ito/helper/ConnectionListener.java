@@ -9,10 +9,16 @@ import android.util.Log;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import id.net.iconpln.apps.ito.EventBusProvider;
+import id.net.iconpln.apps.ito.ItoApplication;
 import id.net.iconpln.apps.ito.config.AppConfig;
 import id.net.iconpln.apps.ito.job.WoUploadService;
 import id.net.iconpln.apps.ito.model.Tusbung;
@@ -29,8 +35,10 @@ import id.net.iconpln.apps.ito.socket.SocketListener;
 import id.net.iconpln.apps.ito.socket.SocketTransaction;
 import id.net.iconpln.apps.ito.socket.SocketWatcher;
 import id.net.iconpln.apps.ito.socket.envelope.ErrorMessageEvent;
+import id.net.iconpln.apps.ito.socket.envelope.PingEvent;
 import id.net.iconpln.apps.ito.storage.LocalDb;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
+import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
 import id.net.iconpln.apps.ito.utility.NotifUtils;
 import id.net.iconpln.apps.ito.utility.StringUtils;
@@ -57,8 +65,8 @@ public class ConnectionListener extends BroadcastReceiver {
 
     private Context mContext;
 
-    private static boolean isUploadRunning = false;
-
+    private static boolean isUploadRunning     = false;
+    private static boolean readySendingMessage = false;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -69,7 +77,24 @@ public class ConnectionListener extends BroadcastReceiver {
             EventBusProvider.getInstance().post(new NetworkAvailabilityEvent(ConnectivityUtils.INTERNET_OK));
 
             System.out.println("Upload Running " + isUploadRunning + "----------------------------------------");
-            SocketTransaction.shouldReinitSocket();
+
+            if (!readySendingMessage) {
+                SocketTransaction.shouldReinitSocket(new SocketListener.SocketState() {
+                    @Override
+                    public void onSuccess() {
+                        System.out.println("Good News!");
+                        makePreparationData();
+                        if (mTusbungTotal > 0 && isUploadRunning == false) {
+                            performJob();
+                        }
+                    }
+
+                    @Override
+                    public void onFailed() {
+                        System.out.println("Bad News!");
+                    }
+                });
+            }
             makePreparationData();
             if (mTusbungTotal > 0 && isUploadRunning == false) {
                 performJob();
@@ -96,10 +121,23 @@ public class ConnectionListener extends BroadcastReceiver {
 
         if (mTusbungList.get(mTusbungPosition).getStatusSinkron().equals(Constants.SINKRONISASI_PENDING)) {
             Log.d(TAG, "Starting to upload on background state");
-            AppConfig.TUSBUNG = mTusbungList.get(mTusbungPosition);
+
+            Tusbung tusbung = mTusbungList.get(mTusbungPosition);
+
+            Pattern p = Pattern.compile("[^A-Za-z0-9]");
+            Matcher m = p.matcher(tusbung.getNamaPetugas());
+            if (m.find()) {
+                System.out.println("Nama mengandung escape character");
+                String nameNormalize = tusbung.getNamaPetugas().replace("\"", "");
+                tusbung.setNamaPetugas(nameNormalize);
+            }
+
+            AppConfig.TUSBUNG = tusbung;
             AppConfig.TUSBUNG.setPart("1");
+
             upload();
         }
+
     }
 
     private List<Tusbung> getDataLocal() {
@@ -118,7 +156,6 @@ public class ConnectionListener extends BroadcastReceiver {
                 AppConfig.TUSBUNG.setKeteranganSinkron("Timeout!");
                 if (isUploadRunning == true) {
                     System.out.println("isUploadRunning");
-                    SocketTransaction.shouldReinitSocket();
                     if (getDataLocal().size() > 0) {
                         performJob();
                     } else {
@@ -181,14 +218,15 @@ public class ConnectionListener extends BroadcastReceiver {
         Log.d(TAG, progressEvent.toString());
 
         // stop socket watcher to prevent wrong alarm
-        mSocketWatcher.stop();
+        if (mSocketWatcher != null)
+            mSocketWatcher.stop();
 
         if (progressEvent.isSuccess()) {
             // remove the already successful tusbung
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
-                    System.out.println("making changes on successfull wo");
+                    System.out.println("Update changes on successfull wo");
                     LocalDb.getInstance().where(Tusbung.class)
                             .equalTo("noWo", progressEvent.noWo, Case.INSENSITIVE)
                             .findFirst()
@@ -209,6 +247,15 @@ public class ConnectionListener extends BroadcastReceiver {
                     AppConfig.TUSBUNG = mTusbungList.get(mTusbungPosition);
                     AppConfig.TUSBUNG.setBase64Foto(ImageUtils.getURLEncodeBase64(mContext, photo));
                     AppConfig.TUSBUNG.setPart("1");
+
+                    Pattern p = Pattern.compile("[^A-Za-z0-9]");
+                    Matcher m = p.matcher(AppConfig.TUSBUNG.getNamaPetugas());
+                    if (m.find()) {
+                        System.out.println("Nama mengandung escape character");
+                        String nameNormalize = AppConfig.TUSBUNG.getNamaPetugas().replace("\"", "");
+                        AppConfig.TUSBUNG.setNamaPetugas(nameNormalize);
+                    }
+
                     upload();
                 } else {
                     Log.d(TAG, "onTusbungRespond: tidak ada foto");
@@ -253,5 +300,12 @@ public class ConnectionListener extends BroadcastReceiver {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketFailure(ErrorMessageEvent errorMessage) {
         System.out.println("Failed because of " + errorMessage.getMessage());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPingReceived(PingEvent pingEvent) {
+        Date   date       = DateUtils.parseToDate(pingEvent.getDate());
+        String dateString = DateUtils.parseToString(date);
+        readySendingMessage = true;
     }
 }

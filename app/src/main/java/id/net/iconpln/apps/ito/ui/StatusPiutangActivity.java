@@ -115,7 +115,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
                     break;
                 case "selesai":
                     txtTanggalPutusLunasLabel.setText("Tanggal Putus");
-                    txtTanggalPutusLunas.setText(StringUtils.normalize(workOrder.getTanggalWo()));
+                    txtTanggalPutusLunas.setText(StringUtils.normalize(workOrder.getTanggalPutus()));
                     txtTanggalPutusLunas.setTextColor(ContextCompat.getColor(this, R.color.colorOrange));
                     break;
                 case "lunas":
@@ -135,6 +135,7 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         txtNoTul.setText(workOrder.getNoTul());
         txtKodeKddk.setText(workOrder.getKddk());
         txtAlamat.setText(workOrder.getAlamat());
+        txtTanggalPutusLunas.setText(workOrder.getTanggalPutus());
         txtTarifDaya.setText(workOrder.getTarif() + "/" + workOrder.getDaya());
         txtGarduTiang.setText(workOrder.getNoGardu() + "/" + workOrder.getNoTiang());
         adjustingFieldWithTabType(workOrder);
@@ -184,39 +185,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onMessageEventReceived(WorkOrder workOrder) {
-        // providing work order information to be post when user clicked tusbus button.
-        woInfo = workOrder;
-
-        checkTusbungIsAllowed(workOrder);
-        updateCustomerInfoDisplay(workOrder);
-        Log.d(TAG, "onStatusPiutangDataReceiver: -------------------------------------------------");
-        Log.d(TAG, "onStatusPiutangDataReceiver: " + workOrder.toString());
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        EventBusProvider.getInstance().register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        EventBusProvider.getInstance().unregister(this);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            //  NavUtils.navigateUpFromSameTask(this);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * Move to activity tusbung if permitted.
      * Also send work order item into PemutusanActivity.class
@@ -242,6 +210,47 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         }
     }
 
+    private void shouldUpdateMarker() {
+        if ((googleMap != null) && (customerLocation != null)) {
+            googleMap.clear();
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation));
+            googleMap.addMarker(new MarkerOptions().position(customerLocation));
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBusProvider.getInstance().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBusProvider.getInstance().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onMessageEventReceived(WorkOrder workOrder) {
+        // providing work order information to be post when user clicked tusbus button.
+        woInfo = workOrder;
+
+        checkTusbungIsAllowed(workOrder);
+        updateCustomerInfoDisplay(workOrder);
+        Log.d(TAG, "onStatusPiutangDataReceiver: -------------------------------------------------");
+        Log.d(TAG, "onStatusPiutangDataReceiver: " + workOrder.toString());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            //  NavUtils.navigateUpFromSameTask(this);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
@@ -258,14 +267,6 @@ public class StatusPiutangActivity extends AppCompatActivity implements OnMapRea
         }
 
         shouldUpdateMarker();
-    }
-
-    private void shouldUpdateMarker() {
-        if ((googleMap != null) && (customerLocation != null)) {
-            googleMap.clear();
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation));
-            googleMap.addMarker(new MarkerOptions().position(customerLocation));
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

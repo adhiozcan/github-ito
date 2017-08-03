@@ -3,7 +3,9 @@ package id.net.iconpln.apps.ito.ui.fragment;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -162,6 +164,65 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         }
     }
 
+    private void initViewPager() {
+        categorizeWoList();
+
+        mLayoutContent.setVisibility(View.VISIBLE);
+        mViewPager.setVisibility(View.VISIBLE);
+        mTabLayout.setVisibility(View.VISIBLE);
+        loadingView.setVisibility(View.GONE);
+
+        mTabLayout.removeAllTabs();
+        mViewPager.setAdapter(new PelaksanaanTabAdapter(getActivity().getSupportFragmentManager(), woBelumLunasList, woSelesaiList, woLunasList));
+
+        mTabLayout.setupWithViewPager(mViewPager);
+        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + woBelumLunasList.size() + ")");
+        mTabLayout.getTabAt(1).setText("WO Selesai (" + woSelesaiList.size() + ")");
+        mTabLayout.getTabAt(2).setText("WO Lunas (" + woLunasList.size() + ")");
+
+        mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        shouldUpdateAllWoMarker(woBelumLunasList);
+                        break;
+                    case 1:
+                        shouldUpdateAllWoMarker(woSelesaiList);
+                        break;
+                    case 2:
+                        shouldUpdateAllWoMarker(woLunasList);
+                        break;
+                }
+                if (!isPanelExpand)
+                    showPanel();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                if (!isPanelExpand)
+                    showPanel();
+                else
+                    hidePanel();
+            }
+        });
+
+        loadingView.setVisibility(View.GONE);
+        mViewPager.setVisibility(View.VISIBLE);
+
+        if (googleMap != null) {
+            double latitude  = -7.783248;
+            double longitude = 106.5338977;
+            LatLng latLng    = new LatLng(latitude, longitude);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(12f));
+        }
+    }
+
     private void backupWoSelesai() {
         mWoBackupList = new ArrayList<>();
         List<WorkOrder> localWoSelesai = LocalDb.getInstance().copyFromRealm(
@@ -229,65 +290,6 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         }
     }
 
-    private void initViewPager() {
-        categorizeWoList();
-
-        mLayoutContent.setVisibility(View.VISIBLE);
-        mViewPager.setVisibility(View.VISIBLE);
-        mTabLayout.setVisibility(View.VISIBLE);
-        loadingView.setVisibility(View.GONE);
-
-        mTabLayout.removeAllTabs();
-        mViewPager.setAdapter(new PelaksanaanTabAdapter(getActivity().getSupportFragmentManager(), woBelumLunasList, woSelesaiList, woLunasList));
-
-        mTabLayout.setupWithViewPager(mViewPager);
-        mTabLayout.getTabAt(0).setText("WO Pelaksanaan (" + woBelumLunasList.size() + ")");
-        mTabLayout.getTabAt(1).setText("WO Selesai (" + woSelesaiList.size() + ")");
-        mTabLayout.getTabAt(2).setText("WO Lunas (" + woLunasList.size() + ")");
-
-        mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                switch (tab.getPosition()) {
-                    case 0:
-                        shouldUpdateAllWoMarker(woBelumLunasList);
-                        break;
-                    case 1:
-                        shouldUpdateAllWoMarker(woSelesaiList);
-                        break;
-                    case 2:
-                        shouldUpdateAllWoMarker(woLunasList);
-                        break;
-                }
-                if (!isPanelExpand)
-                    showPanel();
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                if (!isPanelExpand)
-                    showPanel();
-                else
-                    hidePanel();
-            }
-        });
-
-        loadingView.setVisibility(View.GONE);
-        mViewPager.setVisibility(View.VISIBLE);
-
-        if (googleMap != null) {
-            double latitude  = -7.783248;
-            double longitude = 106.5338977;
-            LatLng latLng    = new LatLng(latitude, longitude);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(12f));
-        }
-    }
-
     private void hidePanel() {
         isPanelExpand = false;
         if (heightContainer == 0)
@@ -352,27 +354,35 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         shouldUpdateAllWoMarker(woBelumLunasList);
     }
 
-    private void shouldUpdateAllWoMarker(List<WorkOrder> woList) {
+    private void shouldUpdateAllWoMarker(final List<WorkOrder> woList) {
         if ((googleMap != null) && ((woList != null) && (!woList.isEmpty()))) {
-            for (WorkOrder wo : woList) {
+            googleMap.clear();
 
-                // if can't parse lat lng for any specific reason like null variable, then continue
-                // to the next iteration.
-                boolean isSafeToContinue = isValidLatLng(wo.getKoordinatX(), wo.getKoordinatY());
-                if (!isSafeToContinue) continue;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    for (WorkOrder wo : woList) {
+                        System.out.println("Wo List size : " + woList.size());
+                        // if can't parse lat lng for any specific reason such as null variable,
+                        // then continue to the next iteration.
+                        boolean isSafeToContinue = isValidLatLng(wo.getKoordinatX(), wo.getKoordinatY());
+                        if (!isSafeToContinue) continue;
 
-                // add marker and additional info on top of it.
-                double lat    = Double.parseDouble(wo.getKoordinatX());
-                double lng    = Double.parseDouble(wo.getKoordinatY());
-                LatLng latLng = new LatLng(lat, lng);
-                googleMap.addMarker(
-                        new MarkerOptions()
-                                .position(latLng)
-                                .title(wo.getPelangganId())
-                                .snippet(wo.getAlamat()));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                googleMap.animateCamera(CameraUpdateFactory.zoomTo(11f));
-            }
+                        // add marker and additional info on top of it.
+                        double lat    = Double.parseDouble(wo.getKoordinatX());
+                        double lng    = Double.parseDouble(wo.getKoordinatY());
+                        LatLng latLng = new LatLng(lat, lng);
+                        googleMap.addMarker(
+                                new MarkerOptions()
+                                        .position(latLng)
+                                        .title(wo.getPelangganId())
+                                        .snippet(wo.getAlamat()));
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        googleMap.animateCamera(CameraUpdateFactory.zoomTo(11f));
+                    }
+                }
+            }, 800);
         }
     }
 
@@ -542,10 +552,5 @@ public class PelaksanaanFragment extends Fragment implements OnMapReadyCallback 
         Date   date       = DateUtils.parseToDate(pingEvent.getDate());
         String dateString = DateUtils.parseToString(date);
         ItoApplication.pingDate = dateString;
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onUploadBackgroundFinished() {
-        System.out.println("[Service] Stop uploading in the background");
     }
 }

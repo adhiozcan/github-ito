@@ -74,7 +74,7 @@ public class ImageUtils {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] byteFormat = stream.toByteArray();
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 10; i++) {
             ByteArrayOutputStream streamCompressed = new ByteArrayOutputStream();
             if (byteFormat.length > 21048) {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY, streamCompressed);

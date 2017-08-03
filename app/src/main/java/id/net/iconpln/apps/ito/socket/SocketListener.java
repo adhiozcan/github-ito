@@ -56,7 +56,7 @@ public class SocketListener extends WebSocketListener {
     @Override
     public void onClosing(WebSocket webSocket, int code, String reason) {
         System.out.println("[Closing] " + code + " " + reason);
-        webSocket.close(1000, "Goodbye!");
+        //webSocket.close(1000, "Goodbye!");
     }
 
     @Override

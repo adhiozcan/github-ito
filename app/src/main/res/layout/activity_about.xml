@@ -3,10 +3,10 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/colorPrimary"
               android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
+
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,200 +14,159 @@
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Tentang Aplikasi"/>
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_launcher_screen"/>
+
+            <ImageView
+                android:layout_width="82dp"
+                android:layout_height="92dp"
+                android:src="@mipmap/ic_launcher"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorSnow"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_16dp">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Versi Aplikasi"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="0.0.1"
+                android:textAlignment="textEnd"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dip"
+            android:background="@color/colorGrey"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:background="@color/colorSnow"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_16dp">
 
-            <LinearLayout
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/circle_white"
+                android:text="Kode Pengembangan"/>
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:src="@drawable/ic_launcher_screen"/>
-
-                <ImageView
-                    android:layout_width="82dp"
-                    android:layout_height="92dp"
-                    android:src="@mipmap/ic_launcher"/>
-
-            </LinearLayout>
-
-            <!-- menu edit -->
-            <LinearLayout
-                android:id="@+id/layout_edit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="24dp"
-                android:layout_marginRight="24dp"
-                android:layout_marginTop="16dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/circle_white"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/space_16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Website"
-                        android:textColor="@color/colorWhite"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="www.iconpln.co.id"
-                        android:textColor="@color/colorWhite"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="24dp"
-                android:layout_marginRight="24dp"/>
-
-            <!-- menu edit -->
-            <LinearLayout
-                android:id="@+id/layout_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="24dp"
-                android:layout_marginRight="24dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:id="@+id/imageView2"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/circle_white"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/space_16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Versi Aplikasi"
-                        android:textColor="@color/colorWhite"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="0.0.1"
-                        android:textColor="@color/colorWhite"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="24dp"
-                android:layout_marginRight="24dp"/>
-
-            <!-- menu logout -->
-            <LinearLayout
-                android:id="@+id/layout_logout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="24dp"
-                android:layout_marginRight="24dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/circle_white"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/space_16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/circle_white"
-                        android:text="Kode Pengembangan"
-                        android:textColor="@color/colorWhite"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="Build b9c2123 170711.01"
-                        android:textColor="@color/colorWhite"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="end">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                </LinearLayout>
-
-            </LinearLayout>
+                android:layout_gravity="end"
+                android:text="Build 20f74da"
+                android:textAlignment="textEnd"
+                android:textSize="13sp"/>
         </LinearLayout>
 
-    </ScrollView>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dip"
+            android:background="@color/colorGrey"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorSnow"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_16dp">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/circle_white"
+                android:text="Kode Release"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="170802-02-nb"
+                android:textAlignment="textEnd"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dip"
+            android:background="@color/colorGrey"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorSnow"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_16dp">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/circle_white"
+                android:text="Pengembang"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="PT. Indonesia Comnet Plus"
+                android:textAlignment="textEnd"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.1dip"
+            android:background="@color/colorGrey"/>
+
+        <LinearLayout
+            android:id="@+id/layout_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorSnow"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_16dp">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Website"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="www.iconpln.co.id"
+                android:textAlignment="textEnd"/>
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

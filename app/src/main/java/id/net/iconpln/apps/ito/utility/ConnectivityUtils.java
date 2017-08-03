@@ -1,11 +1,16 @@
 package id.net.iconpln.apps.ito.utility;
 
 import android.content.Context;
+import android.content.Intent;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.Settings;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+
+import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 
 /**
  * Created by Ozcan on 12/06/2017.
@@ -31,6 +36,15 @@ public class ConnectivityUtils {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
         return isConnected;
+    }
+
+    public static boolean isProviderEnabled(final Context context) {
+        LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return true;
+        }
+        return false;
     }
 
     public static void register(Context context, SignalListener signalListener) {

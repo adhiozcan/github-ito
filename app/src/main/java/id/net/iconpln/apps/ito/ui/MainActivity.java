@@ -3,6 +3,7 @@ package id.net.iconpln.apps.ito.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -30,6 +31,7 @@ import id.net.iconpln.apps.ito.ui.fragment.ItoDialog;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanFragment;
 import id.net.iconpln.apps.ito.ui.fragment.PelaksanaanUlangFragment;
 import id.net.iconpln.apps.ito.ui.fragment.SynchFragment;
+import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 
@@ -89,6 +91,19 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             loadLastFragment();
+        }
+
+        if (ConnectivityUtils.isProviderEnabled(this)) {
+            ItoDialog.simpleAlert(this, "Mohon aktifkan GPS untuk mendapatkan lokasi", new ItoDialog.Action() {
+                @Override
+                public void onYesButtonClicked() {
+                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                }
+
+                @Override
+                public void onNoButtonClicked() {
+                }
+            });
         }
     }
 

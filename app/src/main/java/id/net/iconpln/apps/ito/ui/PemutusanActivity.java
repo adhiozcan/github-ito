@@ -1,7 +1,6 @@
 package id.net.iconpln.apps.ito.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,7 +11,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -27,7 +25,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,17 +40,15 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
-import org.apache.commons.lang3.CharSet;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.NotActiveException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,10 +79,8 @@ import id.net.iconpln.apps.ito.utility.CameraUtils;
 import id.net.iconpln.apps.ito.utility.CommonUtils;
 import id.net.iconpln.apps.ito.utility.ConnectivityUtils;
 import id.net.iconpln.apps.ito.utility.DateUtils;
-import id.net.iconpln.apps.ito.utility.ImageUtil;
 import id.net.iconpln.apps.ito.utility.ImageUtils;
 import id.net.iconpln.apps.ito.utility.NotifUtils;
-import id.net.iconpln.apps.ito.utility.SignalListener;
 import id.net.iconpln.apps.ito.utility.SmileyLoading;
 import id.net.iconpln.apps.ito.utility.StringUtils;
 import io.realm.Realm;
@@ -112,6 +105,11 @@ public class PemutusanActivity extends AppCompatActivity implements
     public static final  int CAMERA_REQUEST_CODE_3                 = 103;
     public static final  int CAMERA_REQUEST_CODE_4                 = 104;
 
+    private final float MINIMUM_ACCURACY_ACCEPTED = 20.0f;
+    private final float NO_ACCURACY_ACCEPTED      = 0.0f;
+
+    private boolean reachMinimumLocationAccuracy = false;
+
     private static int REQUEST_TAKE_PHOTO = 0;
 
     private Spinner spnPutus;
@@ -122,7 +120,6 @@ public class PemutusanActivity extends AppCompatActivity implements
     private TextView txtNama;
     private TextView txtAlamat;
     private TextView txtTanggal;
-
     private EditText edLokasi;
     private EditText edTanggalPutus;
     private EditText edLwbp;
@@ -138,8 +135,7 @@ public class PemutusanActivity extends AppCompatActivity implements
 
     private GoogleApiClient mGoogleClient;
     private LocationRequest mLocationRequest;
-
-    private ArrayAdapter keteranganAdapter;
+    private ArrayAdapter    keteranganAdapter;
 
     private List<FlagTusbung> mFlagTusbung;
     private List<String>      keteranganList;
@@ -262,6 +258,7 @@ public class PemutusanActivity extends AppCompatActivity implements
 
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(mGoogleClient, this);
+        System.out.println("Stop receiving location updates");
     }
 
     /**
@@ -286,29 +283,73 @@ public class PemutusanActivity extends AppCompatActivity implements
         );
     }
 
-    public void takePicture(View viewId) {
-        if (CameraUtils.canOpenCamera(this))
-            switch (viewId.getId()) {
-                case R.id.foto_1:
-                    REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_1;
-                    dispatchTakePictureIntent();
-                    break;
-                case R.id.foto_2:
-                    REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_2;
-                    dispatchTakePictureIntent();
-                    break;
-                case R.id.foto_3:
-                    REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_3;
-                    dispatchTakePictureIntent();
-                    break;
-                case R.id.foto_4:
-                    REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_4;
-                    dispatchTakePictureIntent();
-                    break;
+    public void takePicture(final View viewId) {
+        if (CameraUtils.canOpenCamera(this)) {
+
+            // chek location accuracy first for watermark location tagging validation
+            if (!reachMinimumLocationAccuracy) {
+                ItoDialog.simpleAlert(this, "Koordinat lokasi belum akurat.\n\n" +
+                        "Tetap melanjutkan pengambilan foto?", new ItoDialog.Action() {
+                    @Override
+                    public void onYesButtonClicked() {
+                        switch (viewId.getId()) {
+                            case R.id.foto_1:
+                                REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_1;
+                                dispatchTakePictureIntent();
+                                break;
+                            case R.id.foto_2:
+                                REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_2;
+                                dispatchTakePictureIntent();
+                                break;
+                            case R.id.foto_3:
+                                REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_3;
+                                dispatchTakePictureIntent();
+                                break;
+                            case R.id.foto_4:
+                                REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_4;
+                                dispatchTakePictureIntent();
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public void onNoButtonClicked() {
+                    }
+                });
+            } else {
+                switch (viewId.getId()) {
+                    case R.id.foto_1:
+                        REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_1;
+                        dispatchTakePictureIntent();
+                        break;
+                    case R.id.foto_2:
+                        REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_2;
+                        dispatchTakePictureIntent();
+                        break;
+                    case R.id.foto_3:
+                        REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_3;
+                        dispatchTakePictureIntent();
+                        break;
+                    case R.id.foto_4:
+                        REQUEST_TAKE_PHOTO = CAMERA_REQUEST_CODE_4;
+                        dispatchTakePictureIntent();
+                        break;
+                }
             }
+        }
+
     }
 
     private void dispatchTakePictureIntent() {
+        /*if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
+                m.invoke(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }*/
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Ensure that there's a camera activity to handle the intent
@@ -364,6 +405,29 @@ public class PemutusanActivity extends AppCompatActivity implements
         return image;
     }
 
+    private Bitmap addWatermark(Bitmap imageBitmap) {
+        // Getting LocationManager object from System Service LOCATION_SERVICE
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria        criteria        = new Criteria();
+        String          provider        = locationManager.getBestProvider(criteria, true);
+        Location        location        = locationManager.getLastKnownLocation(provider);
+
+        String kodePetugas = AppConfig.getUserInformation().getKodePetugas();
+        String tanggal     = DateUtils.parseToString(new Date());
+        String latitude    = "";
+        String longitude   = "";
+        if (tusbung.getLatitude() != null && tusbung.getLongitude() != null) {
+            latitude = tusbung.getLatitude();
+            longitude = tusbung.getLongitude();
+        } else if (location != null) {
+            latitude = String.valueOf(location.getLatitude());
+            longitude = String.valueOf(location.getLongitude());
+        }
+        imageBitmap = ImageUtils.addWatermark(imageBitmap, kodePetugas, tanggal, latitude, longitude);
+        ImageUtils.saveImage(mCurrentPhotoPath, imageBitmap);
+        return imageBitmap;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -372,50 +436,29 @@ public class PemutusanActivity extends AppCompatActivity implements
         if (data == null) {
             Bitmap imageBitmap = CameraUtils.uriToBitmap(this, Uri.parse("file://" + mCurrentPhotoPath));
             imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap, 150, 150);
-
-            // Getting LocationManager object from System Service LOCATION_SERVICE
-            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-            Criteria        criteria        = new Criteria();
-            String          provider        = locationManager.getBestProvider(criteria, true);
-            Location        location        = locationManager.getLastKnownLocation(provider);
-
-            String kodePetugas = "";
-            String tanggal     = "";
-            String latitude    = "";
-            String longitude   = "";
-            if (tusbung.getLatitude() != null && tusbung.getLongitude() != null) {
-                kodePetugas = AppConfig.getUserInformation().getKodePetugas();
-                tanggal = DateUtils.parseToString(new Date());
-                latitude = tusbung.getLatitude();
-                longitude = tusbung.getLongitude();
-            } else if (location != null) {
-                kodePetugas = AppConfig.getUserInformation().getKodePetugas();
-                tanggal = DateUtils.parseToString(new Date());
-                latitude = tusbung.getLatitude();
-                longitude = tusbung.getLongitude();
-            }
-            imageBitmap = ImageUtils.addWatermark(imageBitmap, kodePetugas, tanggal, latitude, longitude);
-            ImageUtils.saveImage(mCurrentPhotoPath, imageBitmap);
-
             switch (requestCode) {
                 case CAMERA_REQUEST_CODE_1:
                     hapusFoto(R.id.foto_1);
-                    imgFoto1.setImageBitmap(imageBitmap);
+                    imgFoto1.setImageBitmap(addWatermark(imageBitmap));
+                    imgFoto1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     imgFoto1.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_2:
                     hapusFoto(R.id.foto_2);
-                    imgFoto2.setImageBitmap(imageBitmap);
+                    imgFoto2.setImageBitmap(addWatermark(imageBitmap));
+                    imgFoto2.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     imgFoto2.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_3:
                     hapusFoto(R.id.foto_3);
-                    imgFoto3.setImageBitmap(imageBitmap);
+                    imgFoto3.setImageBitmap(addWatermark(imageBitmap));
+                    imgFoto3.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     imgFoto3.setTag("Flag to be post!");
                     break;
                 case CAMERA_REQUEST_CODE_4:
                     hapusFoto(R.id.foto_4);
-                    imgFoto4.setImageBitmap(imageBitmap);
+                    imgFoto4.setImageBitmap(addWatermark(imageBitmap));
+                    imgFoto4.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     imgFoto4.setTag("Flag to be post!");
                     break;
                 default:
@@ -425,51 +468,27 @@ public class PemutusanActivity extends AppCompatActivity implements
             if (resultCode == RESULT_OK) {
                 Bitmap imageBitmap = CameraUtils.uriToBitmap(this, Uri.parse("file://" + mCurrentPhotoPath));
                 imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap, 150, 150);
-
-                // Getting LocationManager object from System Service LOCATION_SERVICE
-                LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-                Criteria        criteria        = new Criteria();
-                String          provider        = locationManager.getBestProvider(criteria, true);
-                Location        location        = locationManager.getLastKnownLocation(provider);
-
-                String kodePetugas = "";
-                String tanggal     = "";
-                String latitude    = "";
-                String longitude   = "";
-
-                if (tusbung.getLatitude() != null && tusbung.getLongitude() != null) {
-                    kodePetugas = AppConfig.getUserInformation().getKodePetugas();
-                    tanggal = DateUtils.parseToString(new Date());
-                    latitude = tusbung.getLatitude();
-                    longitude = tusbung.getLongitude();
-                } else if (location != null) {
-                    kodePetugas = AppConfig.getUserInformation().getKodePetugas();
-                    tanggal = DateUtils.parseToString(new Date());
-                    latitude = tusbung.getLatitude();
-                    longitude = tusbung.getLongitude();
-                }
-                imageBitmap = ImageUtils.addWatermark(imageBitmap, kodePetugas, tanggal, latitude, longitude);
-                ImageUtils.saveImage(mCurrentPhotoPath, imageBitmap);
+                addWatermark(imageBitmap);
 
                 switch (requestCode) {
                     case CAMERA_REQUEST_CODE_1:
-                        hapusFoto(R.id.foto_1);
-                        imgFoto1.setImageBitmap(imageBitmap);
+                        imgFoto1.setImageBitmap(addWatermark(imageBitmap));
+                        imgFoto1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         imgFoto1.setTag("Flag to be post!");
                         break;
                     case CAMERA_REQUEST_CODE_2:
-                        hapusFoto(R.id.foto_2);
-                        imgFoto2.setImageBitmap(imageBitmap);
+                        imgFoto2.setImageBitmap(addWatermark(imageBitmap));
+                        imgFoto2.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         imgFoto2.setTag("Flag to be post!");
                         break;
                     case CAMERA_REQUEST_CODE_3:
-                        hapusFoto(R.id.foto_3);
-                        imgFoto3.setImageBitmap(imageBitmap);
+                        imgFoto3.setImageBitmap(addWatermark(imageBitmap));
+                        imgFoto3.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         imgFoto3.setTag("Flag to be post!");
                         break;
                     case CAMERA_REQUEST_CODE_4:
-                        hapusFoto(R.id.foto_4);
-                        imgFoto4.setImageBitmap(imageBitmap);
+                        imgFoto4.setImageBitmap(addWatermark(imageBitmap));
+                        imgFoto4.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         imgFoto4.setTag("Flag to be post!");
                         break;
                     default:
@@ -494,23 +513,6 @@ public class PemutusanActivity extends AppCompatActivity implements
                         break;
                 }
             }
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        EventBusProvider.getInstance().register(this);
-        mGoogleClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        EventBusProvider.getInstance().unregister(this);
-        if (mGoogleClient.isConnected()) {
-            stopLocationUpdates();
-            mGoogleClient.disconnect();
         }
     }
 
@@ -606,25 +608,29 @@ public class PemutusanActivity extends AppCompatActivity implements
             case R.id.hapus_foto_1:
                 if (mPhotoPath[0] == null) return;
                 new File(mPhotoPath[0].getPath()).delete();
-                imgFoto1.setImageResource(R.drawable.camera_b);
+                imgFoto1.setImageResource(R.drawable.camera_dark);
+                imgFoto1.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 mPhotoPath[0] = null;
                 break;
             case R.id.hapus_foto_2:
                 if (mPhotoPath[1] == null) return;
                 new File(mPhotoPath[1].getPath()).delete();
-                imgFoto2.setImageResource(R.drawable.camera_b);
+                imgFoto2.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                imgFoto2.setImageResource(R.drawable.camera_dark);
                 mPhotoPath[1] = null;
                 break;
             case R.id.hapus_foto_3:
                 if (mPhotoPath[2] == null) return;
                 new File(mPhotoPath[2].getPath()).delete();
-                imgFoto3.setImageResource(R.drawable.camera_b);
+                imgFoto3.setImageResource(R.drawable.camera_dark);
+                imgFoto3.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 mPhotoPath[2] = null;
                 break;
             case R.id.hapus_foto_4:
                 if (mPhotoPath[3] == null) return;
                 new File(mPhotoPath[3].getPath()).delete();
-                imgFoto4.setImageResource(R.drawable.camera_b);
+                imgFoto4.setImageResource(R.drawable.camera_dark);
+                imgFoto4.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 mPhotoPath[3] = null;
                 break;
         }
@@ -661,7 +667,8 @@ public class PemutusanActivity extends AppCompatActivity implements
         SmileyLoading.show(this, "Sedang memproses tusbung", 15000, new SmileyLoading.LoadingTimer() {
             @Override
             public void onTimeout() {
-                NotifUtils.makePinkSnackbar(PemutusanActivity.this, "Timeout! Coba beberapa saat lagi");
+                NotifUtils.makePinkSnackbar(PemutusanActivity.this, "Pengerjaan tusbung akan disimpan di lokal").show();
+                finish();
             }
         });
 
@@ -678,7 +685,7 @@ public class PemutusanActivity extends AppCompatActivity implements
         String status       = getStatusKodeFlag();
         String isGagalPutus = String.valueOf(spnPutus.getSelectedItemPosition());
         String namaPetugas  = mWo.getNama();
-        String email        = null;
+        String email        = "";
         try {
             email = URLEncoder.encode(edEmail.getText().toString(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -737,10 +744,21 @@ public class PemutusanActivity extends AppCompatActivity implements
         LocalDb.makeSafeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                LocalDb.getInstance().where(WorkOrder.class)
+                realm.where(WorkOrder.class)
                         .equalTo("noWo", mWo.getNoWo())
                         .findFirst()
                         .setSelesai(true);
+            }
+        });
+
+        // set tanggal pemutusan
+        LocalDb.makeSafeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.where(WorkOrder.class)
+                        .equalTo("noWo", mWo.getNoWo())
+                        .findFirst()
+                        .setTanggalPutus(DateUtils.getDateFromLogin());
             }
         });
 
@@ -824,6 +842,23 @@ public class PemutusanActivity extends AppCompatActivity implements
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBusProvider.getInstance().register(this);
+        mGoogleClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBusProvider.getInstance().unregister(this);
+        if (mGoogleClient.isConnected()) {
+            stopLocationUpdates();
+            mGoogleClient.disconnect();
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTusbungRespond(ProgressUpdateEvent progressEvent) {
         Log.d(TAG, "---------------------------------------------");
@@ -831,12 +866,8 @@ public class PemutusanActivity extends AppCompatActivity implements
 
         SmileyLoading.shouldCloseDialog();
 
-        System.out.println(progressEvent.kode);
-        System.out.println(progressEvent.isSuccess());
-
         // mark mWo has done.
         if (progressEvent.isSuccess()) {
-            System.out.println("reality is success : true");
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
@@ -862,7 +893,6 @@ public class PemutusanActivity extends AppCompatActivity implements
             });
             snackbar.show();
         } else {
-            System.out.println("reality is success : false");
             LocalDb.makeSafeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
@@ -974,7 +1004,8 @@ public class PemutusanActivity extends AppCompatActivity implements
             return;
         }
 
-        startLocationUpdates();
+        if (reachMinimumLocationAccuracy == false)
+            startLocationUpdates();
     }
 
     @Override
@@ -994,22 +1025,25 @@ public class PemutusanActivity extends AppCompatActivity implements
         } else {
             Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
         }
-
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        edLokasi.setText("X : " + location.getLatitude() + "\nY : " + location.getLongitude());
-        tusbung.setLatitude(String.valueOf(location.getLatitude()));
-        tusbung.setLongitude(String.valueOf(location.getLongitude()));
+        Log.d(TAG, "Accuracy : " + location.getAccuracy() + " " + location.getLatitude() + " " + location.getLongitude());
+
+        float accuracy = location.getAccuracy();
+        if (accuracy <= MINIMUM_ACCURACY_ACCEPTED && accuracy > NO_ACCURACY_ACCEPTED) {
+            edLokasi.setText("X : " + location.getLatitude() + "\nY : " + location.getLongitude());
+            tusbung.setLatitude(String.valueOf(location.getLatitude()));
+            tusbung.setLongitude(String.valueOf(location.getLongitude()));
+
+            stopLocationUpdates();
+            reachMinimumLocationAccuracy = true;
+        }
     }
 
     @Override
     public void onItemSelected(AdapterView<?> spinner, View view, int position, long l) {
-        System.out.println("Spinner Selected\t: " + spinner.getId());
-        System.out.println("Spinner Putus\t: " + spnPutus.getId());
-        System.out.println("Spinner Keterangan\t: " + spnKeterangan.getId());
-
         if (spinner == spnPutus) {
             keteranganList.clear();
             keteranganList.add("Pilih Keterangan");
@@ -1030,10 +1064,5 @@ public class PemutusanActivity extends AppCompatActivity implements
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onUploadBackgroundFinished(WoUploadServiceEvent wusEvent) {
-        System.out.println("[Service] Stop uploading in the background");
     }
 }
